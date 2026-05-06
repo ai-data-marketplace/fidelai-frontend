@@ -58,6 +58,11 @@ export interface ApplicationStatusResponse {
   submitted_at: string | null;
 }
 
+export interface OnboardingCompleteResponse {
+  message?: string;
+  [key: string]: unknown;
+}
+
 /* ─────────────────────────────────────
    Auth Hooks
    ───────────────────────────────────── */
@@ -82,6 +87,25 @@ export function useApplicationStatus(options?: { enabled?: boolean }) {
     },
     retry: false,
     enabled: options?.enabled ?? true,
+  });
+}
+
+export function useSubmitOnboardingComplete() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (formData: FormData) => {
+      const { data } = await apiClient.post<OnboardingCompleteResponse>(API_ENDPOINTS.AUTH.ONBOARDING_COMPLETE, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return data;
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['applicationStatus'] }),
+        queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
+      ]);
+    },
   });
 }
 

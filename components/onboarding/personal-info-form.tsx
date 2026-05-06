@@ -1,10 +1,10 @@
 "use client";
 
 import { useOnboarding, OnboardingRole } from "@/context/onboarding-context";
-import { Upload, PenTool, ShieldCheck, ShoppingBag, ArrowRight } from "lucide-react";
+import { Upload, PenTool, ShieldCheck, ShoppingBag, ArrowRight, ImagePlus, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const roles: { 
   id: OnboardingRole; 
@@ -64,15 +64,30 @@ const roles: {
 ];
 
 export function PersonalInfoForm() {
-  const { role, setRole, personalDetails, setPersonalDetails, setCurrentStep, markStepComplete } = useOnboarding();
+  const { role, setRole, profile, setProfile, profile_picture, setProfilePicture, setCurrentStep, markStepComplete } = useOnboarding();
   const router = useRouter();
   
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!profile_picture) {
+      setProfilePreviewUrl(null);
+      return;
+    }
+
+    const nextPreviewUrl = URL.createObjectURL(profile_picture);
+    setProfilePreviewUrl(nextPreviewUrl);
+
+    return () => {
+      URL.revokeObjectURL(nextPreviewUrl);
+    };
+  }, [profile_picture]);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
-    if (!personalDetails.fullName) newErrors.fullName = "Full name is required";
-    if (!personalDetails.country) newErrors.country = "Country is required";
+    if (!profile.country) newErrors.country = "Country is required";
+    if (!profile.native_language) newErrors.nativeLanguage = "Native language is required";
     if (!role) newErrors.role = "Please select a role";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -94,30 +109,28 @@ export function PersonalInfoForm() {
       className="space-y-8"
     >
       <div>
-        <h2 className="text-2xl font-bold tracking-tight mb-2">Personal Details & Role</h2>
-        <p className="text-muted-foreground">Please tell us a bit about yourself and how you plan to use FidelAI.</p>
+        <h2 className="text-2xl font-bold tracking-tight mb-2">Profile & Role</h2>
+        <p className="text-muted-foreground">Share the profile details required to start your onboarding application.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* ... existing fields ... */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">Full Name</label>
+          <label className="text-sm font-medium">Full Name (Optional)</label>
           <input 
             type="text" 
-            value={personalDetails.fullName || ""}
-            onChange={(e) => setPersonalDetails({ fullName: e.target.value })}
+            value={profile.full_name || ""}
+            onChange={(e) => setProfile({ full_name: e.target.value })}
             placeholder="John Doe"
             className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-border"
           />
-          {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
         </div>
         
         <div className="space-y-2">
           <label className="text-sm font-medium">Phone Number (Optional)</label>
           <input 
             type="tel" 
-            value={personalDetails.phone || ""}
-            onChange={(e) => setPersonalDetails({ phone: e.target.value })}
+            value={profile.phone_number || ""}
+            onChange={(e) => setProfile({ phone_number: e.target.value })}
             placeholder="+251 911 234 567"
             className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-border"
           />
@@ -127,8 +140,8 @@ export function PersonalInfoForm() {
           <label className="text-sm font-medium">Country / Region</label>
           <div className="relative">
             <select 
-              value={personalDetails.country || ""}
-              onChange={(e) => setPersonalDetails({ country: e.target.value })}
+              value={profile.country || ""}
+              onChange={(e) => setProfile({ country: e.target.value })}
               className="flex h-11 w-full rounded-lg border border-input bg-background text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-border appearance-none w-full"
             >
               <option value="" disabled className="dark:bg-[#0f172a] dark:text-white">Select your country</option>
@@ -149,8 +162,8 @@ export function PersonalInfoForm() {
           <label className="text-sm font-medium">Native Language</label>
           <div className="relative">
             <select 
-              value={personalDetails.language || ""}
-              onChange={(e) => setPersonalDetails({ language: e.target.value })}
+              value={profile.native_language || ""}
+              onChange={(e) => setProfile({ native_language: e.target.value })}
               className="flex h-11 w-full rounded-lg border border-input bg-background text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-border appearance-none w-full"
             >
               <option value="" disabled className="dark:bg-[#0f172a] dark:text-white">Select primary language</option>
@@ -164,6 +177,44 @@ export function PersonalInfoForm() {
               <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
             </div>
           </div>
+          {errors.nativeLanguage && <p className="text-xs text-destructive">{errors.nativeLanguage}</p>}
+        </div>
+
+        <div className="space-y-2 md:col-span-2">
+          <label className="text-sm font-medium">Profile Picture (Optional)</label>
+          <div className="flex items-center gap-3 rounded-xl border border-dashed border-border/70 bg-muted/20 p-4">
+            <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-background border border-border/60 shrink-0">
+              {profilePreviewUrl ? (
+                <img
+                  src={profilePreviewUrl}
+                  alt="Selected profile preview"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <ImagePlus className="w-5 h-5 text-muted-foreground" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setProfilePicture(e.target.files?.[0] ?? null)}
+                className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-lg file:border-0 file:bg-orange-500 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-orange-600"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">PNG, JPG, JPEG, or WEBP. Optional for now.</p>
+            </div>
+            {profile_picture && (
+              <button
+                type="button"
+                onClick={() => setProfilePicture(null)}
+                className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-3 h-3" />
+                Clear
+              </button>
+            )}
+          </div>
+          {profile_picture && <p className="text-xs text-emerald-600">Selected: {profile_picture.name}</p>}
         </div>
       </div>
 
@@ -172,6 +223,7 @@ export function PersonalInfoForm() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {roles.map((r) => (
             <button
+              type="button"
               key={r.id}
               onClick={() => {
                 setRole(r.id);
@@ -203,6 +255,7 @@ export function PersonalInfoForm() {
 
       <div className="flex justify-end pt-6">
         <button
+          type="button"
           onClick={handleNext}
           className="flex items-center gap-2 h-12 px-8 rounded-xl brand-gradient-btn font-bold text-white shadow-lg brand-shadow brand-shadow-hover transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >

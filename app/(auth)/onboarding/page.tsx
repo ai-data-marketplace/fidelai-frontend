@@ -8,10 +8,10 @@ import { useApplicationStatus } from "@/lib/hooks";
 export default function OnboardingRoot() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const { data: applicationStatus, isLoading: isApplicationStatusLoading } = useApplicationStatus();
+  const { data: applicationStatus, isLoading: isApplicationStatusLoading, isFetching: isApplicationStatusFetching } = useApplicationStatus();
 
   useEffect(() => {
-    if (isAuthLoading || isApplicationStatusLoading || !user) return;
+    if (isAuthLoading || isApplicationStatusLoading || isApplicationStatusFetching || !user) return;
     const normalizedRole = (applicationStatus?.role || user.role || "").toLowerCase();
     if (normalizedRole === "unknown") {
       router.replace(applicationStatus?.has_application ? "/onboarding/pending" : "/onboarding/step-1");
@@ -20,7 +20,7 @@ export default function OnboardingRoot() {
 
     const roleRoots = ["contributor", "annotator", "expert", "buyer", "admin"];
     router.replace(roleRoots.includes(normalizedRole) ? `/${normalizedRole}` : "/dashboard/profile");
-  }, [applicationStatus, isApplicationStatusLoading, isAuthLoading, router, user]);
+  }, [applicationStatus, isApplicationStatusFetching, isApplicationStatusLoading, isAuthLoading, router, user]);
 
   return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Loading onboarding...</div>;
 }

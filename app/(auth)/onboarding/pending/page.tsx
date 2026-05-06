@@ -11,17 +11,17 @@ import { useRouter } from "next/navigation";
 export default function PendingPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const { data: status, isLoading } = useApplicationStatus();
+  const { data: status, isLoading, isFetching } = useApplicationStatus();
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || isFetching) return;
 
     if (!status) return;
 
     if (!status.has_application) {
       router.replace("/onboarding/step-1");
     }
-  }, [isLoading, router, status]);
+  }, [isFetching, isLoading, router, status]);
 
   const roleLabel = status?.role_applied_for || user?.role || "role application";
   const applicationState = status?.application_status || "UNDER REVIEW";

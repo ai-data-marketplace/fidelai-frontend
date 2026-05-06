@@ -4,6 +4,7 @@ export const API_ENDPOINTS = {
     VERIFY_EMAIL: '/auth/verify-email/',
     RESEND_CODE: '/auth/resend-code/',
     LOGIN: '/auth/login/',
+    ONBOARDING_COMPLETE: '/auth/onboarding/complete/',
     APPLICATION_STATUS: '/auth/application-status/',
     REFRESH: '/auth/token/refresh/',
     VERIFY_TOKEN: '/auth/token/verify/',
