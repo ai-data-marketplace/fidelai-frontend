@@ -24,10 +24,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
 
     const roleRoots = ["contributor", "annotator", "expert", "buyer", "admin"];
-    if (normalizedRole === "unknown" && roleRoots.includes(applicationRole)) {
-      return `/${applicationRole}`;
-    }
-
     if (roleRoots.includes(normalizedRole)) {
       const firstSegment = pathname.split("/")[1];
       if (roleRoots.includes(firstSegment) && firstSegment !== normalizedRole) {

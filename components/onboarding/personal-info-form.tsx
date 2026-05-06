@@ -115,17 +115,6 @@ export function PersonalInfoForm() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Full Name (Optional)</label>
-          <input 
-            type="text" 
-            value={profile.full_name || ""}
-            onChange={(e) => setProfile({ full_name: e.target.value })}
-            placeholder="John Doe"
-            className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all hover:border-border"
-          />
-        </div>
-        
-        <div className="space-y-2">
           <label className="text-sm font-medium">Phone Number (Optional)</label>
           <input 
             type="tel" 

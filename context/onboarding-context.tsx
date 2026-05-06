@@ -180,8 +180,20 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       role_application: {
         role_applied_for: role ?? "",
       },
-    }));
-  }, []);
+       application_data: {
+         step_2: {},
+         step_3: {
+           readiness_check: null,
+         },
+       },
+       readinessData: {
+         completed: false,
+         answers: {},
+         score: 0,
+       },
+       completedSteps: [],
+     }));
+    }, []);
 
   const setProfile = useCallback((profile: Partial<ProfileData>) => {
     setState((prev) => ({
@@ -276,7 +288,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     }
 
     const formData = new FormData();
-    formData.append("profile", JSON.stringify(state.profile));
+    const { full_name, ...profileWithoutName } = state.profile;
+    formData.append("profile", JSON.stringify(profileWithoutName));
     formData.append("role_application", JSON.stringify({ role_applied_for: state.role }));
     formData.append(
       "application_data",
