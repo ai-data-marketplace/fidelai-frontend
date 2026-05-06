@@ -1,45 +1,113 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import apiClient from '../services/api-client';
+import { API_ENDPOINTS } from '../services/endpoints';
+import tokenUtils from '../lib/utils/token-utils';
 
-type User = {
+export interface AuthUser {
   id: string;
   email: string;
-  role: 'contributor' | 'annotator' | 'expert' | 'buyer' | 'admin';
-  name?: string;
-};
+  full_name: string;
+  role: string;
+  is_verified?: boolean;
+}
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   isLoading: boolean;
-  login: (token: string, userData: User) => void;
+  isAuthenticated: boolean;
+  isRefreshing: boolean;
+  login: (access: string, refresh: string, user?: AuthUser) => Promise<void>;
   logout: () => void;
+  refreshTokens: () => Promise<boolean>;
+  fetchCurrentUser: () => Promise<AuthUser | null>;
+  setUser: (u: AuthUser | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    // Attempt hydration from local storage or API wrapper
-    setIsLoading(false);
+  const isAuthenticated = !!tokenUtils.getTokens().access;
+
+  const fetchCurrentUser = useCallback(async () => {
+    try {
+      const { data } = await apiClient.get(API_ENDPOINTS.AUTH.ME);
+      setUser(data as AuthUser);
+      return data as AuthUser;
+    } catch (e) {
+      setUser(null);
+      return null;
+    }
   }, []);
 
-  const login = (token: string, userData: User) => {
-    localStorage.setItem('token', token);
-    setUser(userData);
-  };
+  const refreshTokens = useCallback(async (): Promise<boolean> => {
+    const { refresh } = tokenUtils.getTokens();
+    if (!refresh) return false;
+    setIsRefreshing(true);
+    try {
+      const resp = await apiClient.post(API_ENDPOINTS.AUTH.REFRESH, { refresh });
+      const { access, refresh: newRefresh } = resp.data;
+      if (access && newRefresh) {
+        tokenUtils.storeTokens(access, newRefresh);
+        setIsRefreshing(false);
+        return true;
+      }
+    } catch (err) {
+      tokenUtils.clearTokens();
+    }
+    setIsRefreshing(false);
+    return false;
+  }, []);
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  const login = useCallback(async (access: string, refresh: string, userData?: AuthUser) => {
+    tokenUtils.storeTokens(access, refresh);
+    if (userData) {
+      setUser(userData);
+    } else {
+      await fetchCurrentUser();
+    }
+  }, [fetchCurrentUser]);
+
+  const logout = useCallback(() => {
+    tokenUtils.clearTokens();
     setUser(null);
-  };
+    // client-side redirect can be handled by pages that consume the context
+  }, []);
+
+  // Hydrate on mount: if tokens exist try to ensure user is loaded
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { access, refresh } = tokenUtils.getTokens();
+      if (!access && !refresh) {
+        if (mounted) setIsLoading(false);
+        return;
+      }
+
+      // If access token missing or expired, try refresh
+      const shouldRefresh = tokenUtils.isTokenExpired(access);
+      if (shouldRefresh && refresh) {
+        const ok = await refreshTokens();
+        if (ok) {
+          await fetchCurrentUser();
+        }
+      } else if (access) {
+        await fetchCurrentUser();
+      }
+
+      if (mounted) setIsLoading(false);
+    })();
+
+    return () => { mounted = false; };
+  }, [fetchCurrentUser, refreshTokens]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, isAuthenticated, isRefreshing, login, logout, refreshTokens, fetchCurrentUser, setUser }}>
       {children}
     </AuthContext.Provider>
   );
@@ -47,6 +115,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

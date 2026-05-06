@@ -1,9 +1,15 @@
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: '/users/auth/jwt/create/',
-    REGISTER: '/users/auth/users/',
-    REFRESH: '/users/auth/jwt/refresh/',
-    ME: '/users/auth/users/me/',
+    REGISTER: '/auth/register/',
+    VERIFY_EMAIL: '/auth/verify-email/',
+    RESEND_CODE: '/auth/resend-code/',
+    LOGIN: '/auth/login/',
+    APPLICATION_STATUS: '/auth/application-status/',
+    REFRESH: '/auth/token/refresh/',
+    VERIFY_TOKEN: '/auth/token/verify/',
+    ME: '/auth/me/',
+    FORGOT_PASSWORD: '/auth/forgot-password/',
+    RESET_PASSWORD: '/auth/reset-password/',
   },
   DATASETS: {
     LIST: '/marketplace/datasets/',

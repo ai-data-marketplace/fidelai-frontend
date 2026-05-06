@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "@/context/theme-context";
-import { AuthProvider } from "@/context/auth-context";
-import { RoleProvider } from "@/context/role-context";
-import { NotificationProvider } from "@/context/notification-context";
+import { Providers } from "@/app/providers";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
@@ -35,16 +32,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen antialiased">
-        <ThemeProvider>
-          <AuthProvider>
-            <RoleProvider>
-              <NotificationProvider>
-                {children}
-                <Toaster richColors position="top-right" />
-              </NotificationProvider>
-            </RoleProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <Providers>
+          {children}
+          <Toaster richColors position="top-right" />
+        </Providers>
       </body>
     </html>
   );

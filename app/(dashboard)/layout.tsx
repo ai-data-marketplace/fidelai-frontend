@@ -1,21 +1,67 @@
 "use client";
 
 import { Sidebar } from "@/components/layout/sidebar";
-import { useRole } from "@/context/role-context";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { RoleToggle } from "@/components/dashboard/role-toggle";
+import { useAuth } from "@/context/auth-context";
+import { useApplicationStatus } from "@/lib/hooks";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { role } = useRole();
+  const { user, isLoading } = useAuth();
+  const { data: applicationStatus, isLoading: isApplicationStatusLoading } = useApplicationStatus();
+  const router = useRouter();
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const normalizedRole = (user?.role || "contributor").toLowerCase();
+  const applicationRole = (applicationStatus?.role || normalizedRole).toLowerCase();
+  const expectedRoute = (() => {
+    if (!user) return "/login";
+    if (applicationRole === "unknown") {
+      return applicationStatus?.has_application ? "/onboarding/pending" : "/onboarding/step-1";
+    }
+
+    const roleRoots = ["contributor", "annotator", "expert", "buyer", "admin"];
+    if (normalizedRole === "unknown" && roleRoots.includes(applicationRole)) {
+      return `/${applicationRole}`;
+    }
+
+    if (roleRoots.includes(normalizedRole)) {
+      const firstSegment = pathname.split("/")[1];
+      if (roleRoots.includes(firstSegment) && firstSegment !== normalizedRole) {
+        return `/${normalizedRole}`;
+      }
+    }
+
+    return null;
+  })();
+
+  useLayoutEffect(() => {
+    if (isLoading || isApplicationStatusLoading) return;
+
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+
+    if (expectedRoute && expectedRoute !== pathname) {
+      router.replace(expectedRoute);
+    }
+  }, [applicationStatus, expectedRoute, isApplicationStatusLoading, isLoading, pathname, router, user]);
+
+  if (isLoading || isApplicationStatusLoading || !user || (expectedRoute && expectedRoute !== pathname)) {
+    return <div className="flex h-screen items-center justify-center bg-background text-sm text-muted-foreground">Loading dashboard...</div>;
+  }
+
+  const sidebarRole = (user.role || "contributor").toLowerCase();
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Desktop Sidebar */}
       <aside className="w-64 border-r hidden md:block">
-        <Sidebar role={role || 'contributor'} />
+        <Sidebar role={sidebarRole} />
       </aside>
 
       {/* Mobile Menu Trigger */}
@@ -46,7 +92,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="fixed inset-y-0 left-0 w-72 bg-background z-50 md:hidden border-r shadow-2xl"
             >
-              <Sidebar role={role || 'contributor'} />
+              <Sidebar role={sidebarRole} />
             </motion.aside>
           </>
         )}
@@ -59,9 +105,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider md:hidden">FidelAI</h2>
           </div>
           <div className="flex items-center gap-6">
-            <RoleToggle />
             <div className="h-9 w-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
-              <span className="text-xs font-bold text-primary">AM</span>
+              <span className="text-xs font-bold text-primary">{(user.full_name || user.email || "U").slice(0, 2).toUpperCase()}</span>
             </div>
           </div>
         </header>

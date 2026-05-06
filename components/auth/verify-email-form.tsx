@@ -3,20 +3,34 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useResendCode, useVerifyEmail } from "@/lib/hooks";
+import { getErrorMessage } from "@/lib/utils/error-helper";
 
 export function VerifyEmailForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") ?? "";
   const [code, setCode] = useState(["", "", "", "", "", ""]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [generalError, setGeneralError] = useState("");
+  const [resendMessage, setResendMessage] = useState("");
+  const [cooldown, setCooldown] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const verifyMutation = useVerifyEmail();
+  const resendMutation = useResendCode();
 
   useEffect(() => {
     if (inputRefs.current[0]) {
       inputRefs.current[0].focus();
     }
   }, []);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = window.setTimeout(() => setCooldown((value) => value - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [cooldown]);
 
   const handleChange = (index: number, value: string) => {
     if (!/^[0-9]*$/.test(value)) return;
@@ -54,17 +68,37 @@ export function VerifyEmailForm() {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const fullCode = code.join("");
-    if (fullCode.length !== 6) return;
+    if (fullCode.length !== 6 || !email) return;
 
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsSuccess(true);
-      
-      setTimeout(() => {
-        router.push("/onboarding/step-1");
-      }, 1500);
-    }, 1500);
+    setGeneralError("");
+    verifyMutation.mutate(
+      { email, code: fullCode },
+      {
+        onSuccess: (data) => {
+          setIsSuccess(true);
+          const normalizedRole = (data.user.role || "").toLowerCase();
+          const targetRoute = normalizedRole === "unknown" ? "/onboarding" : normalizedRole ? `/${normalizedRole}` : "/dashboard/profile";
+          window.setTimeout(() => router.push(targetRoute), 1200);
+        },
+        onError: (error) => setGeneralError(getErrorMessage(error)),
+      }
+    );
+  };
+
+  const handleResend = () => {
+    if (!email || cooldown > 0) return;
+    setGeneralError("");
+    setResendMessage("");
+    resendMutation.mutate(
+      { email },
+      {
+        onSuccess: () => {
+          setResendMessage("Verification code sent again.");
+          setCooldown(60);
+        },
+        onError: (error) => setGeneralError(getErrorMessage(error)),
+      }
+    );
   };
 
   if (isSuccess) {
@@ -92,6 +126,17 @@ export function VerifyEmailForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-6 mt-6">
+      {generalError && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {generalError}
+        </div>
+      )}
+      {resendMessage && (
+        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700">
+          {resendMessage}
+        </div>
+      )}
+
       <div className="flex justify-between gap-2 max-w-xs mx-auto">
         {code.map((digit, index) => (
           <input
@@ -111,17 +156,17 @@ export function VerifyEmailForm() {
 
       <button
         type="submit"
-        disabled={isLoading || code.join("").length !== 6}
+        disabled={verifyMutation.isPending || code.join("").length !== 6 || !email}
         className="w-full flex h-12 items-center justify-center rounded-xl brand-gradient-btn px-8 text-sm font-bold text-white shadow-lg brand-shadow brand-shadow-hover transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
       >
-        {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+        {verifyMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
         Verify Email
       </button>
 
       <p className="text-center text-sm text-muted-foreground">
         Didn't receive the code?{" "}
-        <button type="button" className="font-medium text-orange-600 hover:text-orange-500 hover:underline transition-colors">
-          Resend
+        <button type="button" onClick={handleResend} disabled={!email || cooldown > 0 || resendMutation.isPending} className="font-medium text-orange-600 hover:text-orange-500 hover:underline transition-colors disabled:opacity-50 disabled:no-underline">
+          {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend"}
         </button>
       </p>
     </form>

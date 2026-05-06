@@ -7,18 +7,25 @@ import * as z from "zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLogin, useRegister } from "@/lib/hooks";
+import { getErrorMessage, getFieldErrors } from "@/lib/utils/error-helper";
 
 // Zod schemas
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
   password: z.string().min(1, { message: "Password is required." }),
-  rememberMe: z.boolean().optional(),
 });
 
 const registerSchema = z.object({
   fullName: z.string().min(3, { message: "Full name must be at least 3 characters." }),
   email: z.string().email({ message: "Please enter a valid email address." }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters." })
+    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter." })
+    .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter." })
+    .regex(/[0-9]/, { message: "Password must contain at least one digit." })
+    .regex(/[^A-Za-z0-9]/, { message: "Password must contain at least one special character." }),
   confirmPassword: z.string(),
   acceptTerms: z.boolean().refine((val) => val === true, {
     message: "You must accept the terms and conditions.",
@@ -37,33 +44,47 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 export function LoginForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [generalError, setGeneralError] = useState("");
+  const loginMutation = useLogin();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false,
     },
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
-    setTimeout(() => {
-      // Set mock cookie for middleware
-      document.cookie = "token=mock-token; path=/; max-age=3600";
-      setIsLoading(false);
-      router.push("/dashboard/profile"); 
-    }, 1500);
+    setGeneralError("");
+    try {
+      const response = await loginMutation.mutateAsync({ email: data.email, password: data.password });
+      const normalizedRole = (response.user.role || "").toLowerCase();
+      router.push(normalizedRole === "unknown" ? "/onboarding" : normalizedRole ? `/${normalizedRole}` : "/dashboard/profile");
+    } catch (error) {
+      const fieldErrors = getFieldErrors(error);
+      if (Object.keys(fieldErrors).length > 0) {
+        Object.entries(fieldErrors).forEach(([field, message]) => {
+          setError(field as keyof LoginFormValues, { message });
+        });
+      } else {
+        setGeneralError(getErrorMessage(error));
+      }
+    }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {generalError && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {generalError}
+        </div>
+      )}
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-medium">Email Address</label>
         <input 
@@ -79,7 +100,7 @@ export function LoginForm() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <label htmlFor="password" className="text-sm font-medium">Password</label>
-          <Link href="#" className="text-xs font-medium text-orange-600 hover:text-orange-500 transition-colors">
+          <Link href="/forgot-password" className="text-xs font-medium text-orange-600 hover:text-orange-500 transition-colors">
             Forgot password?
           </Link>
         </div>
@@ -102,24 +123,13 @@ export function LoginForm() {
         {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
       </div>
 
-      <div className="flex items-center space-x-2 pt-1">
-        <input 
-          type="checkbox" 
-          id="rememberMe" 
-          {...register("rememberMe")}
-          className="h-4 w-4 rounded border-border text-primary focus:ring-primary bg-background" 
-        />
-        <label htmlFor="rememberMe" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-          Remember me
-        </label>
-      </div>
 
       <button 
         type="submit" 
-        disabled={isLoading}
+        disabled={loginMutation.isPending}
         className="w-full flex h-12 items-center justify-center rounded-xl brand-gradient-btn px-8 text-sm font-bold text-white shadow-lg brand-shadow brand-shadow-hover transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 mt-6"
       >
-        {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+        {loginMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
         Sign In
       </button>
 
@@ -150,13 +160,15 @@ export function LoginForm() {
 export function RegisterForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [generalError, setGeneralError] = useState("");
+  const registerMutation = useRegister();
   
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
+    setError,
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -182,17 +194,33 @@ export function RegisterForm() {
   const strengthColor = ["bg-muted", "bg-red-500", "bg-amber-500", "bg-blue-500", "bg-emerald-500"][strength];
 
   const onSubmit = async (data: RegisterFormValues) => {
-    setIsLoading(true);
-    setTimeout(() => {
-      // Set mock cookie for middleware
-      document.cookie = "token=mock-token; path=/; max-age=3600";
-      setIsLoading(false);
-      router.push("/dashboard/profile"); 
-    }, 1500);
+    setGeneralError("");
+    try {
+      await registerMutation.mutateAsync({
+        full_name: data.fullName,
+        email: data.email,
+        password: data.password,
+      });
+      router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
+    } catch (error) {
+      const fieldErrors = getFieldErrors(error);
+      if (Object.keys(fieldErrors).length > 0) {
+        Object.entries(fieldErrors).forEach(([field, message]) => {
+          setError(field as keyof RegisterFormValues, { message });
+        });
+      } else {
+        setGeneralError(getErrorMessage(error));
+      }
+    }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {generalError && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {generalError}
+        </div>
+      )}
       <div className="space-y-2">
         <label htmlFor="fullName" className="text-sm font-medium">Full Name</label>
         <input 
@@ -276,10 +304,10 @@ export function RegisterForm() {
 
       <button 
         type="submit" 
-        disabled={isLoading}
+        disabled={registerMutation.isPending}
         className="w-full flex h-12 items-center justify-center rounded-xl brand-gradient-btn px-8 text-sm font-bold text-white shadow-lg brand-shadow brand-shadow-hover transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 mt-6"
       >
-        {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+        {registerMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
         Create Account
       </button>
     </form>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
 import {
@@ -86,7 +87,8 @@ interface SidebarProps {
 
 export function Sidebar({ role = 'contributor' }: SidebarProps) {
   const pathname = usePathname();
-  const { logout, user } = useAuth();
+  const router = useRouter();
+  const { logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   
   const roleLinks = allRoleLinks[role] || contributorLinks;
@@ -136,7 +138,10 @@ export function Sidebar({ role = 'contributor' }: SidebarProps) {
       {/* Logout / User Info */}
       <div className="p-4 border-t border-border/50">
         <button
-          onClick={() => logout()}
+          onClick={() => {
+            logout();
+            router.replace('/login');
+          }}
           className={cn(
             "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-destructive transition-all hover:bg-destructive/10",
             isCollapsed && "justify-center"

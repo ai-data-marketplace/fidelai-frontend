@@ -3,15 +3,28 @@
 import Link from "next/link";
 import { CheckCircle2, Clock, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import { useOnboarding } from "@/context/onboarding-context";
+import { useAuth } from "@/context/auth-context";
+import { useApplicationStatus } from "@/lib/hooks";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function PendingPage() {
-  const { role, resetOnboarding } = useOnboarding();
+  const { user } = useAuth();
+  const router = useRouter();
+  const { data: status, isLoading } = useApplicationStatus();
 
   useEffect(() => {
-    // resetOnboarding(); 
-  }, [resetOnboarding]);
+    if (isLoading) return;
+
+    if (!status) return;
+
+    if (!status.has_application) {
+      router.replace("/onboarding/step-1");
+    }
+  }, [isLoading, router, status]);
+
+  const roleLabel = status?.role_applied_for || user?.role || "role application";
+  const applicationState = status?.application_status || "UNDER REVIEW";
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 py-12 bg-background min-h-[calc(100vh-80px)]">
@@ -34,8 +47,8 @@ export default function PendingPage() {
           
           <h2 className="text-2xl font-bold tracking-tight mb-3">Application Under Review</h2>
           <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-            Thank you for completing your <span className="font-semibold text-foreground capitalize">{role || "platform"}</span> profile setup. 
-            Our quality assurance team is reviewing your application to ensure standards.
+            Thank you for submitting your <span className="font-semibold text-foreground capitalize">{roleLabel}</span> application.
+            Your current status is <span className="font-semibold text-foreground">{applicationState}</span> while our team reviews it.
           </p>
 
           <div className="bg-muted/50 rounded-xl p-4 mb-8 text-left border border-border/50">
@@ -61,7 +74,6 @@ export default function PendingPage() {
 
           <Link
             href="/"
-            onClick={resetOnboarding}
             className="w-full flex h-12 items-center justify-center rounded-xl brand-gradient-btn text-white px-8 text-sm font-bold shadow-lg brand-shadow brand-shadow-hover transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Return to Homepage
