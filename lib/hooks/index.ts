@@ -66,10 +66,23 @@ export interface OnboardingCompleteResponse {
 export interface DocumentSubmission {
   id: string;
   title: string;
+  description?: string;
   domain: string;
+  subdomain?: string;
   language: string;
+  data_type?: string;
+  consent_given?: boolean;
   processing_status: string;
   review_status: string;
+  validation_notes?: string;
+  files?: Array<{
+    id: number;
+    file_name: string;
+    file_type: string;
+    file_size: number;
+    checksum: string;
+    uploaded_at: string;
+  }>;
   created_at: string;
   updated_at: string;
 }
@@ -237,6 +250,17 @@ export function useMySubmissions() {
       const { data } = await apiClient.get<DocumentSubmission[]>(API_ENDPOINTS.DOCUMENTS.MY_SUBMISSIONS);
       return data;
     },
+  });
+}
+
+export function useMySubmission(id: string) {
+  return useQuery({
+    queryKey: ['documentSubmission', id],
+    queryFn: async () => {
+      const { data } = await apiClient.get<DocumentSubmission>(API_ENDPOINTS.DOCUMENTS.MY_SUBMISSION_DETAIL(id));
+      return data;
+    },
+    enabled: !!id,
   });
 }
 

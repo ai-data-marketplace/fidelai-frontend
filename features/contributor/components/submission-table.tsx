@@ -13,6 +13,7 @@ import {
   Filter
 } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export function SubmissionTable() {
   const { data: submissions = [], isLoading, isError } = useMySubmissions();
@@ -131,9 +132,13 @@ export function SubmissionTable() {
                     <td className="px-6 py-4 text-muted-foreground">{formatDate(s.created_at)}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Link
+                          href={`/contributor/submissions/${s.id}`}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          aria-label={`View ${s.title}`}
+                        >
                           <Eye className="h-4 w-4" />
-                        </Button>
+                        </Link>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                           <Download className="h-4 w-4" />
                         </Button>

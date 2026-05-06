@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
   DOCUMENTS: {
     SUBMIT: '/documents/submit/',
     MY_SUBMISSIONS: '/documents/my-submissions/',
+    MY_SUBMISSION_DETAIL: (id: string) => `/documents/my-submissions/${id}/`,
   },
   TASKS: {
     QUEUE: '/processing/tasks/',
