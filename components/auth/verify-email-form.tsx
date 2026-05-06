@@ -5,11 +5,13 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useResendCode, useVerifyEmail } from "@/lib/hooks";
+import { useAuth } from "@/context/auth-context";
 import { getErrorMessage } from "@/lib/utils/error-helper";
 
 export function VerifyEmailForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const email = searchParams.get("email") ?? "";
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -76,8 +78,15 @@ export function VerifyEmailForm() {
       {
         onSuccess: (data) => {
           setIsSuccess(true);
-          const normalizedRole = (data.user.role || "").toLowerCase();
-          const targetRoute = normalizedRole === "unknown" ? "/onboarding" : normalizedRole ? `/${normalizedRole}` : "/dashboard/profile";
+          // Use data.user if available, otherwise fallback to auth context (which was just updated by hook)
+          const roleRoots = ["contributor", "annotator", "expert", "buyer", "admin"];
+          const userRole = data?.user?.role || user?.role || "";
+          const normalizedRole = userRole.trim().toLowerCase();
+          const targetRoute = normalizedRole === "unknown"
+            ? "/onboarding"
+            : roleRoots.includes(normalizedRole)
+              ? `/${normalizedRole}`
+              : "/dashboard/profile";
           window.setTimeout(() => router.push(targetRoute), 1200);
         },
         onError: (error) => setGeneralError(getErrorMessage(error)),

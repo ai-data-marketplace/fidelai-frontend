@@ -8,7 +8,8 @@ function isExpiredJwt(token: string) {
     const payload = token.split('.')[1];
     if (!payload) return true;
     const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const decoded = JSON.parse(atob(normalized));
+    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
+    const decoded = JSON.parse(atob(padded));
     return typeof decoded.exp === 'number' ? Date.now() >= decoded.exp * 1000 : true;
   } catch {
     return true;
