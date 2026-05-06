@@ -4,70 +4,44 @@ import {
   Badge, 
   Button 
 } from "@/components/ui";
+import { useMySubmissions, type DocumentSubmission } from "@/lib/hooks";
 import { 
   Eye, 
   Download, 
   Trash2, 
-  MoreVertical,
   Search,
   Filter
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-interface Submission {
-  id: string;
-  title: string;
-  domain: string;
-  status: 'Pending AI QC' | 'Pending Validation' | 'Rejected' | 'Approved';
-  score: number;
-  date: string;
-}
-
-const mockSubmissions: Submission[] = [
-  {
-    id: "1",
-    title: "Amharic News Dataset v1",
-    domain: "News",
-    status: "Approved",
-    score: 94,
-    date: "2024-03-20",
-  },
-  {
-    id: "2",
-    title: "Legal Proceedings Corpus",
-    domain: "Law",
-    status: "Pending Validation",
-    score: 0,
-    date: "2024-03-22",
-  },
-  {
-    id: "3",
-    title: "Health Diagnostic Texts",
-    domain: "Health",
-    status: "Pending AI QC",
-    score: 0,
-    date: "2024-03-24",
-  },
-  {
-    id: "4",
-    title: "Old Amharic Literature",
-    domain: "General",
-    status: "Rejected",
-    score: 42,
-    date: "2024-03-15",
-  },
-];
-
 export function SubmissionTable() {
-  const getStatusVariant = (status: Submission['status']) => {
-    switch (status) {
-      case 'Approved': return 'success';
-      case 'Pending AI QC': return 'info';
-      case 'Pending Validation': return 'warning';
-      case 'Rejected': return 'destructive';
+  const { data: submissions = [], isLoading, isError } = useMySubmissions();
+
+  const getStatusVariant = (status: string) => {
+    const normalizedStatus = status.toLowerCase();
+
+    switch (normalizedStatus) {
+      case 'approved': return 'success';
+      case 'completed': return 'success';
+      case 'pending': return 'info';
+      case 'under_review': return 'warning';
+      case 'rejected': return 'destructive';
       default: return 'default';
     }
   };
+
+  const formatStatus = (status: string) =>
+    status
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, (character) => character.toUpperCase());
+
+  const formatDate = (dateValue: string) =>
+    new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(new Date(dateValue));
 
   return (
     <div className="space-y-4">
@@ -86,7 +60,7 @@ export function SubmissionTable() {
             Filter
           </Button>
           <div className="text-xs text-muted-foreground ml-auto sm:ml-0">
-            Showing {mockSubmissions.length} datasets
+            Showing {submissions.length} datasets
           </div>
         </div>
       </div>
@@ -100,15 +74,31 @@ export function SubmissionTable() {
                 <th className="px-6 py-4">Title</th>
                 <th className="px-6 py-4">Domain</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Score</th>
                 <th className="px-6 py-4">Upload Date</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y">
-              {mockSubmissions.length === 0 ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-20 text-center">
+                  <td colSpan={5} className="px-6 py-20 text-center text-muted-foreground">
+                    Loading submissions...
+                  </td>
+                </tr>
+              ) : isError ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-20 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                        <Search className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                      <p className="text-muted-foreground">Unable to load submissions.</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : submissions.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
                         <Search className="w-6 h-6 text-muted-foreground" />
@@ -119,7 +109,7 @@ export function SubmissionTable() {
                   </td>
                 </tr>
               ) : (
-                mockSubmissions.map((s, idx) => (
+                submissions.map((s: DocumentSubmission, idx) => (
                   <motion.tr 
                     key={s.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -134,14 +124,11 @@ export function SubmissionTable() {
                       </Badge>
                     </td>
                     <td className="px-6 py-4">
-                      <Badge variant={getStatusVariant(s.status)}>
-                        {s.status}
+                      <Badge variant={getStatusVariant(s.review_status)}>
+                        {formatStatus(s.review_status)}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 font-mono font-bold">
-                      {s.score > 0 ? `${s.score}%` : "—"}
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground">{s.date}</td>
+                    <td className="px-6 py-4 text-muted-foreground">{formatDate(s.created_at)}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">

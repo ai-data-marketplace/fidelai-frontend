@@ -17,6 +17,10 @@ export const API_ENDPOINTS = {
     DETAIL: (id: string) => `/marketplace/datasets/${id}/`,
     UPLOAD: '/marketplace/datasets/upload/',
   },
+  DOCUMENTS: {
+    SUBMIT: '/documents/submit/',
+    MY_SUBMISSIONS: '/documents/my-submissions/',
+  },
   TASKS: {
     QUEUE: '/processing/tasks/',
     SUBMIT: (id: string) => `/processing/tasks/${id}/submit/`,

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
+import { isAxiosError } from "axios";
 import { 
   Button, 
   Input, 
   Select, 
   Checkbox, 
-  Badge,
   Card,
   CardContent,
   CardHeader,
@@ -15,7 +15,6 @@ import {
 import { 
   Upload, 
   AlertCircle, 
-  FileText, 
   ShieldCheck, 
   CheckCircle2,
   ArrowLeft,
@@ -24,37 +23,116 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUploadDataset } from "@/lib/hooks";
 
 const domains = [
-  "General",
-  "Health",
-  "Education",
-  "Law",
-  "Finance",
-  "News",
-  "Religion",
+  { value: "general", label: "General" },
+  { value: "health", label: "Health" },
+  { value: "education", label: "Education" },
+  { value: "law", label: "Law" },
+  { value: "finance", label: "Finance" },
+  { value: "news", label: "News" },
+  { value: "religion", label: "Religion" },
 ];
+
+const allowedExtensions = [".pdf", ".docx", ".txt"];
+
+function isAllowedDocument(file: File) {
+  return allowedExtensions.some((extension) => file.name.toLowerCase().endsWith(extension));
+}
+
+function getUploadErrorMessage(error: unknown) {
+  if (isAxiosError(error)) {
+    const status = error.response?.status;
+    const responseData = error.response?.data as { message?: string; detail?: string; error?: string } | undefined;
+
+    if (status && status >= 500) {
+      return "Upload failed on the server. Please try again later.";
+    }
+
+    return responseData?.message || responseData?.detail || responseData?.error || "Upload failed. Please try again.";
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Upload failed. Please try again.";
+}
 
 export function DatasetUploadForm() {
   const router = useRouter();
-  const [domain, setDomain] = useState("General");
+  const uploadMutation = useUploadDataset();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [domain, setDomain] = useState("general");
+  const [subdomain, setSubdomain] = useState("");
+  const [language, setLanguage] = useState("amharic");
   const [hasConsent, setHasConsent] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [error, setError] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const isSensitiveDomain = ["Health", "Law", "Finance"].includes(domain);
+  const isSensitiveDomain = ["health", "law", "finance"].includes(domain);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!hasConsent) return;
-    
-    setIsUploading(true);
-    // Mock upload delay
-    setTimeout(() => {
-      setIsUploading(false);
-      setIsSuccess(true);
-    }, 2000);
+  const selectedFileLabel = useMemo(() => selectedFile?.name ?? "No file selected yet", [selectedFile]);
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setError("");
+    const file = event.target.files?.[0] ?? null;
+
+    if (!file) {
+      setSelectedFile(null);
+      return;
+    }
+
+    if (!isAllowedDocument(file)) {
+      setSelectedFile(null);
+      setError("Only PDF, DOCX, or TXT files are allowed.");
+      event.target.value = "";
+      return;
+    }
+
+    setSelectedFile(file);
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!selectedFile) {
+      setError("Please choose a document file to upload.");
+      return;
+    }
+
+    if (!title.trim()) {
+      setError("Title is required.");
+      return;
+    }
+
+    if (!hasConsent) {
+      setError("You must confirm consent before submitting.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("title", title.trim());
+    formData.append("description", description.trim());
+    formData.append("domain", domain);
+    formData.append("subdomain", subdomain.trim());
+    formData.append("language", language || "amharic");
+    formData.append("consent_given", String(hasConsent));
+
+    try {
+      await uploadMutation.mutateAsync(formData);
+      setIsSuccess(true);
+    } catch (uploadError) {
+      setError(getUploadErrorMessage(uploadError));
+    }
+  };
+
+  const isUploading = uploadMutation.isPending;
 
   if (isSuccess) {
     return (
@@ -101,59 +179,86 @@ export function DatasetUploadForm() {
         </CardHeader>
         <CardContent className="pt-8">
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Warning Message */}
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex gap-4">
-              <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                <AlertCircle className="w-5 h-5 text-amber-700" />
-              </div>
-              <div className="text-sm">
-                <p className="font-bold text-amber-900">Important System Note</p>
-                <p className="text-amber-800/80 leading-relaxed">
-                  The platform currently supports high-quality **text-based datasets** only (Amharic). 
-                  Audio and image datasets will be available in the Q3 system update.
-                </p>
-              </div>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-bold tracking-tight">Dataset Title</label>
-                <Input placeholder="e.g. Amharic News Corpus 2024" className="h-11" required />
+                <label className="text-sm font-bold tracking-tight">Title</label>
+                <Input
+                  placeholder="e.g. Amharic News Corpus 2024"
+                  className="h-11"
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  required
+                />
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-bold tracking-tight">Domain Category</label>
-                <Select 
-                  value={domain} 
-                  onChange={(e) => setDomain(e.target.value)}
+                <label className="text-sm font-bold tracking-tight">Domain</label>
+                <Select
+                  value={domain}
+                  onChange={(event) => setDomain(event.target.value)}
                   className="h-11"
                   required
                 >
-                  {domains.map(d => (
-                    <option key={d} value={d}>{d}</option>
+                  {domains.map((item) => (
+                    <option key={item.value} value={item.value}>{item.label}</option>
                   ))}
                 </Select>
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold tracking-tight">Specific Sub-domain</label>
-              <Input placeholder="e.g. Political Journalism, Medical Reports" className="h-11" />
+              <label className="text-sm font-bold tracking-tight">Description</label>
+              <Input
+                placeholder="Optional summary of the document or dataset"
+                className="h-11"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold tracking-tight">Sub-domain</label>
+              <Input
+                placeholder="e.g. Political Journalism, Medical Reports"
+                className="h-11"
+                value={subdomain}
+                onChange={(event) => setSubdomain(event.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold tracking-tight">Language</label>
+              <Select
+                value={language}
+                onChange={(event) => setLanguage(event.target.value)}
+                className="h-11"
+              >
+                <option value="amharic">Amharic</option>
+                <option value="english">English</option>
+                <option value="other">Other</option>
+              </Select>
             </div>
 
             {/* File Upload Area */}
             <div className="space-y-3">
-              <label className="text-sm font-bold tracking-tight">Dataset Source File</label>
+              <label className="text-sm font-bold tracking-tight">File</label>
               <div className="border-2 border-dashed rounded-2xl p-12 text-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group relative">
-                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept=".pdf,.docx,.txt,.jpg,.png" required />
+                <input
+                  type="file"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  accept=".pdf,.docx,.txt"
+                  onChange={handleFileChange}
+                  required
+                />
                 <div className="flex flex-col items-center">
                   <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-primary transition-all duration-300">
                     <Upload className="w-8 h-8 text-primary group-hover:text-white" />
                   </div>
                   <p className="text-lg font-bold">Select File to Upload</p>
                   <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto leading-relaxed">
-                    Drag and drop your file here. Supported: PDF, TXT, DOCX, JPG (Max 50MB)
+                    Drag and drop your file here. Supported: PDF, TXT, DOCX
                   </p>
+                  <p className="mt-3 text-xs font-medium text-muted-foreground">{selectedFileLabel}</p>
                 </div>
               </div>
             </div>
@@ -203,7 +308,7 @@ export function DatasetUploadForm() {
                 <Checkbox 
                   id="consent"
                   checked={hasConsent}
-                  onChange={(e) => setHasConsent(e.target.checked)}
+                  onChange={(event) => setHasConsent(event.target.checked)}
                   required
                   className="mt-1"
                 />
@@ -225,9 +330,15 @@ export function DatasetUploadForm() {
                 disabled={!hasConsent || isUploading}
                 className="h-12 px-12 shadow-lg shadow-primary/30"
               >
-                {isUploading ? "Uploading Dataset..." : "Submit for Validation"}
+                {isUploading ? "Uploading Document..." : "Submit for Validation"}
               </Button>
             </div>
+
+            {error && (
+              <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+                {error}
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>

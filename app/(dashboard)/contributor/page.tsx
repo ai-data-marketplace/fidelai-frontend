@@ -15,9 +15,7 @@ import {
   ArrowRight,
   TrendingUp,
   Clock,
-  CheckCircle2,
-  AlertCircle,
-  Lightbulb
+  CheckCircle2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -117,41 +115,6 @@ export default function ContributorOverview() {
           </Card>
         </div>
 
-        {/* Info Sidebar */}
-        <div className="lg:col-span-4 space-y-6">
-          <Card className="bg-primary shadow-2xl shadow-primary/20 text-primary-foreground border-none overflow-hidden relative">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-md">
-                <Lightbulb className="w-5 h-5" />
-                Pro Tip
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10 pb-6">
-              <p className="text-sm font-medium leading-relaxed opacity-90">
-                Verified Expert datasets earn <span className="font-black">2x points</span> and are prioritized in the validation queue. Complete your profile to apply!
-              </p>
-              <Button variant="outline" className="mt-4 bg-white/10 border-white/20 hover:bg-white/20 text-white w-full border-none shadow-none">
-                 Complete Profile
-              </Button>
-            </CardContent>
-            <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
-          </Card>
-
-          <Card className="border-amber-500/20 bg-amber-500/5">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-amber-700 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                Platform Alert
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-amber-800 leading-relaxed">
-                Starting April 15th, all health and finance data must include source attribution documents. Check the documentation for more.
-              </p>
-              <button className="text-[10px] font-black underline mt-2 text-amber-900">Read Documentation</button>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );

@@ -63,6 +63,17 @@ export interface OnboardingCompleteResponse {
   [key: string]: unknown;
 }
 
+export interface DocumentSubmission {
+  id: string;
+  title: string;
+  domain: string;
+  language: string;
+  processing_status: string;
+  review_status: string;
+  created_at: string;
+  updated_at: string;
+}
+
 /* ─────────────────────────────────────
    Auth Hooks
    ───────────────────────────────────── */
@@ -208,13 +219,23 @@ export function useUploadDataset() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (formData: FormData) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.DATASETS.UPLOAD, formData, {
+      const { data } = await apiClient.post(API_ENDPOINTS.DOCUMENTS.SUBMIT, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['datasets'] });
+    },
+  });
+}
+
+export function useMySubmissions() {
+  return useQuery({
+    queryKey: ['documentSubmissions'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<DocumentSubmission[]>(API_ENDPOINTS.DOCUMENTS.MY_SUBMISSIONS);
+      return data;
     },
   });
 }
