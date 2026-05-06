@@ -56,7 +56,7 @@ export function Navbar() {
 
   const handleLogout = () => {
     logout();
-    router.replace("/");
+    router.replace("/login");
   };
 
   if (isAuthLoading || isAuthActionsLoading) {
@@ -116,6 +116,12 @@ export function Navbar() {
           >
             Complete Onboarding
           </Link>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Logout
+          </button>
         </div>
       );
     }
@@ -179,6 +185,16 @@ export function Navbar() {
           >
             Complete Onboarding
           </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setMobileOpen(false);
+              handleLogout();
+            }}
+            className="px-4 py-3 text-sm text-center text-muted-foreground hover:text-foreground rounded-lg transition-colors"
+          >
+            Logout
+          </button>
         </div>
       );
     }
