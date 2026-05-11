@@ -217,7 +217,7 @@ export function TaskQueueList() {
 
   const handleOpen = async (taskId: string, assignmentId: string) => {
     await acceptAssignment.mutateAsync(assignmentId);
-    router.push(`/annotator/workspace/${taskId}`);
+    router.push(`/annotator/workspace/${taskId}?assignmentId=${assignmentId}`);
   };
 
   const handleDecline = async (assignmentId: string) => {

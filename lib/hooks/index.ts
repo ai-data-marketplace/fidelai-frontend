@@ -110,6 +110,38 @@ export interface PaginatedAssignmentsResponse {
   results: MyAssignment[];
 }
 
+export interface AssignmentChunk {
+  chunk_id: string;
+  order_index: number;
+  text: string;
+  token_count: number;
+  metadata?: Record<string, any>;
+  annotation_exists: boolean;
+  annotation_id: string | null;
+}
+
+export interface AssignmentProgress {
+  assignment_id: string;
+  total_chunks: number;
+  completed_annotations: number;
+  skipped_annotations: number;
+  remaining_chunks: number;
+  progress_percentage: number;
+  assignment_status: string;
+}
+
+export interface AnnotationPayload {
+  task_assignment: string;
+  domain_match: string;
+  is_amharic: boolean;
+  readability: string;
+  safety_label: string;
+  confidence: string;
+  notes: string;
+  time_spent_seconds: number;
+  is_skipped: false;
+}
+
 /* ─────────────────────────────────────
    Auth Hooks
    ───────────────────────────────────── */
@@ -383,6 +415,43 @@ export function useSubmitTask() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+}
+
+export function useAssignmentChunks(assignmentId: string) {
+  return useQuery({
+    queryKey: ['assignmentChunks', assignmentId],
+    queryFn: async () => {
+      const { data } = await apiClient.get<AssignmentChunk[]>(API_ENDPOINTS.TASKS.GET_CHUNKS(assignmentId));
+      return data;
+    },
+    enabled: !!assignmentId,
+  });
+}
+
+export function useAssignmentProgress(assignmentId: string) {
+  return useQuery({
+    queryKey: ['assignmentProgress', assignmentId],
+    queryFn: async () => {
+      const { data } = await apiClient.get<AssignmentProgress>(API_ENDPOINTS.TASKS.GET_PROGRESS(assignmentId));
+      return data;
+    },
+    enabled: !!assignmentId,
+  });
+}
+
+export function useSubmitAnnotation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ chunkId, payload }: { chunkId: string; payload: AnnotationPayload }) => {
+      const { data } = await apiClient.post(API_ENDPOINTS.TASKS.SUBMIT_ANNOTATION(chunkId), payload);
+      return data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['assignmentChunks'] });
+      await queryClient.invalidateQueries({ queryKey: ['assignmentProgress'] });
     },
   });
 }

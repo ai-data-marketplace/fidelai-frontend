@@ -27,6 +27,9 @@ export const API_ENDPOINTS = {
     MY_ASSIGNMENTS: '/processing/my-assignments/',
     ACCEPT_ASSIGNMENT: (id: string) => `/processing/assignments/${id}/accept/`,
     DECLINE_ASSIGNMENT: (id: string) => `/processing/assignments/${id}/decline/`,
+    GET_CHUNKS: (id: string) => `/processing/assignments/${id}/chunks/`,
+    GET_PROGRESS: (id: string) => `/processing/assignments/${id}/progress/`,
+    SUBMIT_ANNOTATION: (chunkId: string) => `/processing/chunks/${chunkId}/annotate/`,
     SUBMIT: (id: string) => `/processing/tasks/${id}/submit/`,
   },
 };
