@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import apiClient from '@/services/api-client';
 import { API_ENDPOINTS } from '@/services/endpoints';
 import tokenUtils from '@/lib/utils/token-utils';
@@ -313,6 +314,62 @@ export function useMyAssignments(params?: { page?: number; page_size?: number })
         params: requestParams,
       });
       return data;
+    },
+  });
+}
+
+export function useAcceptAssignment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (assignmentId: string) => {
+      const { data } = await apiClient.post(API_ENDPOINTS.TASKS.ACCEPT_ASSIGNMENT(assignmentId));
+      return data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['myAssignments'] });
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+}
+
+export function useDeclineAssignment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (assignmentId: string) => {
+      const { data } = await apiClient.post(API_ENDPOINTS.TASKS.DECLINE_ASSIGNMENT(assignmentId));
+      return data;
+    },
+    onMutate: async (assignmentId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['myAssignments'] });
+
+      const previousAssignments = queryClient.getQueriesData<PaginatedAssignmentsResponse>({ queryKey: ['myAssignments'] });
+
+      queryClient.setQueriesData<PaginatedAssignmentsResponse>({ queryKey: ['myAssignments'] }, (current) => {
+        if (!current) return current;
+
+        return {
+          ...current,
+          count: Math.max(0, current.count - 1),
+          results: current.results.filter((assignment) => assignment.assignment_id !== assignmentId),
+        };
+      });
+
+      return { previousAssignments };
+    },
+    onError: (_error, _assignmentId, context) => {
+      if (!context?.previousAssignments) return;
+
+      for (const [queryKey, data] of context.previousAssignments) {
+        queryClient.setQueryData(queryKey, data);
+      }
+
+      toast.error('Could not decline the assignment. Please try again.');
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['myAssignments'] });
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
   });
 }

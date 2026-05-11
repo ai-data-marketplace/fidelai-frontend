@@ -25,6 +25,8 @@ export const API_ENDPOINTS = {
   TASKS: {
     QUEUE: '/processing/my-assignments/',
     MY_ASSIGNMENTS: '/processing/my-assignments/',
+    ACCEPT_ASSIGNMENT: (id: string) => `/processing/assignments/${id}/accept/`,
+    DECLINE_ASSIGNMENT: (id: string) => `/processing/assignments/${id}/decline/`,
     SUBMIT: (id: string) => `/processing/tasks/${id}/submit/`,
   },
 };

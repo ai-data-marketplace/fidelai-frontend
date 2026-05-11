@@ -20,7 +20,7 @@ import {
   Leaf,
   HelpCircle,
 } from "lucide-react";
-import { useMyAssignments, type MyAssignment } from "@/lib/hooks";
+import { useAcceptAssignment, useDeclineAssignment, useMyAssignments, type MyAssignment } from "@/lib/hooks";
 import { PAGINATION } from "@/lib/constants";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -95,10 +95,14 @@ function TaskCard({
   task,
   onOpen,
   onDecline,
+  accepting,
+  declining,
 }: {
   task: MyAssignment;
   onOpen: (taskId: string, assignmentId: string) => void;
   onDecline: (id: string) => void;
+  accepting: boolean;
+  declining: boolean;
 }) {
   const domainKey = task.domain?.toLowerCase() ?? "";
   const icon = domainIcon[domainKey] ?? <HelpCircle className="h-4 w-4" />;
@@ -168,6 +172,7 @@ function TaskCard({
               <Button
                 size="sm"
                 className="flex-1 sm:flex-none gap-1.5 font-bold"
+                disabled={accepting}
                 onClick={() => onOpen(task.task_id, task.assignment_id)}
               >
                 <CheckCircle2 className="h-3.5 w-3.5" />
@@ -177,6 +182,7 @@ function TaskCard({
                 size="sm"
                 variant="outline"
                 className="flex-1 sm:flex-none gap-1.5 font-bold text-muted-foreground hover:text-destructive hover:border-destructive/40"
+                disabled={declining}
                 onClick={() => onDecline(task.assignment_id)}
               >
                 <XCircle className="h-3.5 w-3.5" />
@@ -195,26 +201,27 @@ function TaskCard({
 export function TaskQueueList() {
   const router = useRouter();
   const [page, setPage] = useState(1);
-  const [hiddenAssignmentIds, setHiddenAssignmentIds] = useState<string[]>([]);
+  const acceptAssignment = useAcceptAssignment();
+  const declineAssignment = useDeclineAssignment();
 
   const { data, isLoading, isError } = useMyAssignments({
     page,
     page_size: ASSIGNMENT_PAGE_SIZE,
   });
 
-  const tasks = (data?.results ?? []).filter((task) => !hiddenAssignmentIds.includes(task.assignment_id));
+  const tasks = data?.results ?? [];
   const totalCount = data?.count ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / ASSIGNMENT_PAGE_SIZE));
   const hasPrevious = Boolean(data?.previous) && page > 1;
   const hasNext = Boolean(data?.next) && page < totalPages;
 
-  const handleOpen = (taskId: string, assignmentId: string) => {
-    setHiddenAssignmentIds((prev) => prev.filter((id) => id !== assignmentId));
+  const handleOpen = async (taskId: string, assignmentId: string) => {
+    await acceptAssignment.mutateAsync(assignmentId);
     router.push(`/annotator/workspace/${taskId}`);
   };
 
-  const handleDecline = (assignmentId: string) => {
-    setHiddenAssignmentIds((prev) => [...prev, assignmentId]);
+  const handleDecline = async (assignmentId: string) => {
+    await declineAssignment.mutateAsync(assignmentId);
   };
 
   if (isLoading) {
@@ -251,6 +258,8 @@ export function TaskQueueList() {
               task={task}
               onOpen={handleOpen}
               onDecline={handleDecline}
+              accepting={acceptAssignment.isPending}
+              declining={declineAssignment.isPending}
             />
           ))
         )}
