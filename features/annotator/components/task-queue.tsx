@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Clock,
   Layers,
+  Timer,
+  Activity,
   CheckCircle2,
   XCircle,
   Inbox,
@@ -17,32 +20,56 @@ import {
   Leaf,
   HelpCircle,
 } from "lucide-react";
-import { taskQueue, Task, Difficulty } from "@/features/annotator/data/mock";
+import { useMyAssignments, type MyAssignment } from "@/lib/hooks";
+import { PAGINATION } from "@/lib/constants";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const difficultyStyle: Record<Difficulty, string> = {
-  Easy: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
-  Medium: "bg-amber-500/10 text-amber-600 border-amber-500/30",
-  Hard: "bg-rose-500/10 text-rose-600 border-rose-500/30",
-};
+const ASSIGNMENT_PAGE_SIZE = PAGINATION.DEFAULT_PAGE_SIZE;
 
 const domainIcon: Record<string, React.ReactNode> = {
-  Health: <Stethoscope className="h-4 w-4" />,
-  Legal: <Scale className="h-4 w-4" />,
-  Finance: <BarChart2 className="h-4 w-4" />,
-  Tech: <Cpu className="h-4 w-4" />,
-  Agriculture: <Leaf className="h-4 w-4" />,
+  health: <Stethoscope className="h-4 w-4" />,
+  legal: <Scale className="h-4 w-4" />,
+  finance: <BarChart2 className="h-4 w-4" />,
+  tech: <Cpu className="h-4 w-4" />,
+  agriculture: <Leaf className="h-4 w-4" />,
 };
 
 const domainColor: Record<string, string> = {
-  Health: "bg-blue-500/10 text-blue-500",
-  Legal: "bg-purple-500/10 text-purple-500",
-  Finance: "bg-emerald-500/10 text-emerald-500",
-  Tech: "bg-cyan-500/10 text-cyan-500",
-  Agriculture: "bg-lime-500/10 text-lime-600",
+  health: "bg-blue-500/10 text-blue-500",
+  legal: "bg-purple-500/10 text-purple-500",
+  finance: "bg-emerald-500/10 text-emerald-500",
+  tech: "bg-cyan-500/10 text-cyan-500",
+  agriculture: "bg-lime-500/10 text-lime-600",
 };
+
+const statusStyle: Record<string, string> = {
+  IN_PROGRESS: "bg-amber-500/10 text-amber-600 border-amber-500/30",
+  COMPLETED: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
+  ASSIGNED: "bg-blue-500/10 text-blue-600 border-blue-500/30",
+};
+
+function formatTaskCode(taskId: string) {
+  const compact = taskId.replace(/-/g, "").slice(0, 5).toUpperCase();
+  return `Task-${compact}`;
+}
+
+function formatStatus(status: string) {
+  return status.replace(/_/g, " ");
+}
+
+function formatDomain(domain: string) {
+  if (!domain) return "Unknown";
+  return domain.charAt(0).toUpperCase() + domain.slice(1);
+}
+
+function formatDate(value: string | null) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString();
+}
 
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
@@ -66,15 +93,17 @@ function EmptyState() {
 
 function TaskCard({
   task,
-  onAccept,
+  onOpen,
   onDecline,
 }: {
-  task: Task;
-  onAccept: (id: string) => void;
+  task: MyAssignment;
+  onOpen: (taskId: string, assignmentId: string) => void;
   onDecline: (id: string) => void;
 }) {
-  const icon = domainIcon[task.domain] ?? <HelpCircle className="h-4 w-4" />;
-  const iconColor = domainColor[task.domain] ?? "bg-muted text-muted-foreground";
+  const domainKey = task.domain?.toLowerCase() ?? "";
+  const icon = domainIcon[domainKey] ?? <HelpCircle className="h-4 w-4" />;
+  const iconColor = domainColor[domainKey] ?? "bg-muted text-muted-foreground";
+  const statusClass = statusStyle[task.status] ?? "bg-muted text-muted-foreground border-border";
 
   return (
     <motion.div
@@ -98,18 +127,17 @@ function TaskCard({
             <div className="flex-1 min-w-0 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                  {task.id}
+                  {formatTaskCode(task.task_id)}
                 </span>
-                <Badge
-                  variant="outline"
-                  className={`text-xs font-bold ${difficultyStyle[task.difficulty]}`}
-                >
-                  {task.difficulty}
+                <Badge variant="outline" className={`text-xs font-bold ${statusClass}`}>
+                  {formatStatus(task.status)}
                 </Badge>
                 <Badge variant="outline" className="text-xs font-bold">
-                  {task.domain}
+                  {formatDomain(task.domain)}
                 </Badge>
               </div>
+
+              <p className="text-base font-black tracking-tight">{task.task_name}</p>
 
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {task.description}
@@ -118,11 +146,19 @@ function TaskCard({
               <div className="flex flex-wrap gap-4 text-xs font-semibold text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <Layers className="h-3.5 w-3.5" />
-                  {task.chunks} chunks
+                  {task.annotated_chunks}/{task.total_chunks} chunks
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Activity className="h-3.5 w-3.5" />
+                  {task.progress_percentage}% progress
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Clock className="h-3.5 w-3.5" />
-                  ~{task.estimatedMinutes} min
+                  Assigned {formatDate(task.assigned_at)}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Timer className="h-3.5 w-3.5" />
+                  Started {formatDate(task.started_at)}
                 </span>
               </div>
             </div>
@@ -132,7 +168,7 @@ function TaskCard({
               <Button
                 size="sm"
                 className="flex-1 sm:flex-none gap-1.5 font-bold"
-                onClick={() => onAccept(task.id)}
+                onClick={() => onOpen(task.task_id, task.assignment_id)}
               >
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 Accept
@@ -141,7 +177,7 @@ function TaskCard({
                 size="sm"
                 variant="outline"
                 className="flex-1 sm:flex-none gap-1.5 font-bold text-muted-foreground hover:text-destructive hover:border-destructive/40"
-                onClick={() => onDecline(task.id)}
+                onClick={() => onDecline(task.assignment_id)}
               >
                 <XCircle className="h-3.5 w-3.5" />
                 Decline
@@ -154,23 +190,54 @@ function TaskCard({
   );
 }
 
-import { useRouter } from "next/navigation";
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function TaskQueueList() {
   const router = useRouter();
-  const [tasks, setTasks] = useState<Task[]>(taskQueue);
+  const [page, setPage] = useState(1);
+  const [hiddenAssignmentIds, setHiddenAssignmentIds] = useState<string[]>([]);
 
-  const handleAccept = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-    router.push(`/annotator/workspace/${id}`);
+  const { data, isLoading, isError } = useMyAssignments({
+    page,
+    page_size: ASSIGNMENT_PAGE_SIZE,
+  });
+
+  const tasks = (data?.results ?? []).filter((task) => !hiddenAssignmentIds.includes(task.assignment_id));
+  const totalCount = data?.count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / ASSIGNMENT_PAGE_SIZE));
+  const hasPrevious = Boolean(data?.previous) && page > 1;
+  const hasNext = Boolean(data?.next) && page < totalPages;
+
+  const handleOpen = (taskId: string, assignmentId: string) => {
+    setHiddenAssignmentIds((prev) => prev.filter((id) => id !== assignmentId));
+    router.push(`/annotator/workspace/${taskId}`);
   };
 
-  const handleDecline = (id: string) => {
-    console.log(`[TaskQueue] Declined task: ${id}`);
-    setTasks((prev) => prev.filter((t) => t.id !== id));
+  const handleDecline = (assignmentId: string) => {
+    setHiddenAssignmentIds((prev) => [...prev, assignmentId]);
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Card className="border-border/50 bg-card/60 backdrop-blur-sm">
+          <CardContent className="p-5 text-sm text-muted-foreground">Loading assignments...</CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-4">
+        <Card className="border-border/50 bg-card/60 backdrop-blur-sm">
+          <CardContent className="p-5 text-sm text-destructive">
+            Failed to load assignments. Please refresh and try again.
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -180,14 +247,38 @@ export function TaskQueueList() {
         ) : (
           tasks.map((task) => (
             <TaskCard
-              key={task.id}
+              key={task.assignment_id}
               task={task}
-              onAccept={handleAccept}
+              onOpen={handleOpen}
               onDecline={handleDecline}
             />
           ))
         )}
       </AnimatePresence>
+
+      <div className="flex items-center justify-between gap-3 pt-2">
+        <p className="text-xs font-semibold text-muted-foreground">
+          Page {page} of {totalPages}
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!hasPrevious}
+            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+          >
+            Previous
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!hasNext}
+            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -87,6 +87,28 @@ export interface DocumentSubmission {
   updated_at: string;
 }
 
+export interface MyAssignment {
+  assignment_id: string;
+  task_id: string;
+  task_name: string;
+  domain: string;
+  description: string;
+  status: string;
+  assigned_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  total_chunks: number;
+  annotated_chunks: number;
+  progress_percentage: number;
+}
+
+export interface PaginatedAssignmentsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: MyAssignment[];
+}
+
 /* ─────────────────────────────────────
    Auth Hooks
    ───────────────────────────────────── */
@@ -272,7 +294,24 @@ export function useTasks(params?: Record<string, string>) {
   return useQuery({
     queryKey: ['tasks', params],
     queryFn: async () => {
-      const { data } = await apiClient.get(API_ENDPOINTS.TASKS.QUEUE, { params });
+      const { data } = await apiClient.get<PaginatedAssignmentsResponse>(API_ENDPOINTS.TASKS.MY_ASSIGNMENTS, { params });
+      return data;
+    },
+  });
+}
+
+export function useMyAssignments(params?: { page?: number; page_size?: number }) {
+  return useQuery({
+    queryKey: ['myAssignments', params],
+    queryFn: async () => {
+      const requestParams = {
+        page: params?.page,
+        page_size: params?.page_size,
+      };
+
+      const { data } = await apiClient.get<PaginatedAssignmentsResponse>(API_ENDPOINTS.TASKS.MY_ASSIGNMENTS, {
+        params: requestParams,
+      });
       return data;
     },
   });
