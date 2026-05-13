@@ -9,7 +9,6 @@ import {
   Flame,
   Coins,
   TrendingUp,
-  Info,
 } from "lucide-react";
 import {
   annotatorStats,
@@ -129,45 +128,11 @@ export function AnnotatorDashboardContent() {
         </div>
       </section>
 
-      {/* Quality Feedback + Recent Activity */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Quality Feedback */}
-        <div className="lg:col-span-5 space-y-4">
-          <h2 className="text-base font-black uppercase tracking-widest text-muted-foreground">
-            Quality Impact
-          </h2>
-          <Card className="border-border/50 bg-card/60 backdrop-blur-sm">
-            <CardContent className="p-6 space-y-5">
-              <div className="flex items-center gap-4 mb-2">
-                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center shrink-0">
-                  <Target className="w-6 h-6 text-blue-500" />
-                </div>
-                <div>
-                  <h3 className="font-black text-lg tracking-tight">Consensus Validation</h3>
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mt-0.5">
-                    Dataset Quality Assurance
-                  </p>
-                </div>
-              </div>
-              <p className="text-sm font-medium leading-relaxed text-foreground/80">
-                Your annotations contribute directly to dataset quality through consensus validation.
-              </p>
-              
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
-                <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                <p className="text-xs text-primary/80 font-medium leading-relaxed">
-                  <strong>Important:</strong> Each task is reviewed by multiple annotators. Final decisions are based on agreement to ensure maximum accuracy for AI training.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="lg:col-span-7 space-y-4">
-          <h2 className="text-base font-black uppercase tracking-widest text-muted-foreground">
-            Recent Activity
-          </h2>
+      {/* Recent Activity */}
+      <section className="space-y-4">
+        <h2 className="text-base font-black uppercase tracking-widest text-muted-foreground">
+          Recent Activity
+        </h2>
           <Card className="border-border/50 bg-card/60 backdrop-blur-sm">
             <CardContent className="p-0">
               <ul className="divide-y divide-border/50">
@@ -206,7 +171,6 @@ export function AnnotatorDashboardContent() {
               </ul>
             </CardContent>
           </Card>
-        </div>
       </section>
     </div>
   );
