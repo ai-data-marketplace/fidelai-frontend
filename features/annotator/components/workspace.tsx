@@ -45,9 +45,20 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const initializedRef = useRef(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [localAnnotations, setLocalAnnotations] = useState<Record<string, any>>({});
 
-  // Form state for current chunk
+  useEffect(() => {
+    if (chunks && chunks.length > 0 && !initializedRef.current) {
+      const firstUnannotatedIndex = chunks.findIndex((chunk) => !chunk.annotation_exists);
+      if (firstUnannotatedIndex !== -1) {
+        setCurrentIndex(firstUnannotatedIndex);
+      }
+      initializedRef.current = true;
+    }
+  }, [chunks]);
+
   const [domainMatch, setDomainMatch] = useState<string | null>(null);
   const [isAmharic, setIsAmharic] = useState<boolean | null>(null);
   const [readability, setReadability] = useState("high");
@@ -55,10 +66,40 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
   const [confidence, setConfidence] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const currentChunk = chunks?.[currentIndex];
 
-  // Start timer when chunk changes
+  useEffect(() => {
+    if (!currentChunk) return;
+
+    if (localAnnotations[currentChunk.chunk_id]) {
+      const cached = localAnnotations[currentChunk.chunk_id];
+      setDomainMatch(cached.domain_match || null);
+      setIsAmharic(cached.is_amharic !== undefined ? cached.is_amharic : null);
+      setReadability(cached.readability || "high");
+      setSafetyLabel(cached.safety_label || null);
+      setConfidence(cached.confidence || null);
+      setNotes(cached.notes || "");
+      return;
+    }
+
+    if (currentChunk.annotation_exists && currentChunk.annotation) {
+      setDomainMatch(currentChunk.annotation.domain_match || null);
+      setIsAmharic(currentChunk.annotation.is_amharic !== undefined ? currentChunk.annotation.is_amharic : null);
+      setReadability(currentChunk.annotation.readability || "high");
+      setSafetyLabel(currentChunk.annotation.safety_label || null);
+      setConfidence(currentChunk.annotation.confidence || null);
+      setNotes(currentChunk.annotation.notes || "");
+      return;
+    }
+
+    setDomainMatch(null);
+    setIsAmharic(null);
+    setReadability("high");
+    setSafetyLabel(null);
+    setConfidence(null);
+    setNotes("");
+  }, [currentIndex, currentChunk, localAnnotations]);
+
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     setElapsedSeconds(0);
@@ -72,7 +113,6 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
     };
   }, [currentIndex, chunks]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -103,15 +143,20 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
         payload,
       });
 
-      // Reset form for next chunk
-      setDomainMatch(null);
-      setIsAmharic(null);
-      setReadability("high");
-      setSafetyLabel(null);
-      setConfidence(null);
-      setNotes("");
+      setLocalAnnotations((prev) => ({
+        ...prev,
+        [currentChunk.chunk_id]: {
+          domain_match: domainMatch,
+          is_amharic: isAmharic,
+          readability,
+          safety_label: safetyLabel,
+          confidence,
+          notes,
+          time_spent_seconds: elapsedSeconds,
+          is_skipped: false,
+        },
+      }));
 
-      // Move to next chunk or complete
       if (currentIndex < (chunks?.length ?? 0) - 1) {
         setCurrentIndex((prev) => prev + 1);
       } else {
@@ -125,32 +170,14 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
   };
 
   const handleSkip = () => {
-    // Reset form for next chunk
-    setDomainMatch(null);
-    setIsAmharic(null);
-    setReadability("high");
-    setSafetyLabel(null);
-    setConfidence(null);
-    setNotes("");
-
-    // Move to next chunk or complete
     if (currentIndex < (chunks?.length ?? 0) - 1) {
       setCurrentIndex((prev) => prev + 1);
-    } else {
-      setIsComplete(true);
     }
   };
 
   const handleBack = () => {
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
-      // Reset form when going back
-      setDomainMatch(null);
-      setIsAmharic(null);
-      setReadability("high");
-      setSafetyLabel(null);
-      setConfidence(null);
-      setNotes("");
     }
   };
 
@@ -418,7 +445,12 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1 h-10 text-xs font-bold text-muted-foreground hover:bg-muted/50" onClick={handleSkip}>
+              <Button 
+                variant="outline" 
+                className="flex-1 h-10 text-xs font-bold text-muted-foreground hover:bg-muted/50" 
+                onClick={handleSkip}
+                disabled={currentIndex >= (chunks?.length ?? 0) - 1}
+              >
                 <XCircle className="w-3.5 h-3.5 mr-1.5" /> Skip
               </Button>
             </div>

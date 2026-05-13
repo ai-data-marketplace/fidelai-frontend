@@ -28,6 +28,12 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const ASSIGNMENT_PAGE_SIZE = PAGINATION.DEFAULT_PAGE_SIZE;
 
+const STATUS_FILTERS = [
+  { value: "assigned", label: "Assigned" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "submitted", label: "Submitted" },
+];
+
 const domainIcon: Record<string, React.ReactNode> = {
   health: <Stethoscope className="h-4 w-4" />,
   legal: <Scale className="h-4 w-4" />,
@@ -45,9 +51,9 @@ const domainColor: Record<string, string> = {
 };
 
 const statusStyle: Record<string, string> = {
-  IN_PROGRESS: "bg-amber-500/10 text-amber-600 border-amber-500/30",
-  COMPLETED: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
-  ASSIGNED: "bg-blue-500/10 text-blue-600 border-blue-500/30",
+  "in_progress": "bg-amber-500/10 text-amber-600 border-amber-500/30",
+  "submitted": "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
+  "assigned": "bg-blue-500/10 text-blue-600 border-blue-500/30",
 };
 
 function formatTaskCode(taskId: string) {
@@ -109,6 +115,10 @@ function TaskCard({
   const iconColor = domainColor[domainKey] ?? "bg-muted text-muted-foreground";
   const statusClass = statusStyle[task.status] ?? "bg-muted text-muted-foreground border-border";
 
+  const isAssigned = task.status === "assigned";
+  const isInProgress = task.status === "in_progress";
+  const isSubmitted = task.status === "submitted";
+
   return (
     <motion.div
       layout
@@ -169,25 +179,46 @@ function TaskCard({
 
             {/* Actions */}
             <div className="flex sm:flex-col gap-2 shrink-0">
-              <Button
-                size="sm"
-                className="flex-1 sm:flex-none gap-1.5 font-bold"
-                disabled={accepting}
-                onClick={() => onOpen(task.task_id, task.assignment_id)}
-              >
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Accept
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="flex-1 sm:flex-none gap-1.5 font-bold text-muted-foreground hover:text-destructive hover:border-destructive/40"
-                disabled={declining}
-                onClick={() => onDecline(task.assignment_id)}
-              >
-                <XCircle className="h-3.5 w-3.5" />
-                Decline
-              </Button>
+              {isAssigned && (
+                <>
+                  <Button
+                    size="sm"
+                    className="flex-1 sm:flex-none gap-1.5 font-bold"
+                    disabled={accepting}
+                    onClick={() => onOpen(task.task_id, task.assignment_id)}
+                  >
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Accept
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 sm:flex-none gap-1.5 font-bold text-muted-foreground hover:text-destructive hover:border-destructive/40"
+                    disabled={declining}
+                    onClick={() => onDecline(task.assignment_id)}
+                  >
+                    <XCircle className="h-3.5 w-3.5" />
+                    Decline
+                  </Button>
+                </>
+              )}
+              {isInProgress && (
+                <Button
+                  size="sm"
+                  className="flex-1 sm:flex-none gap-1.5 font-bold"
+                  disabled={accepting}
+                  onClick={() => onOpen(task.task_id, task.assignment_id)}
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Continue
+                </Button>
+              )}
+              {isSubmitted && (
+                <Badge className="flex-1 sm:flex-none justify-center gap-1.5 font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/30">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Completed
+                </Badge>
+              )}
             </div>
           </div>
         </CardContent>
@@ -201,12 +232,14 @@ function TaskCard({
 export function TaskQueueList() {
   const router = useRouter();
   const [page, setPage] = useState(1);
+  const [status, setStatus] = useState("assigned");
   const acceptAssignment = useAcceptAssignment();
   const declineAssignment = useDeclineAssignment();
 
   const { data, isLoading, isError } = useMyAssignments({
     page,
     page_size: ASSIGNMENT_PAGE_SIZE,
+    status,
   });
 
   const tasks = data?.results ?? [];
@@ -216,12 +249,19 @@ export function TaskQueueList() {
   const hasNext = Boolean(data?.next) && page < totalPages;
 
   const handleOpen = async (taskId: string, assignmentId: string) => {
-    await acceptAssignment.mutateAsync(assignmentId);
+    if (status === "assigned") {
+      await acceptAssignment.mutateAsync(assignmentId);
+    }
     router.push(`/annotator/workspace/${taskId}?assignmentId=${assignmentId}`);
   };
 
   const handleDecline = async (assignmentId: string) => {
     await declineAssignment.mutateAsync(assignmentId);
+  };
+
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus);
+    setPage(1);
   };
 
   if (isLoading) {
@@ -248,6 +288,21 @@ export function TaskQueueList() {
 
   return (
     <div className="space-y-4">
+      {/* Status Filter */}
+      <div className="flex items-center gap-2 flex-wrap pb-2 border-b border-border/50">
+        {STATUS_FILTERS.map((filter) => (
+          <Button
+            key={filter.value}
+            size="sm"
+            variant={status === filter.value ? "default" : "outline"}
+            onClick={() => handleStatusChange(filter.value)}
+            className="font-semibold"
+          >
+            {filter.label}
+          </Button>
+        ))}
+      </div>
+
       <AnimatePresence mode="popLayout">
         {tasks.length === 0 ? (
           <EmptyState />

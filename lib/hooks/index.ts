@@ -118,6 +118,18 @@ export interface AssignmentChunk {
   metadata?: Record<string, any>;
   annotation_exists: boolean;
   annotation_id: string | null;
+  annotation?: {
+    annotation_id: string;
+    domain_match: string;
+    is_amharic: boolean;
+    readability: string;
+    safety_label: string;
+    confidence: string;
+    notes: string;
+    time_spent_seconds: number;
+    is_skipped: boolean;
+    created_at: string;
+  } | null;
 }
 
 export interface AssignmentProgress {
@@ -333,13 +345,14 @@ export function useTasks(params?: Record<string, string>) {
   });
 }
 
-export function useMyAssignments(params?: { page?: number; page_size?: number }) {
+export function useMyAssignments(params?: { page?: number; page_size?: number; status?: string }) {
   return useQuery({
     queryKey: ['myAssignments', params],
     queryFn: async () => {
       const requestParams = {
         page: params?.page,
         page_size: params?.page_size,
+        ...(params?.status && { status: params.status }),
       };
 
       const { data } = await apiClient.get<PaginatedAssignmentsResponse>(API_ENDPOINTS.TASKS.MY_ASSIGNMENTS, {

@@ -1,4 +1,15 @@
-import { AnnotatorWorkspace } from "@/features/annotator";
+import dynamic from "next/dynamic";
+
+const AnnotatorWorkspace = dynamic(
+  () => import("@/features/annotator").then((mod) => ({ default: mod.AnnotatorWorkspace })),
+  {
+    loading: () => (
+      <div className="w-full h-full flex items-center justify-center bg-background text-sm text-muted-foreground">
+        Loading workspace...
+      </div>
+    ),
+  }
+);
 
 interface PageProps {
   params: Promise<{
