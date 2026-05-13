@@ -110,6 +110,22 @@ export interface PaginatedAssignmentsResponse {
   results: MyAssignment[];
 }
 
+export interface ExpertTask {
+  id: string;
+  name: string;
+  domain: string;
+  status: 'assigned' | 'in_progress' | 'submitted';
+  assigned_at: string;
+  total_chunks: number;
+}
+
+export interface PaginatedExpertTasksResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ExpertTask[];
+}
+
 export interface AssignmentChunk {
   chunk_id: string;
   order_index: number;
@@ -465,6 +481,82 @@ export function useSubmitAnnotation() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['assignmentChunks'] });
       await queryClient.invalidateQueries({ queryKey: ['assignmentProgress'] });
+    },
+  });
+}
+
+/* ─────────────────────────────────────
+   Expert Hooks
+   ───────────────────────────────────── */
+
+export function useExpertTasks(params?: { page?: number; page_size?: number; status?: string }) {
+  return useQuery({
+    queryKey: ['expertTasks', params],
+    queryFn: async () => {
+      const requestParams = {
+        page: params?.page,
+        page_size: params?.page_size,
+        ...(params?.status && { status: params.status }),
+      };
+
+      const { data } = await apiClient.get<PaginatedExpertTasksResponse>(API_ENDPOINTS.EXPERT.QUEUE, {
+        params: requestParams,
+      });
+      return data;
+    },
+  });
+}
+
+export function useAcceptExpertTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      const { data } = await apiClient.post(API_ENDPOINTS.EXPERT.ACCEPT_TASK(taskId));
+      return data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['expertTasks'] });
+    },
+  });
+}
+
+export function useDeclineExpertTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      const { data } = await apiClient.post(API_ENDPOINTS.EXPERT.DECLINE_TASK(taskId));
+      return data;
+    },
+    onMutate: async (taskId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['expertTasks'] });
+
+      const previousTasks = queryClient.getQueriesData<PaginatedExpertTasksResponse>({ queryKey: ['expertTasks'] });
+
+      queryClient.setQueriesData<PaginatedExpertTasksResponse>({ queryKey: ['expertTasks'] }, (current) => {
+        if (!current) return current;
+
+        return {
+          ...current,
+          count: Math.max(0, current.count - 1),
+          results: current.results.filter((task) => task.id !== taskId),
+        };
+      });
+
+      return { previousTasks };
+    },
+    onError: (_error, _taskId, context) => {
+      if (!context?.previousTasks) return;
+
+      for (const [queryKey, data] of context.previousTasks) {
+        queryClient.setQueryData(queryKey, data);
+      }
+
+      toast.error('Could not decline the task. Please try again.');
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['expertTasks'] });
     },
   });
 }

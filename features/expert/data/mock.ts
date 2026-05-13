@@ -7,47 +7,47 @@ export const expertStats = {
   agreementWithOutcomes: "92.4%",
 };
 
-export interface EscalatedTask {
+export interface ExpertTask {
   id: string;
+  name: string;
   domain: string;
-  chunks: number;
-  reason: "Low Consensus" | "AI Conflict" | "Flagged Content";
-  difficulty: "Low" | "Medium" | "High";
-  assignedAt: string;
+  status: 'assigned' | 'in_progress' | 'submitted';
+  assigned_at: string;
+  total_chunks: number;
 }
 
-export const reviewQueueData: EscalatedTask[] = [
+export const reviewQueueData: ExpertTask[] = [
   {
     id: "TASK-8021",
+    name: "Legal Document Review",
     domain: "Legal",
-    chunks: 10,
-    reason: "Low Consensus",
-    difficulty: "High",
-    assignedAt: "2h ago",
+    status: "assigned",
+    assigned_at: "2h ago",
+    total_chunks: 10,
   },
   {
     id: "TASK-8034",
+    name: "Health Content Analysis",
     domain: "Health",
-    chunks: 5,
-    reason: "Flagged Content",
-    difficulty: "Medium",
-    assignedAt: "4h ago",
+    status: "in_progress",
+    assigned_at: "4h ago",
+    total_chunks: 5,
   },
   {
     id: "TASK-8042",
+    name: "Finance Report Assessment",
     domain: "Finance",
-    chunks: 15,
-    reason: "AI Conflict",
-    difficulty: "Low",
-    assignedAt: "5h ago",
+    status: "assigned",
+    assigned_at: "5h ago",
+    total_chunks: 15,
   },
   {
     id: "TASK-8055",
+    name: "Technical Specification Review",
     domain: "Tech",
-    chunks: 8,
-    reason: "Low Consensus",
-    difficulty: "Medium",
-    assignedAt: "1d ago",
+    status: "submitted",
+    assigned_at: "1d ago",
+    total_chunks: 8,
   },
 ];
 

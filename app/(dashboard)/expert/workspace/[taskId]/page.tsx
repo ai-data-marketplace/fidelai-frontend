@@ -1,4 +1,8 @@
-import { ExpertWorkspace } from "@/features/expert/components/workspace";
+import dynamic from 'next/dynamic';
+
+const ExpertWorkspace = dynamic(() => 
+  import('@/features/expert/components/workspace').then(mod => ({ default: mod.ExpertWorkspace })),
+);
 
 interface PageProps {
   params: Promise<{

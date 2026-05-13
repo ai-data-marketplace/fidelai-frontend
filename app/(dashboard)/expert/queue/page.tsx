@@ -12,7 +12,7 @@ export default function ExpertQueuePage() {
         </div>
         <h1 className="text-4xl font-black tracking-tighter">Review Queue</h1>
         <p className="text-muted-foreground text-lg leading-relaxed mt-1 max-w-3xl">
-          Tasks waiting for final resolution. Prioritize tasks labeled with 'High' difficulty.
+          Tasks waiting for final resolution. Prioritize tasks related to your domain.
         </p>
       </section>
 

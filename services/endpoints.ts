@@ -32,4 +32,12 @@ export const API_ENDPOINTS = {
     SUBMIT_ANNOTATION: (chunkId: string) => `/processing/chunks/${chunkId}/annotate/`,
     SUBMIT: (id: string) => `/processing/tasks/${id}/submit/`,
   },
+  EXPERT: {
+    QUEUE: '/processing/expert/tasks/',
+    ACCEPT_TASK: (id: string) => `/processing/expert/tasks/${id}/accept/`,
+    DECLINE_TASK: (id: string) => `/processing/expert/tasks/${id}/decline/`,
+    GET_CHUNKS: (id: string) => `/processing/expert/tasks/${id}/chunks/`,
+    GET_PROGRESS: (id: string) => `/processing/expert/tasks/${id}/progress/`,
+    SUBMIT_REVIEW: (chunkId: string) => `/processing/expert/chunks/${chunkId}/review/`,
+  },
 };
