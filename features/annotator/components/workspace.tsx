@@ -193,7 +193,7 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
     );
   }
 
-  if (chunksError || !chunks || chunks.length === 0) {
+  if ((chunksError || !chunks || chunks.length === 0) && !isComplete) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
         <h2 className="text-2xl font-black">Failed to load chunks</h2>

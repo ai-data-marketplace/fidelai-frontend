@@ -214,7 +214,7 @@ function TaskCard({
                 </Button>
               )}
               {isSubmitted && (
-                <Badge className="flex-1 sm:flex-none justify-center gap-1.5 font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/30">
+                <Badge className="flex-1 sm:flex-none justify-center gap-1.5 font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/10 cursor-default">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   Completed
                 </Badge>
