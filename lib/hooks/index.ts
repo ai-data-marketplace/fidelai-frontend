@@ -132,6 +132,7 @@ export interface AssignmentChunk {
   text: string;
   token_count: number;
   metadata?: Record<string, any>;
+  domain?: string;
   annotation_exists: boolean;
   annotation_id: string | null;
   annotation?: {

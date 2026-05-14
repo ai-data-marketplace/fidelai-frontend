@@ -222,7 +222,7 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-black tracking-tight">{formatTaskCode(taskId)}</h2>
               <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">
-                Annotation
+                {currentChunk?.domain || 'Domain'}
               </span>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
