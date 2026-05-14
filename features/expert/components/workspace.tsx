@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
-import { useExpertChunks } from "@/lib/hooks";
+import { useExpertChunks, useResolveExpertChunk, type ExpertResolvePayload } from "@/lib/hooks";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LogOut, 
@@ -16,15 +16,12 @@ import {
   ShieldCheck, 
   Settings2, 
   AlertTriangle,
-  Bot,
   Users,
   CheckCircle2,
-  XCircle,
-  HelpCircle,
   Info,
   Database,
   TrendingUp,
-  BarChart3
+  XCircle
 } from "lucide-react";
 
 interface WorkspaceProps {
@@ -36,9 +33,17 @@ function formatTaskCode(taskId: string) {
   return `Task-${compact}`;
 }
 
+function formatDomainMatchLabel(value: string | null | undefined) {
+  if (value === 'match') return 'Match';
+  if (value === 'not_match') return 'Not Match';
+  if (value === 'uncertain') return 'Uncertain';
+  return '-';
+}
+
 export function ExpertWorkspace({ taskId }: WorkspaceProps) {
   const router = useRouter();
   const { data: chunksData, isLoading: isChunksLoading } = useExpertChunks(taskId);
+  const resolveChunk = useResolveExpertChunk(taskId);
 
   const taskDetails = {
     id: chunksData?.task_id ?? taskId,
@@ -49,6 +54,7 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
   // Use only API response, no mock fallback
   const chunks = chunksData?.task_chunks?.map((chunk) => ({
     id: `chunk-${chunk.chunk_id}`,
+    chunkId: chunk.chunk_id,
     text: chunk.text,
     consensusScore: Math.round(chunk.consensus.agreement_score * 100),
     qualityScore: chunk.quality_score,
@@ -59,7 +65,7 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
       flags: { harmful: false, duplicate: false, noise: false },
     },
     consensus: {
-      domainMatch: chunk.consensus.final_domain_match === "match" ? "Match" : "Not Match",
+      domainMatch: chunk.consensus.final_domain_match,
       isAmharic: chunk.consensus.final_is_amharic,
       readability: chunk.consensus.final_readability,
       safetyLabel: chunk.consensus.final_safety_label,
@@ -74,22 +80,37 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const domainMatchOptions = [
+    { value: 'match', label: 'Match' },
+    { value: 'not_match', label: 'Not Match' },
+    { value: 'uncertain', label: 'Uncertain' },
+  ] as const;
+  const finalDecisionOptions = [
+    { value: 'approved', label: 'Approved' },
+    { value: 'rejected', label: 'Rejected' },
+  ] as const;
   
   const [answers, setAnswers] = useState<any[]>(
     Array(Math.max(chunks.length, 1)).fill({
       domainMatch: null,
       isAmharic: null,
-      quality: null,
-      harmful: null,
-      reasoning: ""
+      readability: null,
+      safetyLabel: null,
+      confidence: null,
+      finalDecision: null,
+      resolutionReasoning: ""
     })
   );
 
-  const [domainMatch, setDomainMatch] = useState<string | null>(null);
+  const [domainMatch, setDomainMatch] = useState<'match' | 'not_match' | 'uncertain' | null>(null);
   const [isAmharic, setIsAmharic] = useState<boolean | null>(null);
-  const [quality, setQuality] = useState<string | null>(null);
-  const [isHarmful, setIsHarmful] = useState<boolean | null>(null);
-  const [reasoning, setReasoning] = useState("");
+  const [readability, setReadability] = useState<'high' | 'medium' | 'low'>('high');
+  const [safetyLabel, setSafetyLabel] = useState<'safe' | 'unsafe' | null>(null);
+  const [confidence, setConfidence] = useState<'high' | 'medium' | 'low' | null>(null);
+  const [notes, setNotes] = useState("");
+  const [finalDecision, setFinalDecision] = useState<'approved' | 'rejected' | null>(null);
+  const [resolutionReasoning, setResolutionReasoning] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentChunk = chunks[currentIndex];
   const progressPercent = ((currentIndex) / chunks.length) * 100;
@@ -100,9 +121,12 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
     if (saved) {
       setDomainMatch(saved.domainMatch);
       setIsAmharic(saved.isAmharic);
-      setQuality(saved.quality);
-      setIsHarmful(saved.harmful);
-      setReasoning(saved.reasoning);
+      setReadability(saved.readability || "high");
+      setSafetyLabel(saved.safetyLabel);
+      setConfidence(saved.confidence);
+      setNotes(saved.notes || "");
+      setFinalDecision(saved.finalDecision);
+      setResolutionReasoning(saved.resolutionReasoning || "");
     }
   }, [currentIndex, answers]);
 
@@ -111,21 +135,53 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
     newAnswers[currentIndex] = {
       domainMatch,
       isAmharic,
-      quality,
-      harmful: isHarmful,
-      reasoning
+      readability,
+      safetyLabel,
+      confidence,
+      notes,
+      finalDecision,
+      resolutionReasoning
     };
     setAnswers(newAnswers);
   };
 
-  const handleSubmit = () => {
-    if (isComplete) return;
+  const handleSubmit = async () => {
+    if (isComplete || isSubmitting || !currentChunk) return;
+    if (!domainMatch || isAmharic === null || !safetyLabel || !confidence || !finalDecision || resolutionReasoning.trim().length < 5) return;
+
     saveCurrentState();
-    
-    if (currentIndex < chunks.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-    } else {
-      setIsComplete(true);
+    setIsSubmitting(true);
+
+    const payload: ExpertResolvePayload = {
+      domain_match: domainMatch,
+      is_amharic: isAmharic,
+      readability,
+      safety_label: safetyLabel,
+      confidence,
+      ...(notes.trim() ? { notes: notes.trim() } : {}),
+      resolution_reasoning: resolutionReasoning,
+      final_decision: finalDecision,
+    };
+
+    console.log("Expert resolve payload:", payload);
+
+    try {
+      await resolveChunk.mutateAsync({
+        chunkId: currentChunk.chunkId,
+        payload,
+      });
+
+      if (currentIndex < chunks.length - 1) {
+        setCurrentIndex(prev => prev + 1);
+      } else {
+        setIsComplete(true);
+      }
+    } catch (error) {
+      console.error("Failed to resolve chunk:", error);
+      console.error("Resolve payload that failed:", payload);
+      console.error("Backend error body:", (error as any)?.response?.data ?? error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -133,6 +189,13 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
     if (currentIndex > 0) {
       saveCurrentState();
       setCurrentIndex(prev => prev - 1);
+    }
+  };
+
+  const handleSkip = () => {
+    if (currentIndex < chunks.length - 1) {
+      saveCurrentState();
+      setCurrentIndex(prev => prev + 1);
     }
   };
 
@@ -302,10 +365,10 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
                       <div className="flex justify-between items-center pb-2 border-b border-border/50">
                         <span className="text-xs font-bold text-muted-foreground">Domain Match:</span>
                         <span className={`font-bold ${
-                          currentChunk?.consensus.domainMatch === 'Match' ? 'text-emerald-500' : 
-                          currentChunk?.consensus.domainMatch === 'Not Match' ? 'text-rose-500' : 'text-amber-500'
+                          currentChunk?.consensus.domainMatch === 'match' ? 'text-emerald-500' : 
+                          currentChunk?.consensus.domainMatch === 'not_match' ? 'text-rose-500' : 'text-amber-500'
                         }`}>
-                          {currentChunk?.consensus.domainMatch}
+                          {formatDomainMatchLabel(currentChunk?.consensus.domainMatch)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center pb-2 border-b border-border/50">
@@ -338,9 +401,16 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
              {/* 1. Final Domain */}
              <div className="space-y-2.5">
                 <label className="text-sm font-bold">1. Final Domain Match</label>
-                <div className="grid grid-cols-2 gap-2">
-                   <button onClick={() => setDomainMatch('Match')} className={`py-2 rounded-xl text-xs font-bold border transition-colors ${domainMatch === 'Match' ? 'bg-primary border-primary text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>Match</button>
-                   <button onClick={() => setDomainMatch('Not Match')} className={`py-2 rounded-xl text-xs font-bold border transition-colors ${domainMatch === 'Not Match' ? 'bg-rose-500 border-rose-500 text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>Not Match</button>
+                <div className="grid grid-cols-3 gap-2">
+                   {domainMatchOptions.map((opt) => (
+                     <button
+                       key={opt.value}
+                       onClick={() => setDomainMatch(opt.value)}
+                       className={`px-2 py-2 rounded-xl text-[11px] font-bold border whitespace-nowrap transition-colors ${domainMatch === opt.value ? 'bg-primary border-primary text-white' : 'bg-card border-border/50 hover:bg-muted'}`}
+                     >
+                       {opt.label}
+                     </button>
+                   ))}
                 </div>
              </div>
 
@@ -357,13 +427,13 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
 
              <hr className="border-border/50" />
 
-             {/* 3. Content Quality */}
+             {/* 3. Readability */}
              <div className="space-y-2.5">
-                <label className="text-sm font-bold text-foreground">3. Content Quality</label>
-                <div className="grid grid-cols-3 gap-2">
-                   {['Clean', 'Noisy', 'Duplicate'].map(opt => (
-                     <button key={opt} onClick={() => setQuality(opt)} className={`py-2 rounded-xl text-[11px] font-bold border transition-colors ${quality === opt ? 'bg-primary border-primary text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>{opt}</button>
-                   ))}
+               <label className="text-sm font-bold text-foreground">3. How readable is this text?</label>
+               <div className="grid grid-cols-3 gap-2">
+                 {(['high', 'medium', 'low'] as const).map(opt => (
+                  <button key={opt} onClick={() => setReadability(opt as 'high' | 'medium' | 'low')} className={`py-2 rounded-xl text-[11px] font-bold border transition-colors ${readability === opt ? 'bg-primary border-primary text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</button>
+                 ))}
                 </div>
              </div>
 
@@ -371,25 +441,68 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
 
              {/* 4. Safety */}
              <div className="space-y-2.5">
-                <label className="text-sm font-bold text-foreground">4. Harmful / Sensitive?</label>
+               <label className="text-sm font-bold text-foreground">4. Is this text safe?</label>
                 <div className="grid grid-cols-2 gap-2">
-                   <button onClick={() => setIsHarmful(true)} className={`py-2 rounded-xl text-xs font-bold border transition-colors ${isHarmful === true ? 'bg-rose-500 border-rose-500 text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>Yes</button>
-                   <button onClick={() => setIsHarmful(false)} className={`py-2 rounded-xl text-xs font-bold border transition-colors ${isHarmful === false ? 'bg-primary border-primary text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>No</button>
+                 <button onClick={() => setSafetyLabel('safe')} className={`py-2 rounded-xl text-xs font-bold border transition-colors ${safetyLabel === 'safe' ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>Safe</button>
+                 <button onClick={() => setSafetyLabel('unsafe')} className={`py-2 rounded-xl text-xs font-bold border transition-colors ${safetyLabel === 'unsafe' ? 'bg-rose-500 border-rose-500 text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>Unsafe</button>
                 </div>
+             </div>
+
+             <hr className="border-border/50" />
+
+             {/* 5. Confidence */}
+             <div className="space-y-2.5">
+               <label className="text-sm font-bold text-foreground">5. How confident are you?</label>
+               <div className="grid grid-cols-3 gap-2">
+                 {(['high', 'medium', 'low'] as const).map(opt => (
+                  <button key={opt} onClick={() => setConfidence(opt as 'high' | 'medium' | 'low')} className={`py-2 rounded-xl text-[11px] font-bold border transition-colors ${confidence === opt ? 'bg-primary border-primary text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</button>
+                 ))}
+               </div>
+             </div>
+
+             <hr className="border-border/50" />
+
+             {/* 6. Final Decision */}
+             <div className="space-y-2.5">
+               <label className="text-sm font-bold text-foreground">6. Final Decision</label>
+               <div className="grid grid-cols-2 gap-2">
+                   {finalDecisionOptions.map((opt) => (
+                     <button
+                       key={opt.value}
+                       onClick={() => setFinalDecision(opt.value)}
+                       className={`py-2 rounded-xl text-xs font-bold border transition-colors ${finalDecision === opt.value ? 'bg-primary border-primary text-white' : 'bg-card border-border/50 hover:bg-muted'}`}
+                     >
+                       {opt.label}
+                     </button>
+                   ))}
+               </div>
+             </div>
+
+             <hr className="border-border/50" />
+
+             {/* 7. Notes */}
+             <div className="space-y-2.5">
+               <label className="text-sm font-bold text-foreground">7. Notes</label>
+               <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Looks fine."
+                className="w-full h-24 rounded-xl border border-border/50 bg-card/60 p-4 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+               />
              </div>
 
              <hr className="border-border/50" />
 
              {/* Mandatory Reasoning */}
              <div className="space-y-2.5">
-                <label className="text-sm font-black flex items-center gap-2 text-rose-500">
-                  5. Authority Reasoning <span className="text-[9px] uppercase tracking-widest bg-rose-500/10 px-2 py-0.5 rounded-full font-black">Required</span>
+               <label className="text-sm font-black flex items-center gap-2 text-rose-500">
+                8. Resolution Reasoning <span className="text-[9px] uppercase tracking-widest bg-rose-500/10 px-2 py-0.5 rounded-full font-black">Required</span>
                 </label>
-                <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-2">Explain why you made this final decision overriding the AI or annotators.</p>
+               <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-2">Explain why you made this final resolution decision.</p>
                 <textarea
-                  value={reasoning}
-                  onChange={(e) => setReasoning(e.target.value)}
-                  placeholder="The prediction failed because..."
+                value={resolutionReasoning}
+                onChange={(e) => setResolutionReasoning(e.target.value)}
+                placeholder="Majority ambiguous; expert confirms match and approves."
                   className="w-full h-28 rounded-xl border border-rose-500/30 bg-rose-500/5 focus:bg-card focus:border-primary/50 p-4 text-sm resize-none outline-none transition-all"
                 />
              </div>
@@ -407,16 +520,21 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
                 </Button>
                 <Button 
                   onClick={handleSubmit}
-                  disabled={!domainMatch || isAmharic === null || !quality || isHarmful === null || reasoning.length < 5}
+                  disabled={!domainMatch || isAmharic === null || !readability || !safetyLabel || !confidence || !finalDecision || resolutionReasoning.trim().length < 5 || isSubmitting}
                   className="w-full h-14 text-sm font-black tracking-widest uppercase gap-2 shadow-xl shadow-primary/20"
                 >
-                   <CheckCircle2 className="w-5 h-5" /> Submit & Continue
+                   <CheckCircle2 className="w-5 h-5" /> Resolve and Continue
                 </Button>
               </div>
               
               <div className="flex justify-between gap-3">
-                <Button variant="outline" className="w-full text-xs font-bold text-rose-500 border-border/50 bg-card hover:bg-rose-500/10 h-10">
-                  <XCircle className="w-3.5 h-3.5 mr-2" /> Reject Chunk
+                <Button
+                  variant="outline"
+                  onClick={handleSkip}
+                  disabled={currentIndex >= chunks.length - 1}
+                  className="w-full text-xs font-bold text-muted-foreground border-border/50 bg-card hover:bg-muted/50 h-10"
+                >
+                  <XCircle className="w-3.5 h-3.5 mr-2" /> Skip
                 </Button>
               </div>
            </div>

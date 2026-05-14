@@ -596,6 +596,17 @@ export interface ExpertChunksResponse {
   task_chunks: ExpertChunk[];
 }
 
+export interface ExpertResolvePayload {
+  domain_match: 'match' | 'not_match' | 'uncertain';
+  is_amharic: boolean;
+  readability: 'high' | 'medium' | 'low';
+  safety_label: 'safe' | 'unsafe';
+  confidence: 'high' | 'medium' | 'low';
+  notes?: string;
+  resolution_reasoning: string;
+  final_decision: 'approved' | 'rejected';
+}
+
 export function useExpertChunks(taskId: string) {
   return useQuery({
     queryKey: ['expertChunks', taskId],
@@ -604,5 +615,20 @@ export function useExpertChunks(taskId: string) {
       return data;
     },
     enabled: !!taskId,
+  });
+}
+
+export function useResolveExpertChunk(taskId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ chunkId, payload }: { chunkId: string | number; payload: ExpertResolvePayload }) => {
+      const { data } = await apiClient.post(API_ENDPOINTS.EXPERT.RESOLVE_CHUNK(chunkId), payload);
+      return data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['expertChunks', taskId] });
+      await queryClient.invalidateQueries({ queryKey: ['expertTasks'] });
+    },
   });
 }

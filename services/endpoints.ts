@@ -38,6 +38,7 @@ export const API_ENDPOINTS = {
     DECLINE_TASK: (id: string) => `/processing/expert/tasks/${id}/decline/`,
     GET_CHUNKS: (id: string) => `/processing/expert/tasks/${id}/chunks/`,
     GET_PROGRESS: (id: string) => `/processing/expert/tasks/${id}/progress/`,
+    RESOLVE_CHUNK: (chunkId: string | number) => `/processing/expert/chunks/${chunkId}/resolve/`,
     SUBMIT_REVIEW: (chunkId: string) => `/processing/expert/chunks/${chunkId}/review/`,
   },
 };
