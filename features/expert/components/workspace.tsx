@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
-import { useExpertChunks, useResolveExpertChunk, type ExpertResolvePayload } from "@/lib/hooks";
+import { useExpertChunks, useResolveExpertChunk, useExpertProgress, type ExpertResolvePayload } from "@/lib/hooks";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LogOut, 
@@ -43,6 +43,7 @@ function formatDomainMatchLabel(value: string | null | undefined) {
 export function ExpertWorkspace({ taskId }: WorkspaceProps) {
   const router = useRouter();
   const { data: chunksData, isLoading: isChunksLoading } = useExpertChunks(taskId);
+  const { data: progress, isLoading: progressLoading } = useExpertProgress(taskId);
   const resolveChunk = useResolveExpertChunk(taskId);
 
   const taskDetails = {
@@ -248,11 +249,14 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
                  {taskDetails.domain}
                </span>
             </div>
-            <div className="flex items-center gap-3">
-               <p className="text-xs font-bold text-muted-foreground w-14">
-                 {currentIndex + 1} / {chunks.length}
+            <div className="flex items-center gap-3 flex-wrap">
+               <p className="text-xs font-bold text-muted-foreground">
+                 {progress?.reviewed_chunks ?? currentIndex + 1} / {progress?.total_chunks ?? chunks.length}
                </p>
-               <Progress value={progressPercent} className="w-40 h-1.5" />
+               <Progress value={progress?.progress_percentage ?? progressPercent} className="w-40 h-1.5" />
+               <p className="text-xs font-bold text-muted-foreground">
+                 {(progress?.progress_percentage ?? progressPercent).toFixed(0)}%
+               </p>
             </div>
           </div>
         </div>

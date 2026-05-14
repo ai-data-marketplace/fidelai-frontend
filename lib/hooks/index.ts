@@ -596,6 +596,15 @@ export interface ExpertChunksResponse {
   task_chunks: ExpertChunk[];
 }
 
+export interface ExpertProgress {
+  assignment_id: string;
+  total_chunks: number;
+  reviewed_chunks: number;
+  remaining_chunks: number;
+  progress_percentage: number;
+  assignment_status: string;
+}
+
 export interface ExpertResolvePayload {
   domain_match: 'match' | 'not_match' | 'uncertain';
   is_amharic: boolean;
@@ -628,7 +637,19 @@ export function useResolveExpertChunk(taskId: string) {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['expertChunks', taskId] });
+      await queryClient.invalidateQueries({ queryKey: ['expertProgress', taskId] });
       await queryClient.invalidateQueries({ queryKey: ['expertTasks'] });
     },
+  });
+}
+
+export function useExpertProgress(taskId: string) {
+  return useQuery({
+    queryKey: ['expertProgress', taskId],
+    queryFn: async () => {
+      const { data } = await apiClient.get<ExpertProgress>(API_ENDPOINTS.EXPERT.GET_PROGRESS(taskId));
+      return data;
+    },
+    enabled: !!taskId,
   });
 }
