@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { useApplicationStatus } from "@/lib/hooks";
 import { useOnboarding } from "@/context/onboarding-context";
-import { ReadinessTest } from "@/components/onboarding/readiness-test";
+
+const ReadinessTest = dynamic(() => 
+  import("@/components/onboarding/readiness-test").then(mod => ({ default: mod.ReadinessTest }))
+);
 
 export default function Step3Page() {
   const router = useRouter();

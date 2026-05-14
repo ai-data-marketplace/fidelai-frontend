@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { useApplicationStatus } from "@/lib/hooks";
 import { useOnboarding } from "@/context/onboarding-context";
-import { ComplianceForm } from "@/components/onboarding/compliance-form";
+
+const ComplianceForm = dynamic(() => 
+  import("@/components/onboarding/compliance-form").then(mod => ({ default: mod.ComplianceForm }))
+);
 
 export default function Step2Page() {
   const router = useRouter();

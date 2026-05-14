@@ -1,14 +1,34 @@
+import dynamic from "next/dynamic";
 import { Navbar } from "@/components/landing/navbar";
 import { Hero } from "@/components/landing/hero";
-import { Features } from "@/components/landing/features";
-import { HowItWorks } from "@/components/landing/how-it-works";
-import { Roles } from "@/components/landing/roles";
-import { AIPipeline } from "@/components/landing/ai-pipeline";
-import { Marketplace } from "@/components/landing/marketplace";
-import { Testimonials } from "@/components/landing/testimonials";
-import { FAQ } from "@/components/landing/faq";
-import { CTA } from "@/components/landing/cta";
-import { Footer } from "@/components/landing/footer";
+
+const Features = dynamic(() =>
+  import("@/components/landing/features").then(mod => ({ default: mod.Features }))
+);
+const HowItWorks = dynamic(() =>
+  import("@/components/landing/how-it-works").then(mod => ({ default: mod.HowItWorks }))
+);
+const Roles = dynamic(() =>
+  import("@/components/landing/roles").then(mod => ({ default: mod.Roles }))
+);
+const AIPipeline = dynamic(() =>
+  import("@/components/landing/ai-pipeline").then(mod => ({ default: mod.AIPipeline }))
+);
+const Marketplace = dynamic(() =>
+  import("@/components/landing/marketplace").then(mod => ({ default: mod.Marketplace }))
+);
+const Testimonials = dynamic(() =>
+  import("@/components/landing/testimonials").then(mod => ({ default: mod.Testimonials }))
+);
+const FAQ = dynamic(() =>
+  import("@/components/landing/faq").then(mod => ({ default: mod.FAQ }))
+);
+const CTA = dynamic(() =>
+  import("@/components/landing/cta").then(mod => ({ default: mod.CTA }))
+);
+const Footer = dynamic(() =>
+  import("@/components/landing/footer").then(mod => ({ default: mod.Footer }))
+);
 
 export const metadata = {
   title: "FidelAI — AI Data Marketplace for Amharic Language",

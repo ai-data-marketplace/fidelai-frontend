@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { useApplicationStatus } from "@/lib/hooks";
 import { useOnboarding } from "@/context/onboarding-context";
-import { PersonalInfoForm } from "@/components/onboarding/personal-info-form";
+
+const PersonalInfoForm = dynamic(() => 
+  import("@/components/onboarding/personal-info-form").then(mod => ({ default: mod.PersonalInfoForm }))
+);
 
 export default function Step1Page() {
   const router = useRouter();
