@@ -561,3 +561,48 @@ export function useDeclineExpertTask() {
     },
   });
 }
+
+export interface ExpertChunkConsensus {
+  final_domain_match: string;
+  final_is_amharic: boolean;
+  final_readability: string;
+  final_safety_label: string;
+  agreement_score: number;
+  requires_expert_review: boolean;
+  total_annotations: number;
+  computed_at: string;
+}
+
+export interface ExpertChunkSource {
+  raw_document_id: number;
+  title: string;
+}
+
+export interface ExpertChunk {
+  chunk_id: number;
+  text: string;
+  domain: string;
+  metadata: Record<string, any>;
+  quality_score: number;
+  consensus: ExpertChunkConsensus;
+  source: ExpertChunkSource;
+  annotation_count: number;
+}
+
+export interface ExpertChunksResponse {
+  task_id: string;
+  name: string;
+  domain: string;
+  task_chunks: ExpertChunk[];
+}
+
+export function useExpertChunks(taskId: string) {
+  return useQuery({
+    queryKey: ['expertChunks', taskId],
+    queryFn: async () => {
+      const { data } = await apiClient.get<ExpertChunksResponse>(API_ENDPOINTS.EXPERT.GET_CHUNKS(taskId));
+      return data;
+    },
+    enabled: !!taskId,
+  });
+}

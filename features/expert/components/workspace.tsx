@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
-import { mockExpertChunks, reviewQueueData } from "@/features/expert/data/mock";
+import { useExpertChunks } from "@/lib/hooks";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LogOut, 
@@ -22,24 +22,55 @@ import {
   XCircle,
   HelpCircle,
   Info,
-  Database
+  Database,
+  TrendingUp,
+  BarChart3
 } from "lucide-react";
 
 interface WorkspaceProps {
   taskId: string;
 }
 
+function formatTaskCode(taskId: string) {
+  const compact = taskId.replace(/-/g, "").slice(0, 5).toUpperCase();
+  return `Task-${compact}`;
+}
+
 export function ExpertWorkspace({ taskId }: WorkspaceProps) {
   const router = useRouter();
+  const { data: chunksData, isLoading: isChunksLoading } = useExpertChunks(taskId);
 
-  const taskDetails = reviewQueueData.find((t) => t.id === taskId) || {
-    id: taskId,
-    domain: "Unknown",
-    chunks: 0,
-    reason: "Low Consensus"
+  const taskDetails = {
+    id: chunksData?.task_id ?? taskId,
+    name: chunksData?.name ?? "",
+    domain: chunksData?.domain ?? "unknown",
   };
 
-  const chunks = mockExpertChunks[taskId] || mockExpertChunks["default"];
+  // Use only API response, no mock fallback
+  const chunks = chunksData?.task_chunks?.map((chunk) => ({
+    id: `chunk-${chunk.chunk_id}`,
+    text: chunk.text,
+    consensusScore: Math.round(chunk.consensus.agreement_score * 100),
+    qualityScore: chunk.quality_score,
+    requiresExpertReview: chunk.consensus.requires_expert_review,
+    ai: {
+      predictedDomain: chunk.domain,
+      confidence: chunk.quality_score,
+      flags: { harmful: false, duplicate: false, noise: false },
+    },
+    consensus: {
+      domainMatch: chunk.consensus.final_domain_match === "match" ? "Match" : "Not Match",
+      isAmharic: chunk.consensus.final_is_amharic,
+      readability: chunk.consensus.final_readability,
+      safetyLabel: chunk.consensus.final_safety_label,
+      harmful: chunk.consensus.final_safety_label !== "safe",
+      agreementPct: Math.round(chunk.consensus.agreement_score * 100),
+      status: chunk.consensus.agreement_score > 0.8 ? "Strong Consensus" : chunk.consensus.agreement_score > 0.5 ? "Weak Consensus" : "Conflict",
+    },
+    source: chunk.source,
+    annotationCount: chunk.annotation_count,
+  })) || [];
+  
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
@@ -109,8 +140,25 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
     router.push("/expert/queue");
   };
 
-  if (!currentChunk && !isComplete) {
-     return <div className="p-20 text-center">Task Not Found</div>;
+  if (isChunksLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
+        Loading expert review task...
+      </div>
+    );
+  }
+
+  if (!chunksData || chunks.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 text-center">
+        <AlertTriangle className="w-12 h-12 text-muted-foreground" />
+        <div>
+          <h2 className="text-2xl font-black mb-2">No chunks found</h2>
+          <p className="text-sm text-muted-foreground mb-6">This task has no items to review.</p>
+          <Button onClick={() => router.push("/expert/queue")}>Return to Queue</Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -131,13 +179,10 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
           <div className="space-y-1">
             <div className="flex items-center gap-3">
                <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
-                 <ShieldCheck className="w-5 h-5 text-primary" /> {taskDetails.id}
+                 <ShieldCheck className="w-5 h-5 text-primary" /> {formatTaskCode(taskDetails.id)}
                </h2>
                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">
                  {taskDetails.domain}
-               </span>
-               <span className="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
-                 <AlertTriangle className="w-3 h-3" /> {taskDetails.reason}
                </span>
             </div>
             <div className="flex items-center gap-3">
@@ -220,27 +265,22 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
            </div>
 
            <div className="space-y-6">
-              {/* AI Prediction Block */}
+              {/* Chunk Quality Block */}
               <div className="space-y-3">
                  <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground flex items-center gap-1.5 opacity-70">
-                   <Bot className="w-3.5 h-3.5" /> Baseline Ground Truth (AI)
+                   <TrendingUp className="w-3.5 h-3.5" /> Chunk Quality
                  </p>
                  <Card className="border-border/50 bg-card/80 shadow-sm border-l-4 border-l-blue-500">
                    <CardContent className="p-4 space-y-3">
                       <div className="flex justify-between items-center pb-2 border-b border-border/50">
-                        <span className="text-xs font-bold text-muted-foreground">Domain Pred:</span>
-                        <Badge variant="outline" className="text-[10px] font-black uppercase text-blue-600 bg-blue-500/10 border-blue-500/30">
-                          {currentChunk?.ai.predictedDomain}
-                        </Badge>
+                        <span className="text-xs font-bold text-muted-foreground">Quality Score:</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-black">{Math.round((currentChunk?.qualityScore || 0) * 100)}%</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-muted-foreground">Confidence:</span>
-                        <span className="text-xs font-black">{(currentChunk?.ai.confidence || 0) * 100}%</span>
-                      </div>
-                      <div className="flex gap-2 pt-2">
-                        {Object.entries(currentChunk?.ai.flags || {}).map(([key, val]) => (
-                           val && <Badge key={key} className="bg-rose-500/10 text-rose-600 border-rose-500/30 text-[9px] uppercase tracking-widest">Flag: {key}</Badge>
-                        ))}
+                      <div className="flex justify-between items-center pt-2">
+                        <span className="text-xs font-bold text-muted-foreground">Annotations:</span>
+                        <span className="text-xs font-black">{currentChunk?.annotationCount ?? 0}</span>
                       </div>
                    </CardContent>
                  </Card>
@@ -254,7 +294,7 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
                    </p>
                  </div>
                  <p className="text-[9px] font-bold text-muted-foreground uppercase leading-relaxed mb-1">
-                   * Aggregated from multiple independent annotator decisions.
+                   * Aggregated from {currentChunk?.annotationCount || 0} independent annotator decisions.
                  </p>
                  
                  <Card className="border-border/50 bg-card shadow-sm text-xs border-l-4 border-l-emerald-500 relative overflow-hidden">
@@ -274,11 +314,13 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
                           {currentChunk?.consensus.isAmharic ? 'Yes' : 'No'}
                         </span>
                       </div>
+                      <div className="flex justify-between items-center pb-2 border-b border-border/50">
+                        <span className="text-xs font-bold text-muted-foreground">Readability:</span>
+                        <span className="text-xs font-black">{currentChunk?.consensus.readability || '-'}</span>
+                      </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-muted-foreground">Harmful Flag:</span>
-                        <span className={`font-bold tracking-tight ${currentChunk?.consensus.harmful ? 'text-rose-500' : 'text-emerald-500'}`}>
-                          {currentChunk?.consensus.harmful ? 'Yes' : 'No'}
-                        </span>
+                        <span className="text-xs font-bold text-muted-foreground">Safety Label:</span>
+                        <span className="text-xs font-black">{currentChunk?.consensus.safetyLabel || '-'}</span>
                       </div>
                    </CardContent>
                  </Card>
