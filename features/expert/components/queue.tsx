@@ -74,13 +74,13 @@ function EmptyState() {
 
 function ExpertTaskCard({
   task,
-  onAccept,
+  onResolve,
   onDecline,
   accepting,
   declining,
 }: {
   task: any;
-  onAccept: (taskId: string) => void;
+  onResolve: (taskId: string) => void;
   onDecline: (taskId: string) => void;
   accepting: boolean;
   declining: boolean;
@@ -91,7 +91,7 @@ function ExpertTaskCard({
   const statusClass = statusStyle[task.status] ?? "bg-muted text-muted-foreground border-border";
 
   const isAssigned = task.status === "assigned";
-  const isInProgress = task.status === "in_progress";
+  const isInProgress = task.status === "in_progress" || task.status === "accepted";
   const isSubmitted = task.status === "submitted";
 
   return (
@@ -144,16 +144,15 @@ function ExpertTaskCard({
             <div className="flex sm:flex-col gap-2 shrink-0">
               {isAssigned && (
                 <>
-                  <Link href={`/expert/workspace/${task.id}`} className="flex-1 sm:flex-none">
-                    <Button
-                      size="sm"
-                      className="w-full gap-1.5 font-bold"
-                      disabled={accepting}
-                    >
-                      <Check className="h-3.5 w-3.5" />
-                      Resolve
-                    </Button>
-                  </Link>
+                  <Button
+                    size="sm"
+                    className="flex-1 sm:flex-none gap-1.5 font-bold"
+                    disabled={accepting}
+                    onClick={() => onResolve(task.id)}
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                    Resolve
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"
@@ -171,7 +170,6 @@ function ExpertTaskCard({
                   <Button
                     size="sm"
                     className="w-full gap-1.5 font-bold"
-                    disabled={accepting}
                   >
                     <CheckCircle2 className="h-3.5 w-3.5" />
                     Continue
@@ -193,6 +191,7 @@ function ExpertTaskCard({
 }
 
 export function ExpertQueueList() {
+  const router = useRouter();
   const [status, setStatus] = useState<'assigned' | 'in_progress' | 'submitted'>('assigned');
   const [page, setPage] = useState(1);
   const { data, isLoading } = useExpertTasks({ page, page_size: EXPERT_PAGE_SIZE, status });
@@ -206,8 +205,9 @@ export function ExpertQueueList() {
   const hasPrevious = Boolean(data?.previous) && page > 1;
   const hasNext = Boolean(data?.next) && page < totalPages;
 
-  const handleAccept = async (taskId: string) => {
+  const handleResolve = async (taskId: string) => {
     await acceptMutation.mutateAsync(taskId);
+    router.push(`/expert/workspace/${taskId}`);
   };
 
   const handleDecline = async (taskId: string) => {
@@ -258,7 +258,7 @@ export function ExpertQueueList() {
             <ExpertTaskCard
               key={task.id}
               task={task}
-              onAccept={handleAccept}
+              onResolve={handleResolve}
               onDecline={handleDecline}
               accepting={acceptMutation.isPending}
               declining={declineMutation.isPending}

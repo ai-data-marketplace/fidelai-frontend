@@ -116,7 +116,7 @@ function TaskCard({
   const statusClass = statusStyle[task.status] ?? "bg-muted text-muted-foreground border-border";
 
   const isAssigned = task.status === "assigned";
-  const isInProgress = task.status === "in_progress";
+  const isInProgress = task.status === "in_progress" || task.status === "accepted";
   const isSubmitted = task.status === "submitted";
 
   return (
