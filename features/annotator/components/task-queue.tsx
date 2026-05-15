@@ -24,7 +24,9 @@ import {
   ListFilter,
 } from "lucide-react";
 import {
+  useAcceptNlpTask,
   useAcceptAssignment,
+  useDeclineNlpTask,
   useDeclineAssignment,
   useMyAssignments,
   useNlpTasks,
@@ -354,6 +356,8 @@ function QualityControlTaskList({ status }: { status: TaskStatusFilter }) {
 
 function NlpTaskList({ status }: { status: TaskStatusFilter }) {
   const [page, setPage] = useState(1);
+  const acceptNlpTask = useAcceptNlpTask();
+  const declineNlpTask = useDeclineNlpTask();
 
   useEffect(() => {
     setPage(1);
@@ -370,6 +374,14 @@ function NlpTaskList({ status }: { status: TaskStatusFilter }) {
   const totalPages = Math.max(1, Math.ceil(totalCount / ASSIGNMENT_PAGE_SIZE));
   const hasPrevious = Boolean(data?.previous) && page > 1;
   const hasNext = Boolean(data?.next) && page < totalPages;
+
+  const handleAccept = async (taskId: string) => {
+    await acceptNlpTask.mutateAsync(taskId);
+  };
+
+  const handleDecline = async (taskId: string) => {
+    await declineNlpTask.mutateAsync(taskId);
+  };
 
   if (isLoading) {
     return (
@@ -402,7 +414,16 @@ function NlpTaskList({ status }: { status: TaskStatusFilter }) {
             description="Check back soon — new NLP jobs are assigned regularly."
           />
         ) : (
-          tasks.map((task) => <NlpTaskCard key={task.task_id} task={task} />)
+          tasks.map((task) => (
+            <NlpTaskCard
+              key={task.task_id}
+              task={task}
+              onAccept={handleAccept}
+              onDecline={handleDecline}
+              accepting={acceptNlpTask.isPending}
+              declining={declineNlpTask.isPending}
+            />
+          ))
         )}
       </AnimatePresence>
 

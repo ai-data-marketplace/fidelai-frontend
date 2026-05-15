@@ -584,6 +584,60 @@ export function useNlpTasks(params?: { page?: number; page_size?: number; status
   });
 }
 
+export function useAcceptNlpTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      const { data } = await apiClient.post(API_ENDPOINTS.TASKS.NLP_ACCEPT_TASK(taskId));
+      return data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['nlpTasks'] });
+    },
+  });
+}
+
+export function useDeclineNlpTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      const { data } = await apiClient.post(API_ENDPOINTS.TASKS.NLP_DECLINE_TASK(taskId));
+      return data;
+    },
+    onMutate: async (taskId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['nlpTasks'] });
+
+      const previousTasks = queryClient.getQueriesData<PaginatedNlpTasksResponse>({ queryKey: ['nlpTasks'] });
+
+      queryClient.setQueriesData<PaginatedNlpTasksResponse>({ queryKey: ['nlpTasks'] }, (current) => {
+        if (!current) return current;
+
+        return {
+          ...current,
+          count: Math.max(0, current.count - 1),
+          results: current.results.filter((task) => task.task_id !== taskId),
+        };
+      });
+
+      return { previousTasks };
+    },
+    onError: (_error, _taskId, context) => {
+      if (!context?.previousTasks) return;
+
+      for (const [queryKey, data] of context.previousTasks) {
+        queryClient.setQueryData(queryKey, data);
+      }
+
+      toast.error('Could not decline the task. Please try again.');
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['nlpTasks'] });
+    },
+  });
+}
+
 export function useAcceptAssignment() {
   const queryClient = useQueryClient();
 
