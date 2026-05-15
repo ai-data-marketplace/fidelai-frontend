@@ -486,7 +486,10 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
 
              {/* 7. Notes */}
              <div className="space-y-2.5">
-               <label className="text-sm font-bold text-foreground">7. Notes</label>
+               <label className="text-sm font-bold text-foreground flex justify-between items-center">
+                 <span>7. Notes</span>
+                 <span className="opacity-50 text-xs">Optional</span>
+               </label>
                <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
