@@ -159,6 +159,13 @@ export interface NlpTask {
   total_chunks: number;
 }
 
+export interface PaginatedNlpTasksResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: NlpTask[];
+}
+
 export interface ExpertTask {
   id: string;
   name: string;
@@ -558,12 +565,17 @@ export function useMyAssignments(params?: { page?: number; page_size?: number; s
   });
 }
 
-export function useNlpTasks(params?: { status?: string }) {
+export function useNlpTasks(params?: { page?: number; page_size?: number; status?: string }) {
   return useQuery({
-    queryKey: ['nlpTasks', params?.status ?? 'all'],
+    queryKey: ['nlpTasks', params],
     queryFn: async () => {
-      const requestParams = params?.status ? { status: params.status } : undefined;
-      const { data } = await apiClient.get<NlpTask[]>(API_ENDPOINTS.TASKS.NLP_TASKS, {
+      const requestParams = {
+        page: params?.page,
+        page_size: params?.page_size,
+        ...(params?.status && { status: params.status }),
+      };
+
+      const { data } = await apiClient.get<PaginatedNlpTasksResponse>(API_ENDPOINTS.TASKS.NLP_TASKS, {
         params: requestParams,
       });
       return data;
