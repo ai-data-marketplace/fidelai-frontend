@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import apiClient from '@/services/api-client';
 import { API_ENDPOINTS } from '@/services/endpoints';
@@ -57,6 +57,39 @@ export interface ApplicationStatusResponse {
   application_status: string | null;
   role_applied_for: string | null;
   submitted_at: string | null;
+}
+
+export interface AdminRoleApplicationUser {
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  is_verified: boolean;
+}
+
+export interface AdminRoleApplicationReviewer {
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+}
+
+export interface AdminRoleApplication {
+  id: string;
+  user: AdminRoleApplicationUser;
+  role_applied_for: string;
+  application_data: Record<string, unknown>;
+  status: string;
+  submitted_at: string;
+  reviewed_at: string | null;
+  reviewed_by: AdminRoleApplicationReviewer | null;
+}
+
+export interface PaginatedAdminRoleApplicationsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: AdminRoleApplication[];
 }
 
 export interface OnboardingCompleteResponse {
@@ -195,6 +228,134 @@ export function useApplicationStatus(options?: { enabled?: boolean }) {
     },
     retry: false,
     enabled: options?.enabled ?? true,
+  });
+}
+
+export function useAdminRoleApplications(options?: { page?: number; pageSize?: number; status?: string; enabled?: boolean }) {
+  const page = options?.page ?? 1;
+  const pageSize = options?.pageSize ?? 10;
+  const status = options?.status;
+
+  return useQuery({
+    queryKey: ['adminRoleApplications', page, pageSize, status ?? 'pending'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<PaginatedAdminRoleApplicationsResponse>(API_ENDPOINTS.ADMIN.ROLE_APPLICATIONS, {
+        params: {
+          page,
+          page_size: pageSize,
+          ...(status ? { status } : { status: 'pending' }),
+        },
+      });
+      return data;
+    },
+    placeholderData: keepPreviousData,
+    retry: false,
+    enabled: options?.enabled ?? true,
+  });
+}
+
+function updateAdminRoleApplicationCache(
+  queryClient: ReturnType<typeof useQueryClient>,
+  updatedApplication: AdminRoleApplication,
+) {
+  queryClient.setQueriesData<PaginatedAdminRoleApplicationsResponse>(
+    { queryKey: ['adminRoleApplications'] },
+    (current) => {
+      if (!current) return current;
+
+      return {
+        ...current,
+        results: current.results.map((application) =>
+          application.id === updatedApplication.id ? updatedApplication : application,
+        ),
+      };
+    },
+  );
+}
+
+export function useApproveAdminRoleApplication() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (applicationId: string) => {
+      const { data } = await apiClient.post<AdminRoleApplication>(API_ENDPOINTS.ADMIN.APPROVE_ROLE_APPLICATION(applicationId));
+      return data;
+    },
+    onMutate: async (applicationId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['adminRoleApplications'] });
+
+      const previous = queryClient.getQueriesData<PaginatedAdminRoleApplicationsResponse>({ queryKey: ['adminRoleApplications'] });
+
+      for (const [queryKey, data] of previous) {
+        queryClient.setQueryData(queryKey, (current: PaginatedAdminRoleApplicationsResponse | undefined) => {
+          if (!current) return current;
+
+          return {
+            ...current,
+            count: Math.max(0, current.count - 1),
+            results: current.results.filter((a) => a.id !== applicationId),
+          };
+        });
+      }
+
+      return { previous };
+    },
+    onError: (_error, applicationId, context: any) => {
+      if (!context?.previous) return;
+
+      for (const [queryKey, data] of context.previous) {
+        queryClient.setQueryData(queryKey, data);
+      }
+    },
+    onSuccess: async (updatedApplication) => {
+      queryClient.setQueryData(['adminRoleApplication', updatedApplication.id], updatedApplication);
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['adminRoleApplications'] });
+    },
+  });
+}
+
+export function useRejectAdminRoleApplication() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (applicationId: string) => {
+      const { data } = await apiClient.post<AdminRoleApplication>(API_ENDPOINTS.ADMIN.REJECT_ROLE_APPLICATION(applicationId));
+      return data;
+    },
+    onMutate: async (applicationId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['adminRoleApplications'] });
+
+      const previous = queryClient.getQueriesData<PaginatedAdminRoleApplicationsResponse>({ queryKey: ['adminRoleApplications'] });
+
+      for (const [queryKey, data] of previous) {
+        queryClient.setQueryData(queryKey, (current: PaginatedAdminRoleApplicationsResponse | undefined) => {
+          if (!current) return current;
+
+          return {
+            ...current,
+            count: Math.max(0, current.count - 1),
+            results: current.results.filter((a) => a.id !== applicationId),
+          };
+        });
+      }
+
+      return { previous };
+    },
+    onError: (_error, applicationId, context: any) => {
+      if (!context?.previous) return;
+
+      for (const [queryKey, data] of context.previous) {
+        queryClient.setQueryData(queryKey, data);
+      }
+    },
+    onSuccess: async (updatedApplication) => {
+      queryClient.setQueryData(['adminRoleApplication', updatedApplication.id], updatedApplication);
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['adminRoleApplications'] });
+    },
   });
 }
 

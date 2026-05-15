@@ -12,6 +12,11 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: '/auth/forgot-password/',
     RESET_PASSWORD: '/auth/reset-password/',
   },
+  ADMIN: {
+    ROLE_APPLICATIONS: '/auth/admin/role-applications/',
+    APPROVE_ROLE_APPLICATION: (id: string) => `/auth/admin/role-applications/${id}/approve/`,
+    REJECT_ROLE_APPLICATION: (id: string) => `/auth/admin/role-applications/${id}/reject/`,
+  },
   DATASETS: {
     LIST: '/marketplace/datasets/',
     DETAIL: (id: string) => `/marketplace/datasets/${id}/`,

@@ -1,6 +1,6 @@
 import { UsersTable } from "@/features/admin/components/users-table";
 import { RoleApprovals } from "@/features/admin/components/role-approvals";
-import { Users as UsersIcon, ShieldAlert } from "lucide-react";
+import { Users as UsersIcon } from "lucide-react";
 import { Tabs } from "@/components/ui/tabs";
 
 export default function AdminUsersPage() {
@@ -28,13 +28,6 @@ export default function AdminUsersPage() {
       label: "Role Applications",
       content: (
         <div className="space-y-6 pt-6">
-           <div className="space-y-1">
-              <h2 className="text-2xl font-black flex items-center gap-2">
-                 <ShieldAlert className="h-6 w-6 text-primary" />
-                 Verification Queue
-              </h2>
-              <p className="text-sm text-muted-foreground font-medium">Review and approve candidates for specialized platform roles.</p>
-           </div>
            <RoleApprovals />
         </div>
       )
