@@ -159,6 +159,23 @@ export interface NlpTask {
   total_chunks: number;
 }
 
+export interface NlpChunk {
+  chunk_id: string;
+  order_index: number;
+  text: string;
+  previous_annotation: string | null;
+}
+
+export interface NlpTaskDetail {
+  task_id: string;
+  name: string;
+  domain: string;
+  task_type: string;
+  status: string;
+  total_chunks: number;
+  chunks: NlpChunk[];
+}
+
 export interface PaginatedNlpTasksResponse {
   count: number;
   next: string | null;
@@ -634,6 +651,31 @@ export function useDeclineNlpTask() {
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: ['nlpTasks'] });
+    },
+  });
+}
+
+export function useNlpTaskDetail(taskId: string) {
+  return useQuery({
+    queryKey: ['nlpTaskDetail', taskId],
+    queryFn: async () => {
+      const { data } = await apiClient.get<NlpTaskDetail>(API_ENDPOINTS.TASKS.NLP_TASK_DETAIL(taskId));
+      return data;
+    },
+    enabled: !!taskId,
+  });
+}
+
+export function useAnnotateNlpChunk() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ chunkId, payload }: { chunkId: string; payload: any }) => {
+      const { data } = await apiClient.post(API_ENDPOINTS.TASKS.NLP_ANNOTATE_CHUNK(chunkId), payload);
+      return data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['nlpTaskDetail'] });
     },
   });
 }

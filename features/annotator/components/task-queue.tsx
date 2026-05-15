@@ -356,6 +356,7 @@ function QualityControlTaskList({ status }: { status: TaskStatusFilter }) {
 
 function NlpTaskList({ status }: { status: TaskStatusFilter }) {
   const [page, setPage] = useState(1);
+  const router = useRouter();
   const acceptNlpTask = useAcceptNlpTask();
   const declineNlpTask = useDeclineNlpTask();
 
@@ -381,6 +382,13 @@ function NlpTaskList({ status }: { status: TaskStatusFilter }) {
 
   const handleDecline = async (taskId: string) => {
     await declineNlpTask.mutateAsync(taskId);
+  };
+
+  const handleOpen = async (taskId: string) => {
+    if (status === "assigned") {
+      await acceptNlpTask.mutateAsync(taskId);
+    }
+    router.push(`/annotator/nlp-workspace/${taskId}`);
   };
 
   if (isLoading) {
@@ -420,6 +428,7 @@ function NlpTaskList({ status }: { status: TaskStatusFilter }) {
               task={task}
               onAccept={handleAccept}
               onDecline={handleDecline}
+              onOpen={handleOpen}
               accepting={acceptNlpTask.isPending}
               declining={declineNlpTask.isPending}
             />

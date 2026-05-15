@@ -32,17 +32,21 @@ export function NlpTaskCard({
   task,
   onAccept,
   onDecline,
+  onOpen,
   accepting,
   declining,
 }: {
   task: NlpTask;
   onAccept: (taskId: string) => void;
   onDecline: (taskId: string) => void;
+  onOpen: (taskId: string) => void;
   accepting: boolean;
   declining: boolean;
 }) {
   const statusClass = statusStyle[task.status] ?? "bg-muted text-muted-foreground border-border";
   const isAssigned = task.status === "assigned";
+  const isInProgress = task.status === "in_progress" || task.status === "accepted";
+  const isSubmitted = task.status === "submitted";
 
   return (
     <motion.div
@@ -107,6 +111,23 @@ export function NlpTaskCard({
                   Decline
                 </Button>
               </div>
+            )}
+            {isInProgress && (
+              <Button
+                size="sm"
+                className="flex-1 sm:flex-none gap-1.5 font-bold shrink-0"
+                disabled={accepting}
+                onClick={() => onOpen(task.task_id)}
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Continue
+              </Button>
+            )}
+            {isSubmitted && (
+              <Badge className="flex-1 sm:flex-none justify-center gap-1.5 font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/10 cursor-default shrink-0">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Completed
+              </Badge>
             )}
           </div>
         </CardContent>
