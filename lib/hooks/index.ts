@@ -83,6 +83,13 @@ export interface AdminRoleApplication {
   submitted_at: string;
   reviewed_at: string | null;
   reviewed_by: AdminRoleApplicationReviewer | null;
+  documents?: Array<{
+    id: string;
+    file: string;
+    file_type: string;
+    uploaded_at: string;
+    purpose?: string;
+  }>;
 }
 
 export interface PaginatedAdminRoleApplicationsResponse {

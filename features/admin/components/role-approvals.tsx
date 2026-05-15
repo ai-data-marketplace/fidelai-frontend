@@ -355,6 +355,27 @@ export function RoleApprovals() {
               <ApplicationValue value={selectedApplication.application_data} />
             </div>
 
+            {selectedApplication.documents && selectedApplication.documents.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Supporting Documents</h4>
+                <div className="grid gap-3">
+                  {selectedApplication.documents.map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between p-3 rounded-xl border bg-background">
+                      <div>
+                        <p className="font-semibold">{doc.file.split('/').pop()}</p>
+                        <p className="text-xs text-muted-foreground">{doc.purpose} • Uploaded {formatDateTime(doc.uploaded_at)}</p>
+                      </div>
+                      <div className="ml-4">
+                        <a href={doc.file} target="_blank" rel="noopener noreferrer">
+                          <Button size="sm" className="font-bold">Open</Button>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end pt-2">
               <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} disabled={isActionPending}>
                 Close
