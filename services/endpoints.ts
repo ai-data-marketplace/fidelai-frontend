@@ -30,6 +30,7 @@ export const API_ENDPOINTS = {
   TASKS: {
     QUEUE: '/processing/my-assignments/',
     MY_ASSIGNMENTS: '/processing/my-assignments/',
+    NLP_TASKS: '/nlp/tasks/',
     ACCEPT_ASSIGNMENT: (id: string) => `/processing/assignments/${id}/accept/`,
     DECLINE_ASSIGNMENT: (id: string) => `/processing/assignments/${id}/decline/`,
     GET_CHUNKS: (id: string) => `/processing/assignments/${id}/chunks/`,
