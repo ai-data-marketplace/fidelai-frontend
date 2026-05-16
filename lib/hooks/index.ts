@@ -176,6 +176,14 @@ export interface NlpTaskDetail {
   chunks: NlpChunk[];
 }
 
+export interface NlpTaskProgress {
+  task_id: string;
+  total_chunks: number;
+  annotated_chunks: number;
+  remaining_chunks: number;
+  completion_percentage: number;
+}
+
 export interface PaginatedNlpTasksResponse {
   count: number;
   next: string | null;
@@ -666,6 +674,17 @@ export function useNlpTaskDetail(taskId: string) {
   });
 }
 
+export function useNlpTaskProgress(taskId: string) {
+  return useQuery({
+    queryKey: ['nlpTaskProgress', taskId],
+    queryFn: async () => {
+      const { data } = await apiClient.get<NlpTaskProgress>(API_ENDPOINTS.TASKS.NLP_TASK_PROGRESS(taskId));
+      return data;
+    },
+    enabled: !!taskId,
+  });
+}
+
 export function useAnnotateNlpChunk() {
   const queryClient = useQueryClient();
 
@@ -676,6 +695,7 @@ export function useAnnotateNlpChunk() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['nlpTaskDetail'] });
+      await queryClient.invalidateQueries({ queryKey: ['nlpTaskProgress'] });
     },
   });
 }

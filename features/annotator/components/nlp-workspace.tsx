@@ -9,6 +9,7 @@ import { Modal } from "@/components/ui/modal";
 import { LogOut, CheckCircle2, ChevronRight, ChevronLeft, XCircle, Info } from "lucide-react";
 import {
   useNlpTaskDetail,
+  useNlpTaskProgress,
   useAnnotateNlpChunk,
 } from "@/lib/hooks";
 import { motion, AnimatePresence } from "framer-motion";
@@ -83,12 +84,13 @@ function formatLabelDisplay(label: string) {
 export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
   const router = useRouter();
   const { data: task, isLoading: taskLoading, isError: taskError } = useNlpTaskDetail(taskId);
+  const { data: progress } = useNlpTaskProgress(taskId);
   const annotateChunk = useAnnotateNlpChunk();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
-  const [confidenceScore, setConfidenceScore] = useState(0.5);
+  const [confidenceScore, setConfidenceScore] = useState(1);
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -114,13 +116,13 @@ export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
     if (localAnnotations[currentChunk.chunk_id]) {
       const cached = localAnnotations[currentChunk.chunk_id];
       setSelectedLabel(cached.selectedLabel || null);
-      setConfidenceScore(cached.confidenceScore || 0.5);
+      setConfidenceScore(cached.confidenceScore || 1);
       setNotes(cached.notes || "");
       return;
     }
 
     setSelectedLabel(null);
-    setConfidenceScore(0.5);
+    setConfidenceScore(1);
     setNotes("");
   }, [currentIndex, currentChunk, localAnnotations]);
 
@@ -222,7 +224,7 @@ export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
     );
   }
 
-  const progressPercent = ((currentIndex + 1) / task.chunks.length) * 100;
+  const progressPercent = progress?.completion_percentage ?? ((currentIndex + 1) / task.chunks.length) * 100;
 
   return (
     <div className="flex flex-col h-[calc(100vh-10rem)] w-full overflow-hidden">
@@ -400,7 +402,7 @@ export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
           </div>
           <div className="p-4 rounded-xl border bg-emerald-500/5 border-emerald-500/20 text-center col-span-2">
             <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Total Chunks</p>
-            <p className="text-xl font-bold text-emerald-600">{task.chunks?.length ?? 0}</p>
+            <p className="text-xl font-bold text-emerald-600">{progress?.total_chunks ?? task.chunks?.length ?? 0}</p>
           </div>
         </div>
 
