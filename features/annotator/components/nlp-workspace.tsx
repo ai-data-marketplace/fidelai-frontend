@@ -105,6 +105,10 @@ export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
   // Initialize first unannotated chunk
   useEffect(() => {
     if (task?.chunks && task.chunks.length > 0 && !initializedRef.current) {
+      const firstUnannotatedIndex = task.chunks.findIndex((chunk) => chunk.previous_annotation === null);
+      if (firstUnannotatedIndex !== -1) {
+        setCurrentIndex(firstUnannotatedIndex);
+      }
       initializedRef.current = true;
     }
   }, [task]);
@@ -121,10 +125,21 @@ export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
       return;
     }
 
+    if (currentChunk.previous_annotation) {
+      const labels = currentChunk.previous_annotation.labels ?? {};
+      const previousLabel = labels[taskType] ?? Object.values(labels)[0] ?? null;
+      const parsedConfidence = Number.parseFloat(String(currentChunk.previous_annotation.confidence_score));
+
+      setSelectedLabel(previousLabel ?? null);
+      setConfidenceScore(Number.isFinite(parsedConfidence) ? parsedConfidence : 1);
+      setNotes(currentChunk.previous_annotation.notes || "");
+      return;
+    }
+
     setSelectedLabel(null);
     setConfidenceScore(1);
     setNotes("");
-  }, [currentIndex, currentChunk, localAnnotations]);
+  }, [currentIndex, currentChunk, localAnnotations, taskType]);
 
   // Timer management
   useEffect(() => {
@@ -191,6 +206,12 @@ export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
   const handleBack = () => {
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
+    }
+  };
+
+  const handleSkip = () => {
+    if (currentIndex < (task?.chunks?.length ?? 0) - 1) {
+      setCurrentIndex((prev) => prev + 1);
     }
   };
 
@@ -379,6 +400,17 @@ export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
                 disabled={!selectedLabel || isSubmitting}
               >
                 Submit & Next <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1 h-10 text-xs font-bold text-muted-foreground hover:bg-muted/50"
+                onClick={handleSkip}
+                disabled={currentIndex >= (task?.chunks?.length ?? 0) - 1}
+              >
+                <XCircle className="w-3.5 h-3.5 mr-1.5" /> Skip
               </Button>
             </div>
           </div>

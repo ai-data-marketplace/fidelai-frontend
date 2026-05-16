@@ -163,7 +163,14 @@ export interface NlpChunk {
   chunk_id: string;
   order_index: number;
   text: string;
-  previous_annotation: string | null;
+  previous_annotation: {
+    annotation_id: string;
+    labels: Record<string, string>;
+    confidence_score: string | number;
+    time_spent_seconds: number;
+    notes: string;
+    created_at: string;
+  } | null;
 }
 
 export interface NlpTaskDetail {
