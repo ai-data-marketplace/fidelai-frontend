@@ -5,8 +5,6 @@ import {
   Button 
 } from "@/components/ui";
 import { 
-  ChevronLeft, 
-  ChevronRight,
   ShoppingCart,
   Grid3X3,
   LayoutList,
@@ -32,6 +30,24 @@ const DEFAULT_FILTERS: MarketplaceFiltersState = {
   page: 1,
   pageSize: 20,
 };
+
+const DATASET_PAGE_SIZE = 20;
+
+function DatasetSkeleton() {
+  return (
+    <div className="rounded-2xl border bg-card animate-pulse">
+      <div className="h-48 bg-muted/30" />
+      <div className="p-6 space-y-4">
+        <div className="h-4 bg-muted/30 rounded w-3/4" />
+        <div className="h-6 bg-muted/30 rounded" />
+        <div className="flex gap-2">
+          <div className="h-4 bg-muted/30 rounded flex-1" />
+          <div className="h-4 bg-muted/30 rounded flex-1" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function MarketplacePage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -174,7 +190,31 @@ export default function MarketplacePage() {
 
         {/* Dataset Grid Area */}
         <div className="flex-1 space-y-12">
-          {(!loading && datasets.length === 0) ? (
+          {loading ? (
+            viewMode === "grid" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <DatasetSkeleton key={i} />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex gap-4 p-6 rounded-3xl border bg-card animate-pulse">
+                    <div className="w-32 h-32 bg-muted/30 rounded-xl shrink-0" />
+                    <div className="flex-1 space-y-3">
+                      <div className="h-4 bg-muted/30 rounded w-1/2" />
+                      <div className="h-6 bg-muted/30 rounded" />
+                      <div className="flex gap-2 text-xs">
+                        <div className="h-4 bg-muted/30 rounded flex-1" />
+                        <div className="h-4 bg-muted/30 rounded flex-1" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          ) : datasets.length === 0 ? (
             <div className="h-[400px] border-2 border-dashed rounded-3xl flex flex-col items-center justify-center text-center p-8 space-y-4">
                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
                   <ShoppingCart className="w-8 h-8 text-muted-foreground" />
@@ -187,7 +227,7 @@ export default function MarketplacePage() {
             </div>
           ) : viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6 animate-in fade-in duration-500">
-              {(loading ? [] : datasets).map((ds) => (
+              {datasets.map((ds) => (
                 <DatasetCard key={ds.id} dataset={ds} />
               ))}
             </div>
@@ -220,20 +260,31 @@ export default function MarketplacePage() {
             </div>
           )}
 
-          {/* Pagination */}
-          <div className="flex items-center justify-center gap-2 pt-8 border-t">
-            <Button variant="outline" size="icon" disabled className="rounded-xl">
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button variant="default" className="rounded-xl font-bold w-10">1</Button>
-            <Button variant="outline" className="rounded-xl font-bold w-10">2</Button>
-            <Button variant="outline" className="rounded-xl font-bold w-10">3</Button>
-            <span className="text-muted-foreground px-2">...</span>
-            <Button variant="outline" className="rounded-xl font-bold w-10">50</Button>
-            <Button variant="outline" size="icon" className="rounded-xl">
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+          {!loading && datasets.length > 0 && (
+            <div className="flex items-center justify-between gap-3 pt-8 border-t">
+              <p className="text-xs font-semibold text-muted-foreground">
+                Page {filters.page} of {Math.max(1, Math.ceil((count || 0) / DATASET_PAGE_SIZE))}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={filters.page === 1}
+                  onClick={() => handleFilterChange({ page: Math.max(1, filters.page - 1) })}
+                >
+                  Previous
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={filters.page >= Math.ceil((count || 0) / DATASET_PAGE_SIZE)}
+                  onClick={() => handleFilterChange({ page: filters.page + 1 })}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

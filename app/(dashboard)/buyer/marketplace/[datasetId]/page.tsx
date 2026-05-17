@@ -1,19 +1,57 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { mockDatasets } from "@/features/buyer/data/mock-datasets";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { DatasetDetails } from "@/features/buyer/components/dataset-details";
 import { Button } from "@/components/ui";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import apiClient from "@/services/api-client";
+import { API_ENDPOINTS } from "@/services/endpoints";
+import { MarketplaceDataset } from "@/features/buyer/types";
 
 export default function DatasetPage() {
   const { datasetId } = useParams();
-  const router = useRouter();
-  
-  const dataset = mockDatasets.find((d) => d.id === datasetId);
+  const [dataset, setDataset] = useState<MarketplaceDataset | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  if (!dataset) {
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchDataset() {
+      setLoading(true);
+      setError(false);
+      try {
+        const res = await apiClient.get(API_ENDPOINTS.DATASETS.DETAIL(datasetId as string));
+        if (!cancelled) {
+          setDataset(res.data as MarketplaceDataset);
+        }
+      } catch (err) {
+        console.error('Failed to fetch dataset', err);
+        if (!cancelled) setError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    if (datasetId) {
+      fetchDataset();
+    }
+
+    return () => { cancelled = true; };
+  }, [datasetId]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[600px] space-y-4">
+        <div className="h-12 w-12 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        <p className="text-muted-foreground">Loading dataset details...</p>
+      </div>
+    );
+  }
+
+  if (error || !dataset) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[600px] space-y-4">
         <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
@@ -21,7 +59,7 @@ export default function DatasetPage() {
         </div>
         <div className="text-center space-y-1">
           <h2 className="text-2xl font-black">Dataset Not Found</h2>
-          <p className="text-muted-foreground">The dataset your are looking for might have been removed or moved.</p>
+          <p className="text-muted-foreground">The dataset you are looking for might have been removed or moved.</p>
         </div>
         <Link href="/buyer/marketplace">
           <Button variant="outline" className="font-bold gap-2">

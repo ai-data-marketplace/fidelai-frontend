@@ -44,6 +44,13 @@ const domains = [
 ];
 
 export function MarketplaceFilters({ filters, onChange, onReset }: MarketplaceFiltersProps) {
+  const clampNonNegative = (value: string) => {
+    if (value === "") return "";
+    const parsed = Number(value);
+    if (Number.isNaN(parsed)) return "";
+    return String(Math.max(0, parsed));
+  };
+
   return (
     <Card className="h-fit sticky top-24 border-border/50 shadow-sm">
       <CardHeader className="pb-4 border-b">
@@ -100,8 +107,12 @@ export function MarketplaceFilters({ filters, onChange, onReset }: MarketplaceFi
           <label className="text-xs font-bold text-muted-foreground uppercase">Created Year</label>
           <Input
             type="number"
+            min={0}
             value={filters.year}
-            onChange={(e) => onChange({ year: e.target.value })}
+            onChange={(e) => onChange({ year: clampNonNegative(e.target.value) })}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
             placeholder="e.g. 2023"
             className="text-sm h-10"
           />
@@ -112,8 +123,12 @@ export function MarketplaceFilters({ filters, onChange, onReset }: MarketplaceFi
           <label className="text-xs font-bold text-muted-foreground uppercase">Min Size (MB)</label>
           <Input
             type="number"
+            min={0}
             value={filters.minSize}
-            onChange={(e) => onChange({ minSize: e.target.value })}
+            onChange={(e) => onChange({ minSize: clampNonNegative(e.target.value) })}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
             placeholder="e.g. 50"
             className="text-sm h-10"
           />
@@ -124,8 +139,12 @@ export function MarketplaceFilters({ filters, onChange, onReset }: MarketplaceFi
           <label className="text-xs font-bold text-muted-foreground uppercase">Max Price</label>
           <Input
             type="number"
+            min={0}
             value={filters.maxPrice}
-            onChange={(e) => onChange({ maxPrice: e.target.value })}
+            onChange={(e) => onChange({ maxPrice: clampNonNegative(e.target.value) })}
+            onKeyDown={(e) => {
+              if (e.key === "-") e.preventDefault();
+            }}
             placeholder="e.g. 500"
             className="text-sm h-10"
           />

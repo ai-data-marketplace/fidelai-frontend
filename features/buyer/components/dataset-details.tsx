@@ -8,7 +8,6 @@ import {
   CardContent, 
   CardHeader, 
   CardTitle,
-  Progress 
 } from "@/components/ui";
 import { 
   ShoppingCart, 
@@ -24,14 +23,14 @@ import {
   Cpu,
   Fingerprint
 } from "lucide-react";
-import { Dataset } from "../data/mock-datasets";
+import { MarketplaceDataset } from "../types";
 import { PurchaseModal } from "./purchase-modal";
 import { DatasetStats } from "./dataset-stats";
 import { SampleChunks } from "./sample-chunks";
 import { motion } from "framer-motion";
 
 interface DatasetDetailsProps {
-  dataset: Dataset;
+  dataset: MarketplaceDataset;
 }
 
 const pipelineSteps = [
@@ -39,13 +38,41 @@ const pipelineSteps = [
   "AI QC",
   "Annotation",
   "Expert Review",
+  "NLP Labeling",
   "Aggregation",
   "Published",
 ];
 
 export function DatasetDetails({ dataset }: DatasetDetailsProps) {
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
-  const currentStepIndex = pipelineSteps.indexOf(dataset.status);
+  const statusMap: Record<string, number> = {
+    draft: 0,
+    uploaded: 0,
+    processing: 1,
+    qc: 1,
+    annotation: 2,
+    annotated: 2,
+    expert_review: 3,
+    expert_reviewed: 3,
+    nlp_labeling: 4,
+    aggregation: 5,
+    approved: 6,
+    published: 6,
+  };
+  const currentStepIndex = statusMap[String(dataset.status).toLowerCase()] ?? 5;
+
+  const formatTokenCount = (count: number) => {
+    if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(2)}M`;
+    if (count >= 1_000) return `${(count / 1_000).toFixed(2)}K`;
+    return `${count.toLocaleString()}`;
+  };
+
+  const formatBytes = (bytes: number) => {
+    if (!bytes) return "0 B";
+    const sizes = ["B", "KB", "MB", "GB", "TB"];
+    const index = Math.floor(Math.log(bytes) / Math.log(1024));
+    return `${(bytes / Math.pow(1024, index)).toFixed(2)} ${sizes[index]}`;
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -68,13 +95,13 @@ export function DatasetDetails({ dataset }: DatasetDetailsProps) {
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">License</span>
               <span className="font-bold flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-primary" />
-                {dataset.license}
+                {dataset.license_type.toUpperCase()}
               </span>
             </div>
             <div className="flex flex-col border-l pl-6">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">QC Score</span>
               <span className="font-bold text-xl text-emerald-600 font-mono tracking-tighter">
-                {dataset.qcScore}/100
+                {Math.round((dataset.metrics.avg_qc_score || 0) * 100)}/100
               </span>
             </div>
             <div className="flex flex-col border-l pl-6">
@@ -92,7 +119,7 @@ export function DatasetDetails({ dataset }: DatasetDetailsProps) {
               <div className="space-y-1">
                 <span className="text-xs font-bold text-muted-foreground uppercase">Dataset Price</span>
                 <p className="text-4xl font-black tracking-tighter text-primary">
-                  ETB {dataset.price.toFixed(2)}
+                  ETB {Number(dataset.price).toFixed(2)}
                 </p>
               </div>
               <div className="space-y-3">
@@ -103,14 +130,18 @@ export function DatasetDetails({ dataset }: DatasetDetailsProps) {
                   <ShoppingCart className="w-5 h-5" />
                   Purchase Dataset
                 </Button>
-                <Button variant="outline" className="w-full h-12 font-bold gap-3">
+                <Button
+                  variant="outline"
+                  className="w-full h-12 font-bold gap-3"
+                  onClick={() => {
+                    const el = document.getElementById("sample-preview");
+                    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                >
                   <Eye className="w-5 h-5" />
-                  Request Full Sample
+                  View Sample
                 </Button>
               </div>
-              <p className="text-[10px] text-center text-muted-foreground leading-tight italic">
-                * Purchases are final and include high-quality JSONL export with full metadata.
-              </p>
             </CardContent>
           </Card>
         </div>
@@ -158,7 +189,9 @@ export function DatasetDetails({ dataset }: DatasetDetailsProps) {
 
           <DatasetStats dataset={dataset} />
           
-          <SampleChunks chunks={dataset.sampleChunks} />
+          <div id="sample-preview">
+            <SampleChunks samples={dataset.samples || []} />
+          </div>
         </div>
 
         {/* Right Column: Metadata & Downloads */}
@@ -173,14 +206,14 @@ export function DatasetDetails({ dataset }: DatasetDetailsProps) {
             <CardContent className="p-0">
               <div className="divide-y text-sm">
                 {[
-                  { label: "Total Documents", value: dataset.documentsCount.toLocaleString() },
-                  { label: "Chunk Count", value: dataset.chunkCount.toLocaleString() },
-                  { label: "Token Count", value: (dataset.tokenCount / 1000000).toFixed(2) + "M" },
-                  { label: "Avg QC Score", value: dataset.qcScore + "%" },
-                  { label: "Annotation Coverage", value: dataset.annotationCoverage + "%" },
-                  { label: "Expert Validated", value: dataset.expertValidation ? "Yes, 100%" : "Pending" },
+                  { label: "Total Documents", value: dataset.metrics.total_documents.toLocaleString() },
+                  { label: "Chunk Count", value: dataset.metrics.chunk_count.toLocaleString() },
+                  { label: "Token Count", value: formatTokenCount(dataset.metrics.token_count) },
+                  { label: "Avg QC Score", value: `${Math.round(dataset.metrics.avg_qc_score * 100)}%` },
+                  { label: "Annotation Coverage", value: `${Math.round(dataset.metrics.annotation_coverage * 100)}%` },
+                  { label: "Expert Validation Ratio", value: `${Math.round(dataset.metrics.expert_validation_ratio * 100)}%` },
                   { label: "Language", value: dataset.language },
-                  { label: "Collection Year", value: dataset.createdYear },
+                  { label: "Collection Year", value: dataset.collection_year },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center justify-between p-4 px-6 hover:bg-muted/20 transition-colors">
                     <span className="text-muted-foreground font-medium">{item.label}</span>
@@ -200,28 +233,29 @@ export function DatasetDetails({ dataset }: DatasetDetailsProps) {
              </CardHeader>
              <CardContent className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { format: "JSONL", size: "245 MB", icon: FileJson },
-                    { format: "TSV", size: "180 MB", icon: Table },
-                    { format: "CSV", size: "190 MB", icon: Table },
-                    { format: "TXT", size: "120 MB", icon: FileText },
-                  ].map((f) => (
-                    <button 
-                      key={f.format}
-                      disabled
-                      className="p-3 rounded-xl border-2 border-dashed border-muted bg-muted/10 opacity-60 flex flex-col items-center gap-1 group cursor-not-allowed"
-                    >
-                      <f.icon className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                      <span className="text-xs font-black">{f.format}</span>
-                      <span className="text-[10px] text-muted-foreground">{f.size}</span>
-                    </button>
-                  ))}
-                </div>
-                <div className="p-3 bg-amber-500/5 border border-amber-500/10 rounded-xl flex gap-3">
-                   <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                   <p className="text-[10px] text-amber-700 leading-tight">
-                     Download links will be automatically enabled after purchase confirmation. Your purchase includes lifetime access to updates.
-                   </p>
+                  {dataset.assets?.length ? dataset.assets.map((asset) => {
+                    const AssetIcon = asset.file_format === "csv" || asset.file_format === "tsv"
+                      ? Table
+                      : asset.file_format === "txt"
+                        ? FileText
+                        : FileJson;
+
+                    return (
+                      <button 
+                        key={`${asset.file_format}-${asset.file}`}
+                        disabled
+                        className="p-3 rounded-xl border-2 border-dashed border-muted bg-muted/10 opacity-60 flex flex-col items-center gap-1 group cursor-not-allowed"
+                      >
+                        <AssetIcon className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <span className="text-xs font-black uppercase">{asset.file_format}</span>
+                        <span className="text-[10px] text-muted-foreground">{formatBytes(asset.file_size_bytes)}</span>
+                      </button>
+                    );
+                  }) : (
+                    <div className="col-span-2 rounded-xl border border-dashed bg-muted/10 p-4 text-center text-xs text-muted-foreground">
+                      No assets were returned for this dataset.
+                    </div>
+                  )}
                 </div>
              </CardContent>
           </Card>

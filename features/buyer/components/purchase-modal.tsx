@@ -4,25 +4,21 @@ import { useState } from "react";
 import { 
   Modal, 
   Button, 
-  Badge,
   Checkbox 
 } from "@/components/ui";
 import { 
   ShoppingCart, 
-  Wallet, 
   CheckCircle2, 
   ShieldCheck, 
-  AlertCircle,
   CreditCard,
   Building2,
-  Lock
 } from "lucide-react";
-import { Dataset } from "../data/mock-datasets";
+import { MarketplaceDataset } from "../types";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
 interface PurchaseModalProps {
-  dataset: Dataset;
+  dataset: MarketplaceDataset;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -31,6 +27,7 @@ export function PurchaseModal({ dataset, isOpen, onClose }: PurchaseModalProps) 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const price = Number(dataset.price) || 0;
 
   const handlePurchase = () => {
     if (!agreedToTerms) return;
@@ -64,10 +61,10 @@ export function PurchaseModal({ dataset, isOpen, onClose }: PurchaseModalProps) 
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className="font-bold text-sm truncate">{dataset.title}</h4>
-                <p className="text-xs text-muted-foreground">{dataset.domain} • {dataset.license} License</p>
+                <p className="text-xs text-muted-foreground">{dataset.domain} • {dataset.license_type.toUpperCase()} License</p>
               </div>
               <div className="text-right">
-                <p className="font-black text-primary">ETB {dataset.price.toFixed(2)}</p>
+                <p className="font-black text-primary">ETB {price.toFixed(2)}</p>
               </div>
             </div>
 
@@ -92,7 +89,7 @@ export function PurchaseModal({ dataset, isOpen, onClose }: PurchaseModalProps) 
                <div className="text-xs">
                  <p className="font-bold">Encrypted Transaction</p>
                  <p className="text-muted-foreground leading-relaxed mt-1">
-                   Your purchase is secured by FidelAI Escrow. Funds are released based on the Commercial License Agreement terms.
+                   Your purchase is secured by FidelAI Escrow. Funds are released based on the dataset license terms.
                  </p>
                </div>
             </div>
@@ -116,7 +113,7 @@ export function PurchaseModal({ dataset, isOpen, onClose }: PurchaseModalProps) 
                 disabled={isProcessing || !agreedToTerms}
                 onClick={handlePurchase}
               >
-                {isProcessing ? "Processing..." : `Pay ETB ${dataset.price.toFixed(2)}`}
+                {isProcessing ? "Processing..." : `Pay ETB ${price.toFixed(2)}`}
               </Button>
             </div>
           </motion.div>
