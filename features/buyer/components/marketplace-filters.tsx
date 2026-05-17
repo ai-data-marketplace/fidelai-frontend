@@ -11,14 +11,39 @@ import {
 } from "@/components/ui";
 import { 
   Search, 
-  Filter, 
   RotateCcw,
   SlidersHorizontal,
-  LayoutGrid,
   SortAsc
 } from "lucide-react";
 
-export function MarketplaceFilters() {
+export interface MarketplaceFiltersState {
+  q: string;
+  domain: string;
+  year: string;
+  minSize: string;
+  maxPrice: string;
+  ordering: "newest" | "oldest";
+  page: number;
+  pageSize: number;
+}
+
+interface MarketplaceFiltersProps {
+  filters: MarketplaceFiltersState;
+  onChange: (patch: Partial<MarketplaceFiltersState>) => void;
+  onReset: () => void;
+}
+
+const domains = [
+  { value: "general", label: "General" },
+  { value: "health", label: "Health" },
+  { value: "education", label: "Education" },
+  { value: "law", label: "Law" },
+  { value: "finance", label: "Finance" },
+  { value: "news", label: "News" },
+  { value: "religion", label: "Religion" },
+];
+
+export function MarketplaceFilters({ filters, onChange, onReset }: MarketplaceFiltersProps) {
   return (
     <Card className="h-fit sticky top-24 border-border/50 shadow-sm">
       <CardHeader className="pb-4 border-b">
@@ -27,7 +52,12 @@ export function MarketplaceFilters() {
             <SlidersHorizontal className="w-4 h-4 text-primary" />
             Filters
           </CardTitle>
-          <Button variant="ghost" size="sm" className="h-8 px-2 text-[10px] uppercase font-bold text-muted-foreground gap-1 hover:text-primary">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 text-[10px] uppercase font-bold text-muted-foreground gap-1 hover:text-primary"
+            onClick={onReset}
+          >
             <RotateCcw className="w-3 h-3" />
             Reset
           </Button>
@@ -39,66 +69,66 @@ export function MarketplaceFilters() {
           <label className="text-xs font-bold text-muted-foreground uppercase">Search Keywords</label>
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="News, Law, Health..." className="pl-9 h-10 text-sm" />
+            <Input
+              value={filters.q}
+              onChange={(e) => onChange({ q: e.target.value })}
+              placeholder="News, Law, Health..."
+              className="pl-9 h-10 text-sm"
+            />
           </div>
         </div>
 
         {/* Domain Selection */}
         <div className="space-y-2">
           <label className="text-xs font-bold text-muted-foreground uppercase">Domain</label>
-          <Select className="text-sm">
+          <Select
+            value={filters.domain}
+            onChange={(e) => onChange({ domain: e.target.value })}
+            className="text-sm"
+          >
             <option value="">All Domains</option>
-            <option value="news">News & Media</option>
-            <option value="law">Legal & Government</option>
-            <option value="health">Healthcare</option>
-            <option value="education">Education</option>
-            <option value="general">General Corpus</option>
+            {domains.map((domain) => (
+              <option key={domain.value} value={domain.value}>
+                {domain.label}
+              </option>
+            ))}
           </Select>
         </div>
 
         {/* Year Filter */}
         <div className="space-y-2">
           <label className="text-xs font-bold text-muted-foreground uppercase">Created Year</label>
-          <Select className="text-sm">
-            <option value="">All Years</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-            <option value="2022">2022</option>
-          </Select>
+          <Input
+            type="number"
+            value={filters.year}
+            onChange={(e) => onChange({ year: e.target.value })}
+            placeholder="e.g. 2023"
+            className="text-sm h-10"
+          />
         </div>
 
-        {/* Dataset Size */}
+        {/* Min Size (MB) */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-muted-foreground uppercase">Dataset Size</label>
-          <Select className="text-sm">
-            <option value="">Any Size</option>
-            <option value="small">Small (&lt; 500MB)</option>
-            <option value="medium">Medium (500MB - 2GB)</option>
-            <option value="large">Large (&gt; 2GB)</option>
-          </Select>
+          <label className="text-xs font-bold text-muted-foreground uppercase">Min Size (MB)</label>
+          <Input
+            type="number"
+            value={filters.minSize}
+            onChange={(e) => onChange({ minSize: e.target.value })}
+            placeholder="e.g. 50"
+            className="text-sm h-10"
+          />
         </div>
 
-        {/* QC Score */}
+        {/* Max Price */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-muted-foreground uppercase">Quality Score (QC)</label>
-          <Select className="text-sm">
-            <option value="">Any Score</option>
-            <option value="90+">Excellent (90%+)</option>
-            <option value="80+">Good (80%+)</option>
-            <option value="70+">Fair (70%+)</option>
-          </Select>
-        </div>
-
-        {/* License */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-muted-foreground uppercase">License Type</label>
-          <Select className="text-sm">
-            <option value="">Any License</option>
-            <option value="mit">MIT</option>
-            <option value="cc">Creative Commons</option>
-            <option value="comm">Commercial Use</option>
-            <option value="acad">Academic Only</option>
-          </Select>
+          <label className="text-xs font-bold text-muted-foreground uppercase">Max Price</label>
+          <Input
+            type="number"
+            value={filters.maxPrice}
+            onChange={(e) => onChange({ maxPrice: e.target.value })}
+            placeholder="e.g. 500"
+            className="text-sm h-10"
+          />
         </div>
 
         {/* Sort Order */}
@@ -108,11 +138,13 @@ export function MarketplaceFilters() {
               <SortAsc className="w-3.5 h-3.5" />
               Sort By
             </label>
-            <Select className="text-sm">
+            <Select
+              value={filters.ordering}
+              onChange={(e) => onChange({ ordering: e.target.value as "newest" | "oldest" })}
+              className="text-sm"
+            >
               <option value="newest">Newest First</option>
-              <option value="qc">Highest QC Score</option>
-              <option value="size">Largest Dataset</option>
-              <option value="price-low">Lowest Price</option>
+              <option value="oldest">Oldest First</option>
             </Select>
           </div>
         </div>

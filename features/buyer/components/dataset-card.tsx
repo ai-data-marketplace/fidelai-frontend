@@ -26,6 +26,12 @@ interface DatasetCardProps {
 }
 
 export function DatasetCard({ dataset }: DatasetCardProps) {
+  const formatTokenCount = (count: number) => {
+    if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}M Tokens`;
+    if (count >= 1_000) return `${(count / 1_000).toFixed(1)}K Tokens`;
+    return `${count.toLocaleString()} Tokens`;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -48,11 +54,7 @@ export function DatasetCard({ dataset }: DatasetCardProps) {
                 <span className="text-xs text-muted-foreground">{dataset.subdomain}</span>
               </div>
             </div>
-            <div className={`p-2 rounded-xl scale-95 group-hover:scale-100 transition-transform ${
-              dataset.qcScore >= 90 ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary/10 text-primary'
-            }`}>
-              <span className="text-xs font-black">{dataset.qcScore}%</span>
-            </div>
+            {/* percentage badge removed per design */}
           </div>
 
           <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
@@ -70,7 +72,7 @@ export function DatasetCard({ dataset }: DatasetCardProps) {
             </div>
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-medium">
               <Coins className="w-3.5 h-3.5 text-primary" />
-              {(dataset.tokenCount / 1000000).toFixed(1)}M Tokens
+              {formatTokenCount(dataset.tokenCount)}
             </div>
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-medium">
               <ShieldCheck className="w-3.5 h-3.5 text-primary" />
