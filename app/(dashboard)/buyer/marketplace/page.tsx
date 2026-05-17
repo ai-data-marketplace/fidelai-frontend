@@ -249,7 +249,7 @@ export default function MarketplacePage() {
                    <div className="flex items-center gap-6 shrink-0 border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-6 w-full md:w-auto justify-between md:justify-end">
                       <div className="text-2xl font-black text-primary whitespace-nowrap">ETB {ds.price.toLocaleString()}</div>
                       <div className="flex items-center gap-2">
-                        <Link href={`/marketplace/${ds.id}`}>
+                        <Link href={`/buyer/marketplace/${ds.id}`}>
                           <Button variant="ghost" className="font-bold">Details</Button>
                         </Link>
                         <Button className="font-bold shadow-lg shadow-primary/20">Buy Now</Button>
