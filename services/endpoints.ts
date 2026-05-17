@@ -23,6 +23,10 @@ export const API_ENDPOINTS = {
     UPLOAD: '/marketplace/datasets/upload/',
     PURCHASE: (id: string) => `/marketplace/datasets/${id}/purchase/`,
   },
+  PURCHASES: {
+    LIST: '/marketplace/purchases/',
+    DOWNLOAD: (purchaseId: string, assetId: string) => `/marketplace/purchases/${purchaseId}/assets/${assetId}/download/`,
+  },
   DOCUMENTS: {
     SUBMIT: '/documents/submit/',
     MY_SUBMISSIONS: '/documents/my-submissions/',

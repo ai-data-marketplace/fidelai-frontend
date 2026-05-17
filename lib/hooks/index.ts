@@ -201,6 +201,33 @@ export interface DatasetPurchaseResponse {
   dataset_title: string;
 }
 
+export interface PurchaseAsset {
+  id: string;
+  file_format: string;
+  file_size_bytes: number;
+}
+
+export interface Purchase {
+  id: string;
+  order_number: string;
+  dataset_id: string;
+  dataset_title: string;
+  purchased_at: string;
+  price: string;
+  license: string;
+  status: string;
+  assets: PurchaseAsset[];
+  download_count: number;
+  last_downloaded_at: string | null;
+}
+
+export interface PaginatedPurchasesResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Purchase[];
+}
+
 export interface PaginatedNlpTasksResponse {
   count: number;
   next: string | null;
@@ -549,6 +576,18 @@ export function usePurchaseDataset() {
     onSuccess: async (_data, datasetId) => {
       await queryClient.invalidateQueries({ queryKey: ['dataset', datasetId] });
       await queryClient.invalidateQueries({ queryKey: ['datasets'] });
+    },
+  });
+}
+
+export function usePurchases(page: number = 1) {
+  return useQuery({
+    queryKey: ['purchases', page],
+    queryFn: async () => {
+      const { data } = await apiClient.get<PaginatedPurchasesResponse>(API_ENDPOINTS.PURCHASES.LIST, {
+        params: { page },
+      });
+      return data;
     },
   });
 }
