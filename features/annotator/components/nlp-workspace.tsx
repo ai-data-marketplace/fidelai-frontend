@@ -84,8 +84,19 @@ function formatLabelDisplay(label: string) {
 export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
   const router = useRouter();
   const { data: task, isLoading: taskLoading, isError: taskError } = useNlpTaskDetail(taskId);
-  const { data: progress } = useNlpTaskProgress(taskId);
+  const { data: progress, isLoading: progressLoading } = useNlpTaskProgress(taskId);
   const annotateChunk = useAnnotateNlpChunk();
+
+  // If backend reports task is complete, show completion modal like main workspace
+  useEffect(() => {
+    if (progress) {
+      const pct = Number(progress.completion_percentage ?? 0);
+      const remaining = Number(progress.remaining_chunks ?? 0);
+      if (pct >= 100 || remaining === 0) {
+        setIsComplete(true);
+      }
+    }
+  }, [progress]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
@@ -219,7 +230,7 @@ export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
     router.push("/annotator/tasks");
   };
 
-  if (taskLoading) {
+  if (taskLoading || progressLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
         <h2 className="text-2xl font-black">Loading task...</h2>
@@ -227,7 +238,7 @@ export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
     );
   }
 
-  if (taskError || !task || !task.chunks || task.chunks.length === 0) {
+  if ((taskError || !task || !task.chunks || task.chunks.length === 0) && !isComplete && !progressLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
         <h2 className="text-2xl font-black">Failed to load task</h2>
@@ -245,7 +256,7 @@ export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
     );
   }
 
-  const progressPercent = progress?.completion_percentage ?? ((currentIndex + 1) / task.chunks.length) * 100;
+  const progressPercent = progress?.completion_percentage ?? (task?.chunks?.length ? ((currentIndex + 1) / task.chunks.length) * 100 : 0);
 
   return (
     <div className="flex flex-col h-[calc(100vh-10rem)] w-full overflow-hidden">
@@ -256,12 +267,12 @@ export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-black tracking-tight">{formatTaskCode(taskId)}</h2>
               <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">
-                {task.task_type}
+                {task?.task_type ?? ''}
               </span>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <p className="text-xs font-bold text-muted-foreground w-12 mr-1">
-                {currentIndex + 1} / {task.chunks?.length ?? 0}
+                {currentIndex + 1} / {task?.chunks?.length ?? 0}
               </p>
               <Progress value={progressPercent} className="w-32 h-1.5" />
               <p className="text-xs font-bold text-muted-foreground">
@@ -318,7 +329,7 @@ export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
         {/* Right Panel: Annotation Controls */}
         <div className="w-full lg:w-[450px] shrink-0 flex flex-col overflow-auto h-full px-1 no-scrollbar">
           <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-4 shrink-0">
-            Dynamic Labels ({task.task_type})
+            Dynamic Labels ({task?.task_type ?? ''})
           </h3>
 
           <div className="space-y-7 flex-1 pb-6">
@@ -434,7 +445,7 @@ export function NlpWorkspace({ taskId }: NlpWorkspaceProps) {
           </div>
           <div className="p-4 rounded-xl border bg-emerald-500/5 border-emerald-500/20 text-center col-span-2">
             <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Total Chunks</p>
-            <p className="text-xl font-bold text-emerald-600">{progress?.total_chunks ?? task.chunks?.length ?? 0}</p>
+            <p className="text-xl font-bold text-emerald-600">{progress?.total_chunks ?? task?.chunks?.length ?? 0}</p>
           </div>
         </div>
 
