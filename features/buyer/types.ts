@@ -38,6 +38,7 @@ export interface MarketplaceDataset {
   collection_year: number;
   created_at: string;
   created_by: string;
+  purchase_status?: string | null;
   approved_by?: string | null;
   approved_at?: string | null;
   build_config?: unknown;

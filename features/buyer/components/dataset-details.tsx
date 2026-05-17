@@ -28,6 +28,7 @@ import { PurchaseModal } from "./purchase-modal";
 import { DatasetStats } from "./dataset-stats";
 import { SampleChunks } from "./sample-chunks";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 interface DatasetDetailsProps {
   dataset: MarketplaceDataset;
@@ -45,6 +46,16 @@ const pipelineSteps = [
 
 export function DatasetDetails({ dataset }: DatasetDetailsProps) {
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const purchaseStatus = String(dataset.purchase_status || "").toLowerCase().trim();
+  const purchaseButtonState = (() => {
+    if (purchaseStatus === "pending") return { label: "Pending Payment", disabled: true };
+    if (purchaseStatus === "active") return { label: "In Library", disabled: false };
+    if (purchaseStatus === "failed" || purchaseStatus === "refunded" || purchaseStatus === "revoked") {
+      return { label: "Purchase Dataset", disabled: false };
+    }
+
+    return { label: "Purchase Dataset", disabled: false };
+  })();
   const statusMap: Record<string, number> = {
     draft: 0,
     uploaded: 0,
@@ -123,13 +134,23 @@ export function DatasetDetails({ dataset }: DatasetDetailsProps) {
                 </p>
               </div>
               <div className="space-y-3">
-                <Button 
-                  className="w-full h-12 font-bold text-lg shadow-lg shadow-primary/20 gap-3"
-                  onClick={() => setIsPurchaseModalOpen(true)}
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  Purchase Dataset
-                </Button>
+                {purchaseStatus === "active" ? (
+                  <Link href="/buyer/library">
+                    <Button className="w-full h-12 font-bold text-lg shadow-lg shadow-primary/20 gap-3">
+                      <ShoppingCart className="w-5 h-5" />
+                      In Library
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button 
+                    className="w-full h-12 font-bold text-lg shadow-lg shadow-primary/20 gap-3"
+                    onClick={() => setIsPurchaseModalOpen(true)}
+                    disabled={purchaseButtonState.disabled}
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    {purchaseButtonState.label}
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   className="w-full h-12 font-bold gap-3"

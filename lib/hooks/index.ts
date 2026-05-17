@@ -191,6 +191,16 @@ export interface NlpTaskProgress {
   completion_percentage: number;
 }
 
+export interface DatasetPurchaseResponse {
+  order_number: string;
+  tx_ref: string;
+  checkout_url: string;
+  amount: string;
+  currency: string;
+  dataset_id: string;
+  dataset_title: string;
+}
+
 export interface PaginatedNlpTasksResponse {
   count: number;
   next: string | null;
@@ -525,6 +535,21 @@ export function useDataset(id: string) {
       return data;
     },
     enabled: !!id,
+  });
+}
+
+export function usePurchaseDataset() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (datasetId: string) => {
+      const { data } = await apiClient.post<DatasetPurchaseResponse>(API_ENDPOINTS.DATASETS.PURCHASE(datasetId), {});
+      return data;
+    },
+    onSuccess: async (_data, datasetId) => {
+      await queryClient.invalidateQueries({ queryKey: ['dataset', datasetId] });
+      await queryClient.invalidateQueries({ queryKey: ['datasets'] });
+    },
   });
 }
 
