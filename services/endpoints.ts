@@ -27,6 +27,10 @@ export const API_ENDPOINTS = {
     LIST: '/marketplace/purchases/',
     DOWNLOAD: (purchaseId: string, assetId: string) => `/marketplace/purchases/${purchaseId}/assets/${assetId}/download/`,
   },
+  PAYMENTS: {
+    WALLET_DETAILS: '/payments/wallet-details/',
+    BANKS: '/payments/banks/',
+  },
   DOCUMENTS: {
     SUBMIT: '/documents/submit/',
     MY_SUBMISSIONS: '/documents/my-submissions/',

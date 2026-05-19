@@ -1044,3 +1044,59 @@ export function useExpertProgress(taskId: string) {
     enabled: !!taskId,
   });
 }
+
+/* ─────────────────────────────────────
+   Payments Hooks
+   ───────────────────────────────────── */
+
+export interface WalletDetails {
+  available_points: number;
+  total_points: number;
+  locked_points: number;
+  conversion_rate: number;
+  withdrawable_amount: number;
+  minimum_amount: number;
+  meets_minimum: boolean;
+  currency: string;
+  wallet_available_balance: number;
+  wallet_pending_balance: number;
+  wallet_total_earned: number;
+  wallet_total_withdrawn: number;
+}
+
+export interface PaymentBank {
+  bank_code: number;
+  name: string;
+  slug: string;
+  acct_length: number;
+  swift: string;
+  currency: string;
+  can_process_payouts: number;
+  is_active: number;
+}
+
+export interface BanksResponse {
+  detail?: string;
+  banks: PaymentBank[];
+  provider_response?: unknown;
+}
+
+export function useWalletDetails() {
+  return useQuery({
+    queryKey: ['walletDetails'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<WalletDetails>(API_ENDPOINTS.PAYMENTS.WALLET_DETAILS);
+      return data;
+    },
+  });
+}
+
+export function usePaymentBanks() {
+  return useQuery({
+    queryKey: ['paymentBanks'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<BanksResponse>(API_ENDPOINTS.PAYMENTS.BANKS);
+      return data;
+    },
+  });
+}
