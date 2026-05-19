@@ -47,15 +47,10 @@ export function PayoutPanel() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl border bg-muted/20 space-y-1">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Available</p>
-                <p className="text-2xl font-black text-emerald-600">{formatCurrency(availableBalance, currency)}</p>
-              </div>
-              <div className="p-4 rounded-xl border bg-muted/20 space-y-1">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Pending</p>
-                <p className="text-2xl font-black text-amber-600">{formatCurrency(pendingBalance, currency)}</p>
-              </div>
+            <div className="p-4 rounded-xl border bg-muted/20 space-y-2">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Available</p>
+              <p className="text-2xl font-black text-emerald-600">{formatCurrency(availableBalance, currency)}</p>
+              <p className="text-[10px] text-muted-foreground border-t pt-2">Pending: {formatCurrency(pendingBalance, currency)}</p>
             </div>
 
             <Button 
@@ -66,6 +61,14 @@ export function PayoutPanel() {
               <DollarSign className="w-4 h-4" />
               Withdraw Earnings
             </Button>
+
+            {!walletDetails?.meets_minimum && (
+              <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                <p className="text-[10px] text-amber-700 font-medium">
+                  You need to reach the minimum withdrawal amount to proceed. Keep earning to unlock withdrawals.
+                </p>
+              </div>
+            )}
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">

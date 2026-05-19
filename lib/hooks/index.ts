@@ -1100,3 +1100,112 @@ export function usePaymentBanks() {
     },
   });
 }
+
+export interface WithdrawalRequest {
+  bank_code: string;
+  account_number: string;
+  account_name: string;
+  amount: string;
+}
+
+export interface WithdrawalResponse {
+  detail?: string;
+  id?: string;
+  status?: string;
+  [key: string]: unknown;
+}
+
+function getFirstString(value: unknown): string | null {
+  if (typeof value === 'string' && value.trim()) return value.trim();
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = getFirstString(item);
+      if (found) return found;
+    }
+  }
+  if (value && typeof value === 'object') {
+    for (const item of Object.values(value)) {
+      const found = getFirstString(item);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function parseEmbeddedJsonText(rawText: string): string | null {
+  const jsonStart = rawText.indexOf('{');
+  const jsonEnd = rawText.lastIndexOf('}');
+  if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) return null;
+
+  const jsonText = rawText.slice(jsonStart, jsonEnd + 1);
+  try {
+    const parsed = JSON.parse(jsonText) as Record<string, unknown>;
+    const candidate = getFirstString(parsed?.message) || getFirstString(parsed?.detail) || getFirstString(parsed?.error);
+    return candidate;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeDetailMessage(detail: string): string {
+  const trimmed = detail.trim();
+
+  const embeddedJsonMessage = parseEmbeddedJsonText(trimmed);
+  if (embeddedJsonMessage) return embeddedJsonMessage;
+
+  // Handle Django/DRF string representation like: ErrorDetail(string='...', code='invalid')
+  const errorDetailMatch = trimmed.match(/ErrorDetail\(string='([\s\S]*?)',\s*code='[^']*'\)/);
+  if (errorDetailMatch?.[1]) {
+    const wrapped = errorDetailMatch[1].trim();
+    const nestedJsonMessage = parseEmbeddedJsonText(wrapped);
+    if (nestedJsonMessage) return nestedJsonMessage;
+    return wrapped;
+  }
+
+  return trimmed;
+}
+
+export function getUserFriendlyErrorMessage(
+  error: unknown,
+  fallback = 'Unable to process your request right now. Please try again.'
+) {
+  const data = (error as any)?.response?.data;
+  const message = data?.message;
+  const detail = data?.detail;
+  const rawError = data?.error;
+
+  if (typeof detail === 'string' && detail.trim()) return normalizeDetailMessage(detail);
+  if (Array.isArray(detail) && detail.length > 0) {
+    const first = getFirstString(detail);
+    if (first) return normalizeDetailMessage(first);
+  }
+
+  if (typeof message === 'string' && message.trim()) return message;
+  if (typeof rawError === 'string' && rawError.trim()) return rawError;
+
+  if (data && typeof data === 'object') {
+    const first = getFirstString(data);
+    if (first) return normalizeDetailMessage(first);
+  }
+
+  return fallback;
+}
+
+export function useWithdrawal() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: WithdrawalRequest) => {
+      const { data } = await apiClient.post<WithdrawalResponse>(API_ENDPOINTS.PAYMENTS.WITHDRAWALS, payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['walletDetails'] });
+      toast.success('Withdrawal request submitted successfully');
+    },
+    onError: (error: any) => {
+      const message = getUserFriendlyErrorMessage(error, 'Failed to submit withdrawal request');
+      toast.error(message);
+    },
+  });
+}

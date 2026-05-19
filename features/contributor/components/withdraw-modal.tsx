@@ -12,9 +12,9 @@ import {
   User, 
   Banknote,
   AlertCircle,
-  Loader2
+  X
 } from "lucide-react";
-import { WalletDetails, usePaymentBanks } from "@/lib/hooks";
+import { WalletDetails, usePaymentBanks, useWithdrawal, getUserFriendlyErrorMessage } from "@/lib/hooks";
 import { formatCurrency } from "@/lib/utils/number-formatter";
 
 interface WithdrawModalProps {
@@ -24,28 +24,121 @@ interface WithdrawModalProps {
 }
 
 export function WithdrawModal({ isOpen, onClose, walletDetails }: WithdrawModalProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { data: banksResponse, isLoading: banksLoading } = usePaymentBanks();
+  const [formData, setFormData] = useState({
+    bank_code: '',
+    account_number: '',
+    account_name: '',
+    amount: '',
+  });
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const withdrawableAmount = walletDetails?.withdrawable_amount ?? 4250.00;
-  const minimumAmount = walletDetails?.minimum_amount ?? 500;
+  const { data: banksResponse, isLoading: banksLoading } = usePaymentBanks();
+  const withdrawal = useWithdrawal();
+
+  const withdrawableAmount = walletDetails?.withdrawable_amount ?? 0;
+  const minimumAmount = walletDetails?.minimum_amount ?? 0;
   const currency = walletDetails?.currency ?? "ETB";
   const meetsMinimum = walletDetails?.meets_minimum ?? false;
   const banks = banksResponse?.banks ?? [];
+  const selectedBank = banks.find((bank) => String(bank.bank_code) === formData.bank_code);
+  const amountValue = Number(formData.amount);
+  const isAmountEntered = formData.amount.trim().length > 0;
+  const isAmountNumber = Number.isFinite(amountValue) && amountValue > 0;
+  const isAmountBelowMinimum = isAmountEntered && isAmountNumber && amountValue < minimumAmount;
+  const isAmountAboveWithdrawable = isAmountEntered && isAmountNumber && amountValue > withdrawableAmount;
+  const hasAmountValidationError = isAmountEntered && (!isAmountNumber || isAmountBelowMinimum || isAmountAboveWithdrawable);
+  const hasAccountLengthError =
+    !!selectedBank?.acct_length &&
+    formData.account_number.trim().length > 0 &&
+    formData.account_number.trim().length !== selectedBank.acct_length;
+  const canSubmit =
+    meetsMinimum &&
+    !withdrawal.isPending &&
+    !hasAmountValidationError &&
+    !hasAccountLengthError;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    // Mock processing delay
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setErrorMessage('');
+
+    // Validate form
+    if (!formData.bank_code) {
+      setErrorMessage('Please select a bank/payment provider');
+      return;
+    }
+    if (!formData.account_number.trim()) {
+      setErrorMessage('Please enter your account number');
+      return;
+    }
+    if (!formData.account_name.trim()) {
+      setErrorMessage('Please enter the account holder name');
+      return;
+    }
+    if (!formData.amount) {
+      setErrorMessage('Please enter the withdrawal amount');
+      return;
+    }
+    if (!isAmountNumber) {
+      setErrorMessage(`Please enter a valid amount in ${currency}`);
+      return;
+    }
+    if (amountValue < minimumAmount) {
+      setErrorMessage(`Minimum withdrawal amount is ${formatCurrency(minimumAmount, currency)}`);
+      return;
+    }
+    if (amountValue > withdrawableAmount) {
+      setErrorMessage(`Cannot exceed withdrawable amount of ${formatCurrency(withdrawableAmount, currency)}`);
+      return;
+    }
+    if (hasAccountLengthError) {
+      setErrorMessage(`Account number must be ${selectedBank?.acct_length} digits for ${selectedBank?.name}`);
+      return;
+    }
+
+    withdrawal.mutate(formData, {
+      onSuccess: () => {
+        setFormData({ bank_code: '', account_number: '', account_name: '', amount: '' });
+        setTimeout(() => onClose(), 1500);
+      },
+      onError: (error: any) => {
+        const message = getUserFriendlyErrorMessage(error, 'Failed to submit withdrawal request');
+        setErrorMessage(message);
+      },
+    });
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errorMessage) setErrorMessage('');
+  };
+
+  const handleClose = () => {
+    if (!withdrawal.isPending) {
+      setFormData({ bank_code: '', account_number: '', account_name: '', amount: '' });
+      setErrorMessage('');
       onClose();
-    }, 2000);
+    }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Withdraw Earnings">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Withdraw Earnings">
       <form onSubmit={handleSubmit} className="space-y-6">
+        {errorMessage && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-red-900">{errorMessage}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setErrorMessage('')}
+              className="ml-auto text-red-600 hover:text-red-900"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 flex gap-3">
           <Banknote className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <div className="text-sm">
@@ -60,7 +153,12 @@ export function WithdrawModal({ isOpen, onClose, walletDetails }: WithdrawModalP
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Bank / Payment Provider</label>
-            <Select required disabled={!meetsMinimum || banksLoading || banks.length === 0}>
+            <Select 
+              required 
+              disabled={!meetsMinimum || banksLoading || banks.length === 0 || withdrawal.isPending}
+              value={formData.bank_code}
+              onChange={(e) => handleInputChange('bank_code', e.target.value)}
+            >
               <option value="">Select a provider</option>
               {banksLoading ? (
                 <option value="" disabled>Loading banks...</option>
@@ -79,15 +177,34 @@ export function WithdrawModal({ isOpen, onClose, walletDetails }: WithdrawModalP
               <label className="text-sm font-medium">Account Number</label>
               <div className="relative">
                 <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input className="pl-9" placeholder="1000..." required disabled={!meetsMinimum} />
+                <Input 
+                  className="pl-9" 
+                  placeholder={selectedBank?.acct_length ? `${selectedBank.acct_length} digits` : "1000..."}
+                  required 
+                  disabled={!meetsMinimum || withdrawal.isPending}
+                  value={formData.account_number}
+                  onChange={(e) => handleInputChange('account_number', e.target.value)}
+                />
               </div>
+              {hasAccountLengthError && (
+                <p className="text-[10px] text-red-600">
+                  Account number should be {selectedBank?.acct_length} digits for {selectedBank?.name}
+                </p>
+              )}
             </div>
             
             <div className="space-y-2">
               <label className="text-sm font-medium">Account Holder Name</label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input className="pl-9" placeholder="Full Name" required disabled={!meetsMinimum} />
+                <Input 
+                  className="pl-9" 
+                  placeholder="Full Name" 
+                  required 
+                  disabled={!meetsMinimum || withdrawal.isPending}
+                  value={formData.account_name}
+                  onChange={(e) => handleInputChange('account_name', e.target.value)}
+                />
               </div>
             </div>
           </div>
@@ -100,9 +217,21 @@ export function WithdrawModal({ isOpen, onClose, walletDetails }: WithdrawModalP
               min={minimumAmount}
               max={withdrawableAmount}
               required 
-              disabled={!meetsMinimum}
+              disabled={!meetsMinimum || withdrawal.isPending}
               className="text-lg font-bold"
+              value={formData.amount}
+              onChange={(e) => handleInputChange('amount', e.target.value)}
+              step="0.01"
             />
+            {hasAmountValidationError && (
+              <p className="text-[10px] text-red-600">
+                {!isAmountNumber
+                  ? `Enter a valid amount in ${currency}`
+                  : isAmountBelowMinimum
+                    ? `Minimum amount is ${formatCurrency(minimumAmount, currency)}`
+                    : `Maximum amount is ${formatCurrency(withdrawableAmount, currency)}`}
+              </p>
+            )}
           </div>
         </div>
 
@@ -114,15 +243,15 @@ export function WithdrawModal({ isOpen, onClose, walletDetails }: WithdrawModalP
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-2">
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={handleClose} disabled={withdrawal.isPending}>
             Cancel
           </Button>
           <Button 
             type="submit" 
-            disabled={isSubmitting || !meetsMinimum}
+            disabled={!canSubmit}
             className="min-w-[140px]"
           >
-            {isSubmitting ? "Processing..." : "Submit Request"}
+            {withdrawal.isPending ? "Processing..." : "Submit Request"}
           </Button>
         </div>
       </form>
