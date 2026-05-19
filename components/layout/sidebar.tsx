@@ -45,6 +45,7 @@ const annotatorLinks: SidebarItem[] = [
   { label: 'Tasks', href: '/annotator/tasks', icon: <ListTodo className="h-4 w-4" /> },
   { label: 'Performance', href: '/annotator/performance', icon: <FileText className="h-4 w-4" /> },
   { label: 'Analytics', href: '/annotator/analytics', icon: <BarChart3 className="h-4 w-4" /> },
+  { label: 'Wallet & Earnings', href: '/annotator/wallet', icon: <Wallet className="h-4 w-4" /> },
 ];
 
 const expertLinks: SidebarItem[] = [
@@ -52,6 +53,7 @@ const expertLinks: SidebarItem[] = [
   { label: 'Review Queue', href: '/expert/queue', icon: <ListTodo className="h-4 w-4" /> },
   { label: 'Performance', href: '/expert/performance', icon: <FileText className="h-4 w-4" /> },
   { label: 'Analytics', href: '/expert/analytics', icon: <BarChart3 className="h-4 w-4" /> },
+  { label: 'Wallet & Earnings', href: '/expert/wallet', icon: <Wallet className="h-4 w-4" /> },
 ];
 
 const buyerLinks: SidebarItem[] = [

@@ -3,12 +3,12 @@
 import { ScoreCard } from "@/features/contributor/components/score-card";
 import { PayoutPanel } from "@/features/contributor/components/payout-panel";
 import { 
-  Wallet, 
-  HelpCircle 
+  Wallet,
+  HelpCircle
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui";
 
-export default function ContributorWalletPage() {
+export default function AnnotatorWalletPage() {
   return (
     <div className="space-y-8 pb-12">
       <div className="flex flex-col gap-2">
@@ -27,16 +27,13 @@ export default function ContributorWalletPage() {
         {/* Left Column: Earnings & Transactions */}
         <div className="lg:col-span-7 space-y-6">
           <PayoutPanel />
-          
           <Card className="bg-muted/30 border-dashed">
              <CardContent className="p-6 flex items-start gap-4">
                <HelpCircle className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
                <div className="space-y-1">
                  <p className="text-sm font-bold">About Revenue Sharing</p>
                  <p className="text-xs text-muted-foreground leading-relaxed">
-                   FidelAI provides a transparent 35% revenue share for all validated dataset sales. 
-                   Reach Gold status to unlock the 45% premium tier. Payments are processed monthly between 
-                   the 1st and 5th of each month.
+                   FidelAI provides a transparent revenue share for validated dataset sales. Payments are processed monthly.
                  </p>
                </div>
              </CardContent>

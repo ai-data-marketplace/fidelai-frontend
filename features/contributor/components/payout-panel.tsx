@@ -87,15 +87,7 @@ export function PayoutPanel() {
           </div>
         </div>
 
-        <div className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/5">
-          <p className="text-xs font-medium text-blue-800 flex items-center gap-2">
-            <ExternalLink className="w-3 h-3" />
-            Revenue Share Notice
-          </p>
-          <p className="text-[10px] text-blue-700/80 mt-1">
-            Current rate: 35% of marketplace sales. Reach Gold Level to unlock 45%.
-          </p>
-        </div>
+        {/* Revenue Share Notice removed per role consolidation request */}
       </CardContent>
 
       <WithdrawModal 
