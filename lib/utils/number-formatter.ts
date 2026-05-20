@@ -27,9 +27,12 @@ export function formatLargeNumber(num: number, decimals = 1): string {
  * formatCurrency(1200, 'ETB') => "1.2K ETB"
  * formatCurrency(1500000, 'USD') => "1.5M USD"
  */
-export function formatCurrency(amount: number, currency: string, decimals = 1): string {
-  if (amount < 1000) return `${currency} ${amount.toFixed(2)}`;
+export function formatCurrency(amount: number | string, currency: string, decimals = 1): string {
+  const numericAmount = typeof amount === 'number' ? amount : Number(amount);
+  const safeAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
 
-  const formatted = formatLargeNumber(amount, decimals);
+  if (safeAmount < 1000) return `${currency} ${safeAmount.toFixed(2)}`;
+
+  const formatted = formatLargeNumber(safeAmount, decimals);
   return `${formatted} ${currency}`;
 }

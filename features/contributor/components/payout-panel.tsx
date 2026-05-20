@@ -7,32 +7,63 @@ import {
   CardHeader, 
   CardTitle, 
   Button, 
-  Badge 
+  Badge,
+  Modal
 } from "@/components/ui";
 import { 
   Wallet, 
   ArrowUpRight, 
   History, 
   DollarSign,
-  Loader2
+  Loader2,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { WithdrawModal } from "./withdraw-modal";
-import { useWalletDetails } from "@/lib/hooks";
+import { useWalletDetails, useWithdrawalsList } from "@/lib/hooks";
 import { formatCurrency } from "@/lib/utils/number-formatter";
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString();
+}
+
+function trimWithdrawalId(id: string) {
+  return id.length > 8 ? `${id.slice(0, 8)}...` : id;
+}
+
+function getStatusTone(status: string) {
+  return status.toLowerCase() === 'completed' ? 'text-emerald-600' : 'text-amber-600';
+}
+
+function getStatusBadgeVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
+  const normalized = status.toLowerCase();
+  if (normalized === 'completed' || normalized === 'success') return 'default';
+  if (normalized === 'failed' || normalized === 'rejected') return 'destructive';
+  return 'secondary';
+}
 
 export function PayoutPanel() {
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
-  const { data: walletDetails, isLoading } = useWalletDetails();
+  const [isViewAllOpen, setIsViewAllOpen] = useState(false);
+  const [transactionsPage, setTransactionsPage] = useState(1);
 
-  const transactions = [
-    { id: "TX123", amount: 450.00, date: "2024-03-15", status: "Completed", type: "Withdrawal" },
-    { id: "TX124", amount: 120.50, date: "2024-03-10", status: "Completed", type: "Earnings" },
-    { id: "TX125", amount: 800.00, date: "2024-03-01", status: "Processing", type: "Withdrawal" },
-  ];
+  const { data: walletDetails, isLoading } = useWalletDetails();
+  const { data: recentTransactions, isLoading: isRecentLoading } = useWithdrawalsList(1, 4);
+  const {
+    data: paginatedTransactions,
+    isLoading: isPaginatedLoading,
+    isFetching: isPaginatedFetching,
+  } = useWithdrawalsList(transactionsPage, 10);
 
   const availableBalance = walletDetails?.wallet_available_balance ?? 4250.00;
   const pendingBalance = walletDetails?.wallet_pending_balance ?? 1120.00;
   const currency = walletDetails?.currency ?? "ETB";
+  const recentItems = recentTransactions?.results ?? [];
+  const paginatedItems = paginatedTransactions?.results ?? [];
+  const totalCount = paginatedTransactions?.count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / 10));
+  const canGoPrevious = transactionsPage > 1;
+  const canGoNext = transactionsPage < totalPages;
 
   return (
     <Card>
@@ -76,31 +107,46 @@ export function PayoutPanel() {
                   <History className="w-3 h-3" />
                   Recent Transactions
                 </h4>
-                <button className="text-[10px] font-bold text-primary hover:underline">View All</button>
+                <button
+                  className="text-[10px] font-bold text-primary hover:underline"
+                  onClick={() => {
+                    setTransactionsPage(1);
+                    setIsViewAllOpen(true);
+                  }}
+                  type="button"
+                >
+                  View All
+                </button>
               </div>
 
               <div className="space-y-2">
-                {transactions.map(tx => (
-                  <div key={tx.id} className="flex items-center justify-between p-2.5 rounded-lg border bg-card hover:bg-muted/30 transition-colors group">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        tx.type === 'Withdrawal' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
-                      }`}>
-                        {tx.type === 'Withdrawal' ? <ArrowUpRight className="w-4 h-4" /> : <DollarSign className="w-4 h-4" />}
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold">{tx.type} — {tx.id}</p>
-                        <p className="text-[10px] text-muted-foreground">{tx.date}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs font-black">{tx.type === 'Withdrawal' ? '-' : '+'} {formatCurrency(tx.amount, currency)}</p>
-                      <p className={`text-[10px] font-medium ${
-                        tx.status === 'Completed' ? 'text-emerald-600' : 'text-amber-600'
-                      }`}>{tx.status}</p>
-                    </div>
+                {isRecentLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
                   </div>
-                ))}
+                ) : recentItems.length === 0 ? (
+                  <p className="text-[11px] text-muted-foreground rounded-lg border border-dashed p-3">
+                    No withdrawal requests yet.
+                  </p>
+                ) : (
+                  recentItems.map((tx) => (
+                    <div key={tx.id} className="flex items-center justify-between p-2.5 rounded-lg border bg-card hover:bg-muted/30 transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-amber-100 text-amber-700">
+                          <ArrowUpRight className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold">Withdrawal — {trimWithdrawalId(tx.id)}</p>
+                          <p className="text-[10px] text-muted-foreground">{formatDate(tx.requested_at)}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-black">- {formatCurrency(Number(tx.amount), currency)}</p>
+                        <p className={`text-[10px] font-medium ${getStatusTone(tx.status)}`}>{tx.status}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
@@ -114,6 +160,70 @@ export function PayoutPanel() {
         onClose={() => setIsWithdrawModalOpen(false)}
         walletDetails={walletDetails}
       />
+
+      <Modal
+        isOpen={isViewAllOpen}
+        onClose={() => setIsViewAllOpen(false)}
+        title="All Withdrawal Requests"
+        className="max-w-2xl"
+      >
+        <div className="space-y-4">
+          {isPaginatedLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-5 h-5 animate-spin text-primary" />
+            </div>
+          ) : paginatedItems.length === 0 ? (
+            <p className="text-sm text-muted-foreground rounded-lg border border-dashed p-4">
+              No withdrawal requests found.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {paginatedItems.map((tx) => (
+                <div key={tx.id} className="rounded-lg border p-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold">Withdrawal — {trimWithdrawalId(tx.id)}</p>
+                    <p className="text-xs text-muted-foreground">Requested: {formatDate(tx.requested_at)}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-black">- {formatCurrency(Number(tx.amount), currency)}</p>
+                    <Badge variant={getStatusBadgeVariant(tx.status)} className="mt-1 capitalize">
+                      {tx.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between border-t pt-3">
+            <p className="text-xs text-muted-foreground">
+              Page {transactionsPage} of {totalPages} {isPaginatedFetching ? '(Updating...)' : ''}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={!canGoPrevious || isPaginatedFetching}
+                onClick={() => setTransactionsPage((prev) => Math.max(1, prev - 1))}
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Prev
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={!canGoNext || isPaginatedFetching}
+                onClick={() => setTransactionsPage((prev) => prev + 1)}
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </Card>
   );
 }

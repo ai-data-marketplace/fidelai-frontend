@@ -31,6 +31,7 @@ export const API_ENDPOINTS = {
     WALLET_DETAILS: '/payments/wallet-details/',
     BANKS: '/payments/banks/',
     WITHDRAWALS: '/payments/withdrawals/',
+    WITHDRAWALS_LIST: '/payments/withdrawals/list/',
   },
   DOCUMENTS: {
     SUBMIT: '/documents/submit/',

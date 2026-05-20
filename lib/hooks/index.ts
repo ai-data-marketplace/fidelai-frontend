@@ -1115,6 +1115,40 @@ export interface WithdrawalResponse {
   [key: string]: unknown;
 }
 
+export interface WithdrawalListItem {
+  id: string;
+  amount: string;
+  payment_method: string;
+  payment_details: unknown;
+  status: string;
+  requested_at: string;
+  processed_at: string | null;
+  metadata: unknown;
+}
+
+export interface WithdrawalsListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: WithdrawalListItem[];
+}
+
+export function useWithdrawalsList(page = 1, pageSize = 10) {
+  return useQuery({
+    queryKey: ['withdrawalsList', page, pageSize],
+    queryFn: async () => {
+      const { data } = await apiClient.get<WithdrawalsListResponse>(API_ENDPOINTS.PAYMENTS.WITHDRAWALS_LIST, {
+        params: {
+          page,
+          page_size: pageSize,
+        },
+      });
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
 function getFirstString(value: unknown): string | null {
   if (typeof value === 'string' && value.trim()) return value.trim();
   if (Array.isArray(value)) {
