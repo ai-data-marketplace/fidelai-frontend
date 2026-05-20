@@ -132,24 +132,6 @@ export function LoginForm() {
         {loginMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
         Sign In
       </button>
-
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-border/50" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <button type="button" className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-border/50 bg-background px-8 text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-          Google
-        </button>
-        <button type="button" className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-border/50 bg-background px-8 text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-          Microsoft
-        </button>
-      </div>
     </form>
   );
 }
