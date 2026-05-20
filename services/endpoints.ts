@@ -32,6 +32,11 @@ export const API_ENDPOINTS = {
     BANKS: '/payments/banks/',
     WITHDRAWALS: '/payments/withdrawals/',
     WITHDRAWALS_LIST: '/payments/withdrawals/list/',
+    PAYOUT_RULES: '/payments/payout-rules/',
+    PAYOUT_RULES_UPDATE: (id: string) => `/payments/payout-rules/${id}/`,
+  },
+  SCORING: {
+    SCORE_CONFIGS: '/scoring/score-configs/',
   },
   DOCUMENTS: {
     SUBMIT: '/documents/submit/',

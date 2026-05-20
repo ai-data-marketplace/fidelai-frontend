@@ -1149,6 +1149,99 @@ export function useWithdrawalsList(page = 1, pageSize = 10) {
   });
 }
 
+/* ─────────────────────────────────────
+   Scoring Hooks
+   ───────────────────────────────────── */
+
+export interface ScoreConfig {
+  id: number;
+  action_type: string;
+  points_value: number;
+  description: string | null;
+}
+
+export interface PayoutRule {
+  id: string;
+  role: string;
+  minimum_points_required: number;
+  minimum_withdrawal_amount: string | number;
+  score_to_currency_rate: string | number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useScoreConfigs() {
+  return useQuery({
+    queryKey: ['scoreConfigs'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<ScoreConfig[]>(API_ENDPOINTS.SCORING.SCORE_CONFIGS);
+      return data;
+    },
+  });
+}
+
+export function useCreateScoreConfig() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Omit<ScoreConfig, 'id'>) => {
+      const { data } = await apiClient.post<ScoreConfig>(API_ENDPOINTS.SCORING.SCORE_CONFIGS, payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scoreConfigs'] });
+      toast.success('Score config created');
+    },
+    onError: (err: any) => {
+      toast.error(getUserFriendlyErrorMessage(err, 'Failed to create score config'));
+    },
+  });
+}
+
+export function useUpdateScoreConfig() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, payload }: { id: number; payload: Partial<ScoreConfig> }) => {
+      const { data } = await apiClient.patch<ScoreConfig>(`${API_ENDPOINTS.SCORING.SCORE_CONFIGS}${id}/`, payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scoreConfigs'] });
+      toast.success('Score config updated');
+    },
+    onError: (err: any) => {
+      toast.error(getUserFriendlyErrorMessage(err, 'Failed to update score config'));
+    },
+  });
+}
+
+export function usePayoutRules() {
+  return useQuery({
+    queryKey: ['payoutRules'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<PayoutRule[]>(API_ENDPOINTS.PAYMENTS.PAYOUT_RULES);
+      return data;
+    },
+  });
+}
+
+export function useUpdatePayoutRule() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: Partial<Omit<PayoutRule, 'id' | 'created_at' | 'updated_at'>> }) => {
+      const { data } = await apiClient.patch<PayoutRule>(API_ENDPOINTS.PAYMENTS.PAYOUT_RULES_UPDATE(id), payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payoutRules'] });
+      toast.success('Payout rule updated');
+    },
+    onError: (err: any) => {
+      toast.error(getUserFriendlyErrorMessage(err, 'Failed to update payout rule'));
+    },
+  });
+}
+
 function getFirstString(value: unknown): string | null {
   if (typeof value === 'string' && value.trim()) return value.trim();
   if (Array.isArray(value)) {
