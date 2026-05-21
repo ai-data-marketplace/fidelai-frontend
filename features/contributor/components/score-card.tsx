@@ -16,11 +16,11 @@ import { formatLargeNumber, formatCurrency } from "@/lib/utils/number-formatter"
 export function ScoreCard() {
   const { data: walletDetails, isLoading } = useWalletDetails();
   
-  const totalPoints = walletDetails?.total_points ?? 0;
-  const availablePoints = walletDetails?.available_points ?? 0;
-  const lockedPoints = walletDetails?.locked_points ?? 0;
-  const totalEarned = walletDetails?.wallet_total_earned ?? 0;
-  const totalWithdrawn = walletDetails?.wallet_total_withdrawn ?? 0;
+  const totalPoints = walletDetails?.total_points;
+  const availablePoints = walletDetails?.available_points;
+  const lockedPoints = walletDetails?.locked_points;
+  const totalEarned = walletDetails?.wallet_total_earned;
+  const totalWithdrawn = walletDetails?.wallet_total_withdrawn;
   const currency = walletDetails?.currency ?? "ETB";
 
   return (
@@ -39,12 +39,12 @@ export function ScoreCard() {
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-xl border bg-background/70 p-4 space-y-1">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Total Points</p>
-                <p className="text-3xl font-black">{formatLargeNumber(totalPoints)}</p>
+                <p className="text-3xl font-black">{walletDetails ? formatLargeNumber(totalPoints as number) : '—'}</p>
                 <p className="text-[11px] text-muted-foreground">Points currently accumulated</p>
               </div>
               <div className="rounded-xl border bg-background/70 p-4 space-y-1">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Withdrawn</p>
-                <p className="text-3xl font-black text-emerald-600">{formatCurrency(totalWithdrawn, currency)}</p>
+                <p className="text-3xl font-black text-emerald-600">{walletDetails ? formatCurrency(totalWithdrawn as number, currency) : '—'}</p>
                 <p className="text-[11px] text-muted-foreground">Total withdrawn so far</p>
               </div>
             </div>
@@ -52,15 +52,15 @@ export function ScoreCard() {
             <div className="grid grid-cols-3 gap-3 pt-2 border-t">
               <div className="rounded-lg bg-card border p-3">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Available</p>
-                <p className="text-sm font-black mt-1">{formatLargeNumber(availablePoints)}</p>
+                <p className="text-sm font-black mt-1">{walletDetails ? formatLargeNumber(availablePoints as number) : '—'}</p>
               </div>
               <div className="rounded-lg bg-card border p-3">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Used Points</p>
-                <p className="text-sm font-black mt-1">{formatLargeNumber(lockedPoints)}</p>
+                <p className="text-sm font-black mt-1">{walletDetails ? formatLargeNumber(lockedPoints as number) : '—'}</p>
               </div>
               <div className="rounded-lg bg-card border p-3">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Total Earned</p>
-                <p className="text-sm font-black mt-1 text-emerald-600">{formatCurrency(totalEarned, currency)}</p>
+                <p className="text-sm font-black mt-1 text-emerald-600">{walletDetails ? formatCurrency(totalEarned as number, currency) : '—'}</p>
               </div>
             </div>
           </>

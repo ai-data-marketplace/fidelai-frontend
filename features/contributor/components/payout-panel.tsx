@@ -55,8 +55,8 @@ export function PayoutPanel() {
     isFetching: isPaginatedFetching,
   } = useWithdrawalsList(transactionsPage, 10);
 
-  const availableBalance = walletDetails?.wallet_available_balance ?? 4250.00;
-  const pendingBalance = walletDetails?.wallet_pending_balance ?? 1120.00;
+  const availableBalance = walletDetails?.wallet_available_balance;
+  const pendingBalance = walletDetails?.wallet_pending_balance;
   const currency = walletDetails?.currency ?? "ETB";
   const recentItems = recentTransactions?.results ?? [];
   const paginatedItems = paginatedTransactions?.results ?? [];
@@ -80,8 +80,8 @@ export function PayoutPanel() {
           <>
             <div className="p-4 rounded-xl border bg-muted/20 space-y-2">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Available</p>
-              <p className="text-2xl font-black text-emerald-600">{formatCurrency(availableBalance, currency)}</p>
-              <p className="text-[10px] text-muted-foreground border-t pt-2">Pending: {formatCurrency(pendingBalance, currency)}</p>
+              <p className="text-2xl font-black text-emerald-600">{walletDetails ? formatCurrency(availableBalance as number, currency) : '—'}</p>
+              <p className="text-[10px] text-muted-foreground border-t pt-2">Pending: {walletDetails ? formatCurrency(pendingBalance as number, currency) : '—'}</p>
             </div>
 
             <Button 

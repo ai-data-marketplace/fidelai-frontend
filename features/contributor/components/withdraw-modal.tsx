@@ -35,8 +35,8 @@ export function WithdrawModal({ isOpen, onClose, walletDetails }: WithdrawModalP
   const { data: banksResponse, isLoading: banksLoading } = usePaymentBanks();
   const withdrawal = useWithdrawal();
 
-  const withdrawableAmount = walletDetails?.withdrawable_amount ?? 0;
-  const minimumAmount = walletDetails?.minimum_amount ?? 0;
+  const withdrawableAmount = walletDetails?.withdrawable_amount;
+  const minimumAmount = walletDetails?.minimum_amount;
   const currency = walletDetails?.currency ?? "ETB";
   const meetsMinimum = walletDetails?.meets_minimum ?? false;
   const banks = banksResponse?.banks ?? [];
@@ -44,8 +44,8 @@ export function WithdrawModal({ isOpen, onClose, walletDetails }: WithdrawModalP
   const amountValue = Number(formData.amount);
   const isAmountEntered = formData.amount.trim().length > 0;
   const isAmountNumber = Number.isFinite(amountValue) && amountValue > 0;
-  const isAmountBelowMinimum = isAmountEntered && isAmountNumber && amountValue < minimumAmount;
-  const isAmountAboveWithdrawable = isAmountEntered && isAmountNumber && amountValue > withdrawableAmount;
+  const isAmountBelowMinimum = isAmountEntered && isAmountNumber && (minimumAmount != null) && amountValue < minimumAmount;
+  const isAmountAboveWithdrawable = isAmountEntered && isAmountNumber && (withdrawableAmount != null) && amountValue > withdrawableAmount;
   const hasAmountValidationError = isAmountEntered && (!isAmountNumber || isAmountBelowMinimum || isAmountAboveWithdrawable);
   const hasAccountLengthError =
     !!selectedBank?.acct_length &&
@@ -143,9 +143,9 @@ export function WithdrawModal({ isOpen, onClose, walletDetails }: WithdrawModalP
           <Banknote className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <div className="text-sm">
             <p className="font-bold">Withdrawable Amount</p>
-            <p className="text-2xl font-black text-primary">{formatCurrency(withdrawableAmount, currency)}</p>
+            <p className="text-2xl font-black text-primary">{withdrawableAmount != null ? formatCurrency(withdrawableAmount, currency) : '—'}</p>
             {!meetsMinimum && (
-              <p className="text-[10px] text-amber-600 mt-1">Minimum {formatCurrency(minimumAmount, currency)} required</p>
+              <p className="text-[10px] text-amber-600 mt-1">Minimum {minimumAmount != null ? formatCurrency(minimumAmount, currency) : '—'} required</p>
             )}
           </div>
         </div>
@@ -213,9 +213,9 @@ export function WithdrawModal({ isOpen, onClose, walletDetails }: WithdrawModalP
             <label className="text-sm font-medium text-muted-foreground">Amount to Withdraw ({currency})</label>
             <Input 
               type="number" 
-              placeholder={`Min. ${minimumAmount.toFixed(2)} ${currency}`}
-              min={minimumAmount}
-              max={withdrawableAmount}
+              placeholder={`Min. ${minimumAmount != null ? minimumAmount.toFixed(2) : '—'} ${currency}`}
+              min={minimumAmount ?? undefined}
+              max={withdrawableAmount ?? undefined}
               required 
               disabled={!meetsMinimum || withdrawal.isPending}
               className="text-lg font-bold"
@@ -228,8 +228,8 @@ export function WithdrawModal({ isOpen, onClose, walletDetails }: WithdrawModalP
                 {!isAmountNumber
                   ? `Enter a valid amount in ${currency}`
                   : isAmountBelowMinimum
-                    ? `Minimum amount is ${formatCurrency(minimumAmount, currency)}`
-                    : `Maximum amount is ${formatCurrency(withdrawableAmount, currency)}`}
+                    ? `Minimum amount is ${minimumAmount != null ? formatCurrency(minimumAmount, currency) : '—'}`
+                    : `Maximum amount is ${withdrawableAmount != null ? formatCurrency(withdrawableAmount, currency) : '—'}`}
               </p>
             )}
           </div>

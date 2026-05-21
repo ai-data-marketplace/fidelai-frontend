@@ -1240,6 +1240,40 @@ export interface PayoutRule {
   updated_at: string;
 }
 
+export interface AnnotatorOverviewCard {
+  key: string;
+  label: string;
+  value: number;
+  display_value: string;
+  delta?: {
+    value: number;
+    label: string;
+  } | null;
+}
+
+export interface AnnotatorOverviewGraphs {
+  weekly_performance: Array<{ period: string; tasks_completed: number; points_earned: number }>;
+  confidence_distribution: Array<{ label: string; value: number }>;
+  readability_distribution: Array<{ label: string; value: number }>;
+  avg_time_trend: Array<{ period: string; avg_time_minutes: number }>;
+}
+
+export interface AnnotatorOverviewResponse {
+  cards: AnnotatorOverviewCard[];
+  graphs: AnnotatorOverviewGraphs;
+}
+
+export function useAnnotatorOverview() {
+  return useQuery({
+    queryKey: ['annotatorOverview'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<AnnotatorOverviewResponse>(API_ENDPOINTS.ANALYTICS.ANNOTATOR_OVERVIEW);
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function useScoreConfigs() {
   return useQuery({
     queryKey: ['scoreConfigs'],

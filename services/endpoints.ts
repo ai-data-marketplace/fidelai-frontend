@@ -41,6 +41,9 @@ export const API_ENDPOINTS = {
   SCORING: {
     SCORE_CONFIGS: '/scoring/score-configs/',
   },
+  ANALYTICS: {
+    ANNOTATOR_OVERVIEW: '/analytics/annotator/overview/',
+  },
   DOCUMENTS: {
     SUBMIT: '/documents/submit/',
     MY_SUBMISSIONS: '/documents/my-submissions/',
