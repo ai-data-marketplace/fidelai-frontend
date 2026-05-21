@@ -43,7 +43,6 @@ const contributorLinks: SidebarItem[] = [
 const annotatorLinks: SidebarItem[] = [
   { label: 'Dashboard', href: '/annotator', icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: 'Tasks', href: '/annotator/tasks', icon: <ListTodo className="h-4 w-4" /> },
-  { label: 'Performance', href: '/annotator/performance', icon: <FileText className="h-4 w-4" /> },
   { label: 'Analytics', href: '/annotator/analytics', icon: <BarChart3 className="h-4 w-4" /> },
   { label: 'Wallet & Earnings', href: '/annotator/wallet', icon: <Wallet className="h-4 w-4" /> },
 ];

@@ -1263,11 +1263,47 @@ export interface AnnotatorOverviewResponse {
   graphs: AnnotatorOverviewGraphs;
 }
 
+export interface AnnotatorDashboardHighlight {
+  key: string;
+  label: string;
+  value: number;
+  display_value: string;
+}
+
+export interface AnnotatorDashboardActivity {
+  id: string;
+  chunk_id: string;
+  chunk_text: string;
+  task_name: string;
+  domain_match: string;
+  confidence: string;
+  readability: string;
+  safety_label: string;
+  created_at: string;
+  is_skipped: boolean;
+}
+
+export interface AnnotatorDashboardResponse {
+  highlights: AnnotatorDashboardHighlight[];
+  recent_activity: AnnotatorDashboardActivity[];
+}
+
 export function useAnnotatorOverview() {
   return useQuery({
     queryKey: ['annotatorOverview'],
     queryFn: async () => {
       const { data } = await apiClient.get<AnnotatorOverviewResponse>(API_ENDPOINTS.ANALYTICS.ANNOTATOR_OVERVIEW);
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useAnnotatorDashboard() {
+  return useQuery({
+    queryKey: ['annotatorDashboard'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<AnnotatorDashboardResponse>(API_ENDPOINTS.ANALYTICS.ANNOTATOR_DASHBOARD);
       return data;
     },
     placeholderData: keepPreviousData,
