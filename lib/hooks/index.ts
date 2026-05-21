@@ -99,6 +99,75 @@ export interface PaginatedAdminRoleApplicationsResponse {
   results: AdminRoleApplication[];
 }
 
+export interface AdminPlatformUser {
+  id: string;
+  user: string;
+  email?: string;
+  role: string;
+  status: string;
+  verification: boolean;
+  joined_date: string;
+}
+
+export interface PaginatedAdminPlatformUsersResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: AdminPlatformUser[];
+}
+
+export function useAdminPlatformUsers(page = 1, pageSize = 10) {
+  return useQuery({
+    queryKey: ['adminPlatformUsers', page, pageSize],
+    queryFn: async () => {
+      const { data } = await apiClient.get<PaginatedAdminPlatformUsersResponse>(API_ENDPOINTS.ADMIN.USERS, {
+        params: {
+          page,
+          page_size: pageSize,
+        },
+      });
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useDeactivateAdminUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { data } = await apiClient.post(API_ENDPOINTS.ADMIN.DEACTIVATE_USER(userId));
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminPlatformUsers'] });
+      toast.success('User deactivated');
+    },
+    onError: (err: any) => {
+      toast.error(getUserFriendlyErrorMessage(err, 'Failed to deactivate user'));
+    },
+  });
+}
+
+export function useReactivateAdminUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { data } = await apiClient.post(API_ENDPOINTS.ADMIN.REACTIVATE_USER(userId));
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminPlatformUsers'] });
+      toast.success('User reactivated');
+    },
+    onError: (err: any) => {
+      toast.error(getUserFriendlyErrorMessage(err, 'Failed to reactivate user'));
+    },
+  });
+}
+
 export interface OnboardingCompleteResponse {
   message?: string;
   [key: string]: unknown;

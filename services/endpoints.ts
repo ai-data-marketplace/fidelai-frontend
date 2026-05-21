@@ -16,6 +16,9 @@ export const API_ENDPOINTS = {
     ROLE_APPLICATIONS: '/auth/admin/role-applications/',
     APPROVE_ROLE_APPLICATION: (id: string) => `/auth/admin/role-applications/${id}/approve/`,
     REJECT_ROLE_APPLICATION: (id: string) => `/auth/admin/role-applications/${id}/reject/`,
+    USERS: '/auth/admin/users/',
+    DEACTIVATE_USER: (userId: string) => `/auth/admin/users/${userId}/deactivate/`,
+    REACTIVATE_USER: (userId: string) => `/auth/admin/users/${userId}/reactivate/`,
   },
   DATASETS: {
     LIST: '/marketplace/datasets/',
