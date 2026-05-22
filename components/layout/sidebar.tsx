@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
 import {
@@ -23,10 +25,8 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  Wallet
+  Wallet,
 } from 'lucide-react';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
 interface SidebarItem {
   label: string;
   href: string;
@@ -50,7 +50,6 @@ const annotatorLinks: SidebarItem[] = [
 const expertLinks: SidebarItem[] = [
   { label: 'Dashboard', href: '/expert', icon: <ShieldCheck className="h-4 w-4" /> },
   { label: 'Review Queue', href: '/expert/queue', icon: <ListTodo className="h-4 w-4" /> },
-  { label: 'Performance', href: '/expert/performance', icon: <FileText className="h-4 w-4" /> },
   { label: 'Analytics', href: '/expert/analytics', icon: <BarChart3 className="h-4 w-4" /> },
   { label: 'Wallet & Earnings', href: '/expert/wallet', icon: <Wallet className="h-4 w-4" /> },
 ];

@@ -1305,6 +1305,25 @@ export interface ContributorDashboardResponse {
   };
 }
 
+export interface ExpertOverviewCard {
+  key: string;
+  label: string;
+  value: number;
+  display_value: string;
+}
+
+export interface ExpertOverviewGraphPoint {
+  period: string;
+  total_reviews: number;
+}
+
+export interface ExpertOverviewResponse {
+  cards: ExpertOverviewCard[];
+  graphs: {
+    review_trend: ExpertOverviewGraphPoint[];
+  };
+}
+
 export function useAnnotatorOverview() {
   return useQuery({
     queryKey: ['annotatorOverview'],
@@ -1332,6 +1351,48 @@ export function useContributorDashboard() {
     queryKey: ['contributorDashboard'],
     queryFn: async () => {
       const { data } = await apiClient.get<ContributorDashboardResponse>(API_ENDPOINTS.ANALYTICS.CONTRIBUTOR_DASHBOARD);
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
+export interface ExpertDashboardHighlight {
+  key: string;
+  label: string;
+  value: number;
+  display_value: string;
+}
+
+export interface ExpertDashboardActivity {
+  id: string;
+  task_name: string;
+  status: string;
+  assigned_at: string;
+  completed_at: string;
+}
+
+export interface ExpertDashboardResponse {
+  highlights: ExpertDashboardHighlight[];
+  recent_activity: ExpertDashboardActivity[];
+}
+
+export function useExpertOverview() {
+  return useQuery({
+    queryKey: ['expertOverview'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<ExpertOverviewResponse>(API_ENDPOINTS.ANALYTICS.EXPERT_OVERVIEW);
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useExpertDashboard() {
+  return useQuery({
+    queryKey: ['expertDashboard'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<ExpertDashboardResponse>(API_ENDPOINTS.ANALYTICS.EXPERT_DASHBOARD);
       return data;
     },
     placeholderData: keepPreviousData,
