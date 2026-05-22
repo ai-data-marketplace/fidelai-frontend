@@ -1272,15 +1272,10 @@ export interface AnnotatorDashboardHighlight {
 
 export interface AnnotatorDashboardActivity {
   id: string;
-  chunk_id: string;
-  chunk_text: string;
   task_name: string;
-  domain_match: string;
-  confidence: string;
-  readability: string;
-  safety_label: string;
-  created_at: string;
-  is_skipped: boolean;
+  status: string;
+  assigned_at: string;
+  completed_at: string;
 }
 
 export interface AnnotatorDashboardResponse {

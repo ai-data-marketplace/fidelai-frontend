@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Target, Flame, Coins, TrendingUp, MessageSquareText, ShieldAlert, Sparkles, Clock3 } from "lucide-react";
+import { CheckCircle2, Target, Flame, Coins, TrendingUp, MessageSquareText, Clock3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAnnotatorDashboard } from "@/lib/hooks";
 
@@ -12,11 +12,6 @@ function timeAgo(isoDate: string) {
   if (hrs < 1) return "Just now";
   if (hrs < 24) return `${hrs}h ago`;
   return `${Math.floor(hrs / 24)}d ago`;
-}
-
-function compactText(text: string, maxLength = 92) {
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength).trimEnd()}...`;
 }
 
 const highlightStyles = [
@@ -130,35 +125,25 @@ export function AnnotatorDashboardContent() {
                 <li key={act.id} className="flex flex-col gap-3 px-6 py-4 hover:bg-muted/40 transition-colors duration-150 md:flex-row md:items-center md:justify-between">
                   <div className="flex items-start gap-4">
                     <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      {act.is_skipped ? <ShieldAlert className="w-4 h-4 text-amber-500" /> : <CheckCircle2 className="w-4 h-4 text-primary" />}
+                      <CheckCircle2 className="w-4 h-4 text-primary" />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm font-bold">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                        {`Task-${act.id.slice(0, 5)}`}
+                      </p>
+                      <p className="text-sm font-bold leading-tight">
                         {act.task_name}
-                        <span className="text-primary"> {act.chunk_id}</span>
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        {compactText(act.chunk_text)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Domain match: {act.domain_match}
+                      <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock3 className="h-3.5 w-3.5" />
+                        {timeAgo(act.completed_at || act.assigned_at)}
                       </p>
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 md:justify-end">
-                    <Badge variant="outline" className="text-xs font-bold bg-primary/10 text-primary border-primary/20">
-                      {act.confidence}
+                    <Badge variant="outline" className="text-xs font-bold bg-primary/10 text-primary border-primary/20 capitalize">
+                      {act.status}
                     </Badge>
-                    <Badge variant="outline" className="text-xs font-bold bg-blue-500/10 text-blue-600 border-blue-500/20">
-                      {act.readability}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs font-bold bg-rose-500/10 text-rose-600 border-rose-500/20">
-                      {act.safety_label}
-                    </Badge>
-                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock3 className="h-3.5 w-3.5" />
-                      {timeAgo(act.created_at)}
-                    </span>
                   </div>
                 </li>
               ))}
