@@ -1283,6 +1283,28 @@ export interface AnnotatorDashboardResponse {
   recent_activity: AnnotatorDashboardActivity[];
 }
 
+export interface ContributorDashboardCard {
+  key: string;
+  label: string;
+  value: number;
+  display_value: string;
+}
+
+export interface ContributorDashboardGraphPoint {
+  period: string;
+  total_submissions: number;
+  pending_review: number;
+  approved: number;
+  rejected: number;
+}
+
+export interface ContributorDashboardResponse {
+  cards: ContributorDashboardCard[];
+  graphs: {
+    submissions_over_time: ContributorDashboardGraphPoint[];
+  };
+}
+
 export function useAnnotatorOverview() {
   return useQuery({
     queryKey: ['annotatorOverview'],
@@ -1299,6 +1321,17 @@ export function useAnnotatorDashboard() {
     queryKey: ['annotatorDashboard'],
     queryFn: async () => {
       const { data } = await apiClient.get<AnnotatorDashboardResponse>(API_ENDPOINTS.ANALYTICS.ANNOTATOR_DASHBOARD);
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useContributorDashboard() {
+  return useQuery({
+    queryKey: ['contributorDashboard'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<ContributorDashboardResponse>(API_ENDPOINTS.ANALYTICS.CONTRIBUTOR_DASHBOARD);
       return data;
     },
     placeholderData: keepPreviousData,

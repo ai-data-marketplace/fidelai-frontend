@@ -44,6 +44,7 @@ export const API_ENDPOINTS = {
   ANALYTICS: {
     ANNOTATOR_DASHBOARD: '/analytics/annotator/dashboard/',
     ANNOTATOR_OVERVIEW: '/analytics/annotator/overview/',
+    CONTRIBUTOR_DASHBOARD: '/analytics/contributor/dashboard/',
   },
   DOCUMENTS: {
     SUBMIT: '/documents/submit/',
