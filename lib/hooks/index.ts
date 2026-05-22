@@ -1399,6 +1399,41 @@ export function useExpertDashboard() {
   });
 }
 
+export interface AdminDashboardCard {
+  key: string;
+  label: string;
+  value: number;
+  display_value: string;
+  delta?: {
+    value: number;
+    label: string;
+  };
+}
+
+export interface AdminDashboardActivity {
+  id: string;
+  activity_type: string;
+  title: string;
+  status: string;
+  timestamp: string;
+}
+
+export interface AdminDashboardResponse {
+  cards: AdminDashboardCard[];
+  recent_activity: AdminDashboardActivity[];
+}
+
+export function useAdminDashboard() {
+  return useQuery({
+    queryKey: ['adminDashboard'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<AdminDashboardResponse>(API_ENDPOINTS.ANALYTICS.ADMIN_DASHBOARD);
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function useScoreConfigs() {
   return useQuery({
     queryKey: ['scoreConfigs'],
