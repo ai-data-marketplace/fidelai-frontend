@@ -1434,6 +1434,60 @@ export function useAdminDashboard() {
   });
 }
 
+export interface BuyerDashboardAsset {
+  id: string;
+  file_format: string;
+  file_size_bytes: number;
+}
+
+export interface BuyerDashboardMetrics {
+  total_documents: number;
+  chunk_count: number;
+  token_count: number;
+  avg_qc_score: number;
+  annotation_coverage: number;
+  expert_validation_ratio: number;
+  dataset_size_bytes: number;
+  label_distribution: Record<string, number> | null;
+  domain_distribution: Record<string, number> | null;
+  computed_at: string;
+}
+
+export interface BuyerDashboardDataset {
+  id: string;
+  title: string;
+  description: string;
+  domain: string;
+  subdomain: string;
+  language: string;
+  license_type: string;
+  nlp_task_type: string;
+  price: string;
+  version: string;
+  status: string;
+  collection_year: number;
+  created_at: string;
+  created_by: string;
+  metrics: BuyerDashboardMetrics;
+  assets: BuyerDashboardAsset[];
+}
+
+export interface BuyerDashboardResponse {
+  datasets: BuyerDashboardDataset[];
+  recent_datasets: BuyerDashboardDataset[];
+}
+
+export function useBuyerDashboard() {
+  return useQuery({
+    queryKey: ['buyerDashboard'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<BuyerDashboardResponse>(API_ENDPOINTS.ANALYTICS.BUYER_DASHBOARD);
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function useScoreConfigs() {
   return useQuery({
     queryKey: ['scoreConfigs'],
