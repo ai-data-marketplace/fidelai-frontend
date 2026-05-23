@@ -81,4 +81,10 @@ export const API_ENDPOINTS = {
     RESOLVE_CHUNK: (chunkId: string | number) => `/processing/expert/chunks/${chunkId}/resolve/`,
     SUBMIT_REVIEW: (chunkId: string) => `/processing/expert/chunks/${chunkId}/review/`,
   },
+  NOTIFICATIONS: {
+    LIST: '/notifications/',
+    MARK_READ: (id: string) => `/notifications/${id}/read/`,
+    MARK_ALL_READ: '/notifications/read-all/',
+    UNREAD_COUNT: '/notifications/unread-count/',
+  },
 };

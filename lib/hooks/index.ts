@@ -750,6 +750,76 @@ export function useUpdateProfile() {
   });
 }
 
+/* Notifications */
+export interface NotificationItemResponse {
+  id: string;
+  category: string;
+  notification_type: string;
+  title: string;
+  message: string;
+  metadata: unknown | null;
+  is_read: boolean;
+  read_at: string | null;
+  created_at: string;
+}
+
+export interface PaginatedNotificationsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: NotificationItemResponse[];
+}
+
+export function useNotifications(params?: { page?: number; page_size?: number }) {
+  return useQuery({
+    queryKey: ['notifications', params],
+    queryFn: async () => {
+      const { data } = await apiClient.get<PaginatedNotificationsResponse>(API_ENDPOINTS.NOTIFICATIONS.LIST, { params });
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useUnreadNotificationCount() {
+  return useQuery({
+    queryKey: ['notifications', 'unread_count'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{ unread_count: number }>(API_ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT);
+      return data.unread_count;
+    },
+    placeholderData: 0,
+  });
+}
+
+export function useMarkNotificationRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await apiClient.post(API_ENDPOINTS.NOTIFICATIONS.MARK_READ(id));
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread_count'] });
+    },
+  });
+}
+
+export function useMarkAllNotificationsRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await apiClient.post(API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread_count'] });
+    },
+  });
+}
+
 /* ─────────────────────────────────────
    Task Hooks
    ───────────────────────────────────── */

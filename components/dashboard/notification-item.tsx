@@ -24,7 +24,7 @@ const icons = {
 };
 
 export function NotificationItem({ notification, onMarkRead, onDelete }: NotificationItemProps) {
-  const Icon = icons[notification.type];
+  const Icon = icons[(notification.type as keyof typeof icons)] || Bell;
 
   return (
     <div className={cn(
