@@ -1,30 +1,59 @@
-"use client";
+﻿"use client";
 
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
-import { Switch } from '@/components/ui/switch';
-import { Shield, Key, History, LogOut } from 'lucide-react';
-import { useState } from 'react';
+import { AlertTriangle, Loader2, Trash2 } from 'lucide-react';
+import { useChangePassword } from '@/lib/hooks';
+import { getErrorMessage, getFieldErrors } from '@/lib/utils/error-helper';
 
 const passwordSchema = z.object({
   current: z.string().min(1, "Required"),
   newPassword: z.string().min(8, "Must be at least 8 characters"),
   confirm: z.string()
 }).refine(data => data.newPassword === data.confirm, {
-  message: "Passwords don't match",
+  message: "The passwords don't match",
   path: ["confirm"]
 });
 
+type PasswordFormValues = z.infer<typeof passwordSchema>;
+
 export function SecuritySettings() {
-  const [tfaEnabled, setTfaEnabled] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    resolver: zodResolver(passwordSchema)
+  const [generalError, setGeneralError] = useState("");
+  const changePasswordMutation = useChangePassword();
+  const { register, handleSubmit, formState: { errors }, setError, reset } = useForm<PasswordFormValues>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: { current: "", newPassword: "", confirm: "" },
   });
 
-  const onSubmit = (data: any) => {
-    toast.success("Password updated successfully");
+  const onSubmit = (data: PasswordFormValues) => {
+    setGeneralError("");
+    changePasswordMutation.mutate(
+      {
+        current_password: data.current,
+        new_password: data.newPassword,
+      },
+      {
+        onSuccess: (response) => {
+          toast.success(response.message || "Password updated successfully");
+          reset();
+        },
+        onError: (error) => {
+          const fieldErrors = getFieldErrors(error);
+          if (fieldErrors.password) {
+            setError("newPassword", { message: fieldErrors.password });
+          }
+          if (fieldErrors.current) {
+            setError("current", { message: fieldErrors.current });
+          }
+          if (Object.keys(fieldErrors).length === 0) {
+            setGeneralError(getErrorMessage(error));
+          }
+        },
+      }
+    );
   };
 
   return (
@@ -51,61 +80,32 @@ export function SecuritySettings() {
             <input type="password" {...register('confirm')} className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm" />
             {errors.confirm && <p className="text-xs text-destructive">{errors.confirm.message as string}</p>}
           </div>
-          <button type="submit" className="h-10 px-6 rounded-lg bg-primary text-white font-bold hover:scale-105 active:scale-95 transition-all">
+          {generalError && <p className="text-xs text-destructive">{generalError}</p>}
+          <button
+            type="submit"
+            disabled={changePasswordMutation.isPending}
+            className="h-10 px-6 rounded-lg bg-primary text-white font-bold hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center"
+          >
+            {changePasswordMutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             Update Password
           </button>
         </form>
       </section>
 
-      <section className="space-y-6 p-6 rounded-2xl border bg-muted/30">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-background border shadow-sm text-primary">
-              <Shield size={20} />
-            </div>
-            <div>
-              <h4 className="font-bold">Two-Factor Authentication</h4>
-              <p className="text-xs text-muted-foreground">Add an extra layer of security to your account.</p>
-            </div>
-          </div>
-          <Switch checked={tfaEnabled} onCheckedChange={setTfaEnabled} />
-        </div>
-      </section>
-
-      <section className="space-y-6">
-        <div className="pb-4 border-b">
-          <h3 className="text-lg font-bold">Active Sessions</h3>
-          <p className="text-sm text-muted-foreground">Manage devices currently logged into your account.</p>
+      <section className="bg-destructive/5 rounded-2xl border border-destructive/20 p-8 space-y-6">
+        <div className="flex items-center gap-3 text-destructive">
+          <AlertTriangle size={20} />
+          <h3 className="text-lg font-bold">Danger Zone</h3>
         </div>
 
-        <div className="space-y-3">
-          {[
-            { device: "MacBook Pro - Chrome", location: "Addis Ababa, Ethiopia", status: "Current", time: "Now" },
-            { device: "iPhone 15 - Safari", location: "Addis Ababa, Ethiopia", status: "Active", time: "3 hours ago" }
-          ].map((session, i) => (
-            <div key={i} className="flex items-center justify-between p-4 rounded-xl border bg-card">
-              <div className="flex items-center gap-4">
-                <div className="p-2 rounded-lg bg-muted text-muted-foreground">
-                   <Key size={18} />
-                </div>
-                <div>
-                  <h5 className="text-sm font-bold">{session.device}</h5>
-                  <p className="text-[10px] text-muted-foreground">{session.location} • {session.time}</p>
-                </div>
-              </div>
-              {session.status === 'Current' ? (
-                <span className="text-[10px] font-bold text-primary uppercase tracking-widest px-2 py-0.5 bg-primary/10 rounded">Current</span>
-              ) : (
-                <button className="text-[10px] font-bold text-destructive uppercase tracking-widest hover:underline">Revoke</button>
-              )}
-            </div>
-          ))}
+        <div className="space-y-1">
+          <h4 className="text-sm font-bold text-destructive">Delete Account</h4>
+          <p className="text-xs text-muted-foreground">Permanently remove your account and all associated data. This action is irreversible.</p>
+          <button className="mt-4 px-4 py-2 text-xs font-bold bg-destructive text-white rounded-lg hover:scale-105 active:scale-95 transition-all shadow-lg shadow-destructive/20 flex items-center gap-2">
+            <Trash2 size={14} />
+            Delete Permanently
+          </button>
         </div>
-        
-        <button className="flex items-center gap-2 text-xs font-bold text-destructive hover:underline mt-4">
-          <LogOut size={14} />
-          Logout from all other devices
-        </button>
       </section>
     </div>
   );

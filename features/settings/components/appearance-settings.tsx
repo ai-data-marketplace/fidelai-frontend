@@ -52,19 +52,6 @@ export function AppearanceSettings() {
           </button>
         ))}
       </div>
-
-      <div className="pt-8 pb-4 border-b">
-        <h3 className="text-lg font-bold">Interface Sizing</h3>
-        <p className="text-sm text-muted-foreground">Scale typography for optimized accessibility.</p>
-      </div>
-
-      <div className="flex items-center gap-8 p-6 rounded-2xl border bg-muted/30 max-w-2xl">
-        <span className="text-xs font-bold text-muted-foreground uppercase opacity-50 tracking-widest">Font Size</span>
-        <div className="flex-1 h-2 bg-muted rounded-full relative">
-           <div className="absolute top-1/2 left-[50%] -translate-y-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-primary border-4 border-background shadow-md cursor-pointer" />
-        </div>
-        <span className="text-sm font-bold text-primary">Normal</span>
-      </div>
     </div>
   );
 }

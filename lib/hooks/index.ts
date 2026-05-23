@@ -35,6 +35,11 @@ export interface ResetPasswordRequest {
   new_password: string;
 }
 
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+}
+
 export interface AuthUser {
   id: string;
   email: string;
@@ -617,6 +622,15 @@ export function useResetPassword() {
   return useMutation({
     mutationFn: async (payload: ResetPasswordRequest) => {
       const { data } = await apiClient.post<{ message: string }>(API_ENDPOINTS.AUTH.RESET_PASSWORD, payload);
+      return data;
+    },
+  });
+}
+
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: async (payload: ChangePasswordRequest) => {
+      const { data } = await apiClient.post<{ message: string }>(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, payload);
       return data;
     },
   });

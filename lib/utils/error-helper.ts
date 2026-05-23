@@ -30,6 +30,7 @@ export function getFieldErrors(error: unknown): Record<string, string> {
   const fieldMap: Record<string, string> = {
     full_name: 'fullName',
     new_password: 'password',
+    current_password: 'current',
   };
 
   const errors: Record<string, string> = {};
