@@ -304,6 +304,19 @@ export interface PaginatedNlpTasksResponse {
   results: NlpTask[];
 }
 
+export interface ProfileResponse {
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  profile_picture: string | null;
+  phone_number: string | null;
+  bio: string | null;
+  country: string | null;
+  native_language: string | null;
+  notification_preferences: unknown | null;
+}
+
 export interface ExpertTask {
   id: string;
   name: string;
@@ -694,6 +707,46 @@ export function useMySubmission(id: string) {
       return data;
     },
     enabled: !!id,
+  });
+}
+
+export function useProfile() {
+  return useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<ProfileResponse>(API_ENDPOINTS.AUTH.PROFILE);
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: Partial<ProfileResponse> & { profile_picture_file?: File | null }) => {
+      const formData = new FormData();
+      if (payload.full_name !== undefined) formData.append('full_name', payload.full_name);
+      if (payload.phone_number !== undefined) formData.append('phone_number', payload.phone_number ?? '');
+      if (payload.country !== undefined) formData.append('country', payload.country ?? '');
+      if (payload.native_language !== undefined) formData.append('native_language', payload.native_language ?? '');
+      if (payload.bio !== undefined) formData.append('bio', payload.bio ?? '');
+      if (payload.profile_picture_file) {
+        formData.append('profile_picture', payload.profile_picture_file);
+      }
+      const { data } = await apiClient.patch<ProfileResponse>(API_ENDPOINTS.AUTH.PROFILE, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['profile'], data);
+      toast.success('Profile updated');
+    },
+    onError: () => {
+      toast.error('Failed to update profile');
+    },
   });
 }
 
