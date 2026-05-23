@@ -40,6 +40,10 @@ export interface ChangePasswordRequest {
   new_password: string;
 }
 
+export interface DeleteAccountRequest {
+  password: string;
+}
+
 export interface AuthUser {
   id: string;
   email: string;
@@ -631,6 +635,15 @@ export function useChangePassword() {
   return useMutation({
     mutationFn: async (payload: ChangePasswordRequest) => {
       const { data } = await apiClient.post<{ message: string }>(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, payload);
+      return data;
+    },
+  });
+}
+
+export function useDeleteAccount() {
+  return useMutation({
+    mutationFn: async (payload: DeleteAccountRequest) => {
+      const { data } = await apiClient.post<{ message: string }>(API_ENDPOINTS.AUTH.DELETE_ACCOUNT, payload);
       return data;
     },
   });

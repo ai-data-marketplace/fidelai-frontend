@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: '/auth/forgot-password/',
     RESET_PASSWORD: '/auth/reset-password/',
     CHANGE_PASSWORD: '/auth/change-password/',
+    DELETE_ACCOUNT: '/auth/delete-account/',
   },
   ADMIN: {
     ROLE_APPLICATIONS: '/auth/admin/role-applications/',
