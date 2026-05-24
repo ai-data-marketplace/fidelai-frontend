@@ -11,11 +11,11 @@ import Link from "next/link";
 
 const actions = [
   { 
-    title: "Approve Datasets", 
+    title: "Manage Payout", 
     href: "/admin/system", 
     icon: <Database className="h-5 w-5" />, 
     color: "bg-blue-500",
-    description: "Marketplace submission queue" 
+    description: "Configure payout rule" 
   },
   { 
     title: "Review Users", 
@@ -25,11 +25,11 @@ const actions = [
     description: "Role and identity verification" 
   },
   { 
-    title: "Process Payouts", 
+    title: "Manage Scores", 
     href: "/admin/system", 
     icon: <Wallet className="h-5 w-5" />, 
     color: "bg-amber-500",
-    description: "Financial settlements" 
+    description: "Configure score rules" 
   },
 ];
 

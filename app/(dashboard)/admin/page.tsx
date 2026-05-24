@@ -1,7 +1,7 @@
 import { AdminMetrics } from "@/features/admin/components/admin-metrics";
 import { SystemActivityTimeline } from "@/features/admin/components/system-activity-timeline";
 import { QuickActions } from "@/features/admin/components/quick-actions";
-import { LayoutDashboard, Sparkles, AlertCircle } from "lucide-react";
+import { LayoutDashboard, Zap, AlertCircle } from "lucide-react";
 
 export default function AdminDashboard() {
   return (
@@ -18,10 +18,7 @@ export default function AdminDashboard() {
             Monitor system health, approve submissions, and manage platform growth.
           </p>
         </div>
-        <div className="flex items-center gap-3 bg-muted/50 p-2 px-4 rounded-2xl border border-border/50">
-           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-           <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">System Online: 99.9% Uptime</span>
-        </div>
+          {/* system status badge removed per request */}
       </section>
 
       {/* Metrics Section */}
@@ -34,7 +31,7 @@ export default function AdminDashboard() {
         <div className="lg:col-span-8 space-y-8">
           <div className="space-y-4">
              <div className="flex items-center gap-3">
-                <Sparkles className="w-5 h-5 text-amber-500" />
+                 <Zap className="w-5 h-5 text-amber-500" />
                 <h2 className="text-2xl font-black tracking-tight">Quick Operations</h2>
              </div>
              <QuickActions />
