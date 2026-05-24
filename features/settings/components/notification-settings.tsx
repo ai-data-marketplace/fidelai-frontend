@@ -1,21 +1,78 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Bell, Briefcase, ShoppingBag, Info, Mail } from "lucide-react";
+import { Briefcase, ShoppingBag, Info, Mail, User } from "lucide-react";
+import apiClient from '@/services/api-client';
+import { API_ENDPOINTS } from '@/services/endpoints';
+import { useAuth } from '@/context/auth-context';
+import { useProfile } from '@/lib/hooks';
 
 export function NotificationSettings() {
+  const { user } = useAuth();
+  const profileQuery = useProfile();
+
   const [settings, setSettings] = useState({
     emailAll: true,
+    accountAlerts: true,
     taskAlerts: true,
     marketplaceAlerts: false,
     systemAnnouncements: true,
-    desktopPush: true,
   });
+
+  const debounceRef = useRef<number | null>(null);
 
   const toggle = (key: keyof typeof settings) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));
   };
+
+  useEffect(() => {
+    const prefs = profileQuery.data?.notification_preferences as any;
+    if (!prefs) return;
+    try {
+      const email_notification = prefs.email_notification ?? prefs.emailAll ?? true;
+      const categories = prefs.categories ?? {};
+      setSettings({
+        emailAll: !!email_notification,
+        accountAlerts: categories.account !== undefined ? !!categories.account : true,
+        taskAlerts: !!categories.tasks,
+        marketplaceAlerts: !!categories.marketplace,
+        systemAnnouncements: !!categories.system,
+      });
+    } catch (e) {
+      // ignore malformed prefs
+    }
+  }, [profileQuery.data]);
+
+  useEffect(() => {
+    if (debounceRef.current) {
+      window.clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = window.setTimeout(async () => {
+      const payload = {
+        notification_preferences: {
+          email_notification: !!settings.emailAll,
+          categories: {
+            account: !!settings.accountAlerts,
+            tasks: !!settings.taskAlerts,
+            marketplace: !!settings.marketplaceAlerts,
+            system: !!settings.systemAnnouncements,
+          },
+        },
+      };
+
+      try {
+        await apiClient.patch(API_ENDPOINTS.AUTH.PROFILE, payload);
+      } catch (err) {
+        console.error('Failed updating notification preferences', err);
+      }
+    }, 1000);
+
+    return () => {
+      if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    };
+  }, [settings]);
 
   return (
     <div className="space-y-8">
@@ -33,12 +90,22 @@ export function NotificationSettings() {
           onToggle={() => toggle('emailAll')}
         />
         <NotificationToggle
-          icon={Briefcase}
-          title="Task & Workspace Alerts"
-          description="Get notified when a new task is assigned or your submission is reviewed."
-          checked={settings.taskAlerts}
-          onToggle={() => toggle('taskAlerts')}
+          icon={User}
+          title="Account Notifications"
+          description="Get notified about important account changes, password updates, and security alerts."
+          checked={settings.accountAlerts}
+          onToggle={() => toggle('accountAlerts')}
         />
+        {/* task toggle hidden for contributors */}
+        {user?.role !== 'contributor' && (
+          <NotificationToggle
+            icon={Briefcase}
+            title="Task & Workspace Alerts"
+            description="Get notified when a new task is assigned or your submission is reviewed."
+            checked={settings.taskAlerts}
+            onToggle={() => toggle('taskAlerts')}
+          />
+        )}
         <NotificationToggle
           icon={ShoppingBag}
           title="Marketplace & Sales"
@@ -55,20 +122,7 @@ export function NotificationSettings() {
         />
       </div>
 
-      <div className="pt-8 pb-4 border-b">
-        <h3 className="text-lg font-bold">Desktop Notifications</h3>
-        <p className="text-sm text-muted-foreground">Manage push notifications in your browser.</p>
-      </div>
-
-      <div className="max-w-2xl">
-        <NotificationToggle
-          icon={Bell}
-          title="Push Notifications"
-          description="Enable real-time desktop alerts for urgent tasks and platform system events."
-          checked={settings.desktopPush}
-          onToggle={() => toggle('desktopPush')}
-        />
-      </div>
+      {/* Desktop notifications removed per requirements */}
     </div>
   );
 }
