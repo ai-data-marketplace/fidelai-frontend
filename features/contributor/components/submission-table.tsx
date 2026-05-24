@@ -5,6 +5,7 @@ import {
   Button 
 } from "@/components/ui";
 import { useMySubmissions, type DocumentSubmission } from "@/lib/hooks";
+import { useState, useEffect } from "react";
 import { 
   Eye, 
   Download, 
@@ -16,7 +17,14 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 
 export function SubmissionTable() {
-  const { data: submissions = [], isLoading, isError } = useMySubmissions();
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { data: submissions = [], isLoading, isError } = useMySubmissions(debouncedSearch);
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(search), 500);
+    return () => clearTimeout(handler);
+  }, [search]);
 
   const getStatusVariant = (status: string) => {
     const normalizedStatus = status.toLowerCase();
@@ -50,16 +58,15 @@ export function SubmissionTable() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/30 p-4 rounded-xl border">
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input 
-            placeholder="Search submissions..." 
+          <input
+            placeholder="Search submissions..."
             className="w-full bg-background border rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
           />
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Button variant="outline" size="sm" className="gap-2 shrink-0">
-            <Filter className="w-4 h-4" />
-            Filter
-          </Button>
+          {/* Filter button removed */}
           <div className="text-xs text-muted-foreground ml-auto sm:ml-0">
             Showing {submissions.length} datasets
           </div>
@@ -105,7 +112,7 @@ export function SubmissionTable() {
                         <Search className="w-6 h-6 text-muted-foreground" />
                       </div>
                       <p className="text-muted-foreground">No submissions found.</p>
-                      <Button variant="outline" size="sm">Clear Filters</Button>
+                      <Button variant="outline" size="sm" onClick={() => setSearch("")}>Clear Search</Button>
                     </div>
                   </td>
                 </tr>
@@ -139,12 +146,6 @@ export function SubmissionTable() {
                         >
                           <Eye className="h-4 w-4" />
                         </Link>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
                     </td>
                   </motion.tr>

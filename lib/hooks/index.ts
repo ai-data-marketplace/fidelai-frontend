@@ -716,11 +716,12 @@ export function useUploadDataset() {
   });
 }
 
-export function useMySubmissions() {
+export function useMySubmissions(search?: string) {
   return useQuery({
-    queryKey: ['documentSubmissions'],
+    queryKey: ['documentSubmissions', search],
     queryFn: async () => {
-      const { data } = await apiClient.get<DocumentSubmission[]>(API_ENDPOINTS.DOCUMENTS.MY_SUBMISSIONS);
+      const params = search ? { search } : undefined;
+      const { data } = await apiClient.get<DocumentSubmission[]>(API_ENDPOINTS.DOCUMENTS.MY_SUBMISSIONS, { params });
       return data;
     },
   });
