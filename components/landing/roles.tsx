@@ -54,7 +54,6 @@ export function Roles() {
   return (
     <section className="relative py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -66,17 +65,14 @@ export function Roles() {
             Platform Roles
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
-            A Role for{" "}
-            <span className="brand-gradient-text">
-              Everyone
-            </span>
+            A Role for <span className="brand-gradient-text">Everyone</span>
           </h2>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
-            Whether you contribute data, annotate text, ensure quality, or build AI — there&apos;s a place for you.
+            Whether you contribute data, annotate text, ensure quality, or build
+            AI — there&apos;s a place for you.
           </p>
         </motion.div>
 
-        {/* Role cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {roles.map((role, index) => (
             <motion.div
@@ -88,7 +84,6 @@ export function Roles() {
               className={`group relative p-8 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${role.border} ${role.glow}`}
             >
               <div className="flex items-start gap-5">
-                {/* Icon */}
                 <div
                   className={`shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br ${role.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}
                 >

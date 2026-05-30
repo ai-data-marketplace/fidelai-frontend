@@ -7,10 +7,6 @@ import * as THREE from "three";
 import { ArrowRight, Play } from "lucide-react";
 import Link from "next/link";
 
-/* ────────────────────────────────────────────
-   3D Floating Particles Background
-   ──────────────────────────────────────────── */
-
 function Particles({ count = 200 }) {
   const mesh = useRef<THREE.Points>(null);
 
@@ -22,11 +18,10 @@ function Particles({ count = 200 }) {
       pos[i * 3 + 1] = (Math.random() - 0.5) * 15;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 15;
 
-      // Warm orange/amber palette - boosted for vibrancy
       const t = Math.random();
-      col[i * 3] = 1.0;                // R (Full brightness)
-      col[i * 3 + 1] = 0.5 + t * 0.3; // G (Brighter golden)
-      col[i * 3 + 2] = 0.1 + t * 0.1; // B
+      col[i * 3] = 1.0;
+      col[i * 3 + 1] = 0.5 + t * 0.3;
+      col[i * 3 + 2] = 0.1 + t * 0.1;
     }
     return [pos, col];
   }, [count]);
@@ -34,20 +29,15 @@ function Particles({ count = 200 }) {
   useFrame((state) => {
     if (!mesh.current) return;
     mesh.current.rotation.y = state.clock.getElapsedTime() * 0.03;
-    mesh.current.rotation.x = Math.sin(state.clock.getElapsedTime() * 0.02) * 0.1;
+    mesh.current.rotation.x =
+      Math.sin(state.clock.getElapsedTime() * 0.02) * 0.1;
   });
 
   return (
     <points ref={mesh}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[positions, 3]}
-        />
-        <bufferAttribute
-          attach="attributes-color"
-          args={[colors, 3]}
-        />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
       <pointsMaterial
         size={0.06}
@@ -85,7 +75,8 @@ function FloatingRing2() {
   useFrame((state) => {
     if (!ref.current) return;
     ref.current.rotation.y = state.clock.getElapsedTime() * 0.25;
-    ref.current.rotation.x = Math.PI / 3 + Math.sin(state.clock.getElapsedTime() * 0.3) * 0.1;
+    ref.current.rotation.x =
+      Math.PI / 3 + Math.sin(state.clock.getElapsedTime() * 0.3) * 0.1;
   });
 
   return (
@@ -107,14 +98,12 @@ function Scene() {
   );
 }
 
-/* ────────────────────────────────────────────
-   Hero Section
-   ──────────────────────────────────────────── */
-
 export function Hero() {
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* 3D Background */}
+    <section
+      id="home"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+    >
       <div className="absolute inset-0 z-0">
         <Canvas
           camera={{ position: [0, 0, 6], fov: 60 }}
@@ -125,13 +114,10 @@ export function Hero() {
         </Canvas>
       </div>
 
-      {/* Gradient overlays */}
       <div className="absolute inset-0 z-[1] bg-gradient-to-b from-background via-background/40 to-background" />
       <div className="absolute inset-0 z-[1] brand-radial-overlay" />
 
-      {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
-        {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -145,7 +131,6 @@ export function Hero() {
           FidelAi - Next Gen Ai Data Hub
         </motion.div>
 
-        {/* Title */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -154,12 +139,9 @@ export function Hero() {
         >
           <span className="text-foreground">AI Data Marketplace</span>
           <br />
-          <span className="brand-gradient-text-hero">
-            for Amharic Language
-          </span>
+          <span className="brand-gradient-text-hero">for Amharic Language</span>
         </motion.h1>
 
-        {/* Subtitle */}
         <motion.p
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -170,7 +152,6 @@ export function Hero() {
           using AI-powered workflows and crowdsourcing.
         </motion.p>
 
-        {/* CTA Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -193,7 +174,6 @@ export function Hero() {
           </Link>
         </motion.div>
 
-        {/* Stats */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -210,13 +190,14 @@ export function Hero() {
               <div className="text-2xl sm:text-3xl font-bold brand-gradient-text-soft">
                 {stat.value}
               </div>
-              <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
+              <div className="text-sm text-muted-foreground mt-1">
+                {stat.label}
+              </div>
             </div>
           ))}
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

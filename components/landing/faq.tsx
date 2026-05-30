@@ -88,7 +88,6 @@ export function FAQ() {
   return (
     <section className="relative py-28">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -101,16 +100,13 @@ export function FAQ() {
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
             Frequently Asked{" "}
-            <span className="brand-gradient-text">
-              Questions
-            </span>
+            <span className="brand-gradient-text">Questions</span>
           </h2>
           <p className="max-w-xl mx-auto text-lg text-muted-foreground">
             Everything you need to know about FidelAI.
           </p>
         </motion.div>
 
-        {/* Accordion */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
