@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState } from "react";
 
-type UserRole = 'contributor' | 'annotator' | 'expert' | 'buyer' | 'admin';
+type UserRole = "contributor" | "annotator" | "expert" | "buyer" | "admin";
 
 interface RoleContextType {
   role: UserRole | null;
@@ -17,7 +17,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
 
   const hasPermission = (requiredRole: UserRole) => {
     if (!role) return false;
-    if (role === 'admin') return true; // Admin has all permissions
+    if (role === "admin") return true;
     return role === requiredRole;
   };
 

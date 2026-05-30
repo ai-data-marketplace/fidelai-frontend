@@ -11,7 +11,7 @@ export interface ExpertTask {
   id: string;
   name: string;
   domain: string;
-  status: 'assigned' | 'in_progress' | 'submitted';
+  status: "assigned" | "in_progress" | "submitted";
   assigned_at: string;
   total_chunks: number;
 }
@@ -93,15 +93,15 @@ export const mockExpertChunks: Record<string, ResolutionChunk[]> = {
         isAmharic: true,
         harmful: false,
         agreementPct: 50,
-        status: "Weak Consensus"
-      }
+        status: "Weak Consensus",
+      },
     },
     {
       id: "chunk-102",
       text: "የተጠቀሰው መብት በውርስ ሊተላለፍ የሚችለው ሟች ህጋዊ ኑዛዜ ከትቶ ካለፈ ብቻ ነው።",
       consensusScore: 66,
       ai: {
-        predictedDomain: "Finance", // AI Conflict here (should be legal)
+        predictedDomain: "Finance",
         confidence: 0.82,
         flags: { harmful: false, duplicate: false, noise: false },
       },
@@ -110,8 +110,8 @@ export const mockExpertChunks: Record<string, ResolutionChunk[]> = {
         isAmharic: true,
         harmful: false,
         agreementPct: 66,
-        status: "Weak Consensus"
-      }
+        status: "Weak Consensus",
+      },
     },
     {
       id: "chunk-103",
@@ -127,8 +127,8 @@ export const mockExpertChunks: Record<string, ResolutionChunk[]> = {
         isAmharic: true,
         harmful: false,
         agreementPct: 40,
-        status: "Conflict"
-      }
+        status: "Conflict",
+      },
     },
     {
       id: "chunk-104",
@@ -144,8 +144,8 @@ export const mockExpertChunks: Record<string, ResolutionChunk[]> = {
         isAmharic: true,
         harmful: true,
         agreementPct: 89,
-        status: "Strong Consensus"
-      }
+        status: "Strong Consensus",
+      },
     },
     {
       id: "chunk-105",
@@ -161,11 +161,11 @@ export const mockExpertChunks: Record<string, ResolutionChunk[]> = {
         isAmharic: true,
         harmful: false,
         agreementPct: 55,
-        status: "Weak Consensus"
-      }
-    }
+        status: "Weak Consensus",
+      },
+    },
   ],
-  "default": [
+  default: [
     {
       id: "c-def-1",
       text: "አዳዲስ ቴክኖሎጂዎችን በመጠቀም የጤና ስርዓቱን ማሻሻል ይቻላል።",
@@ -180,19 +180,41 @@ export const mockExpertChunks: Record<string, ResolutionChunk[]> = {
         isAmharic: true,
         harmful: false,
         agreementPct: 66,
-        status: "Conflict"
-      }
-    }
-  ]
+        status: "Conflict",
+      },
+    },
+  ],
 };
 
-// ─── Performance Records ────────────────────────────────────────────────────
-
 export const resolvedRecords = [
-  { id: "TASK-7099", domain: "Tech", chunks: 14, resolution: "Overrides Annotators", date: "2026-04-14" },
-  { id: "TASK-7098", domain: "Legal", chunks: 8, resolution: "Validates Annotators", date: "2026-04-13" },
-  { id: "TASK-7080", domain: "Finance", chunks: 12, resolution: "Overrides AI", date: "2026-04-12" },
-  { id: "TASK-7055", domain: "Health", chunks: 20, resolution: "Content Rejected (Harmful)", date: "2026-04-10" },
+  {
+    id: "TASK-7099",
+    domain: "Tech",
+    chunks: 14,
+    resolution: "Overrides Annotators",
+    date: "2026-04-14",
+  },
+  {
+    id: "TASK-7098",
+    domain: "Legal",
+    chunks: 8,
+    resolution: "Validates Annotators",
+    date: "2026-04-13",
+  },
+  {
+    id: "TASK-7080",
+    domain: "Finance",
+    chunks: 12,
+    resolution: "Overrides AI",
+    date: "2026-04-12",
+  },
+  {
+    id: "TASK-7055",
+    domain: "Health",
+    chunks: 20,
+    resolution: "Content Rejected (Harmful)",
+    date: "2026-04-10",
+  },
 ];
 
 export const expertAnalytics = {

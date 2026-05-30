@@ -1,21 +1,15 @@
 "use client";
 
-import { 
-  Card, 
-  CardContent, 
-  CardFooter,
-  Badge,
-  Button
-} from "@/components/ui";
-import { 
-  FileText, 
-  Coins, 
-  CheckCircle2, 
+import { Card, CardContent, CardFooter, Badge, Button } from "@/components/ui";
+import {
+  FileText,
+  Coins,
+  CheckCircle2,
   ChevronRight,
   Database,
   Calendar,
   ShieldCheck,
-  Languages
+  Languages,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -47,14 +41,18 @@ export function DatasetCard({ dataset }: DatasetCardProps) {
                 {dataset.title}
               </h3>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="font-medium text-[10px] uppercase tracking-wider">
+                <Badge
+                  variant="outline"
+                  className="font-medium text-[10px] uppercase tracking-wider"
+                >
                   {dataset.domain}
                 </Badge>
                 <span className="text-xs text-muted-foreground">•</span>
-                <span className="text-xs text-muted-foreground">{dataset.subdomain}</span>
+                <span className="text-xs text-muted-foreground">
+                  {dataset.subdomain}
+                </span>
               </div>
             </div>
-            {/* percentage badge removed per design */}
           </div>
 
           <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
@@ -91,15 +89,25 @@ export function DatasetCard({ dataset }: DatasetCardProps) {
 
         <CardFooter className="p-4 pt-4 flex items-center justify-between gap-2 border-t bg-muted/30">
           <div className="text-base font-black text-primary whitespace-nowrap">
-            ETB {dataset.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            ETB{" "}
+            {dataset.price.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <Link href={`/buyer/marketplace/${dataset.id}`}>
-              <Button size="sm" variant="ghost" className="h-8 px-2.5 text-[11px] font-bold whitespace-nowrap">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 px-2.5 text-[11px] font-bold whitespace-nowrap"
+              >
                 Details
               </Button>
             </Link>
-            <Button size="sm" className="h-8 px-3 text-[11px] font-bold shadow-md shadow-primary/20 whitespace-nowrap">
+            <Button
+              size="sm"
+              className="h-8 px-3 text-[11px] font-bold shadow-md shadow-primary/20 whitespace-nowrap"
+            >
               Buy Now
             </Button>
           </div>

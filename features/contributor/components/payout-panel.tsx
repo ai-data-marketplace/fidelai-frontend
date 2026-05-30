@@ -1,23 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle, 
-  Button, 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
   Badge,
-  Modal
+  Modal,
 } from "@/components/ui";
-import { 
-  Wallet, 
-  ArrowUpRight, 
-  History, 
+import {
+  Wallet,
+  ArrowUpRight,
+  History,
   DollarSign,
   Loader2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 import { WithdrawModal } from "./withdraw-modal";
 import { useWalletDetails, useWithdrawalsList } from "@/lib/hooks";
@@ -32,14 +32,19 @@ function trimWithdrawalId(id: string) {
 }
 
 function getStatusTone(status: string) {
-  return status.toLowerCase() === 'completed' ? 'text-emerald-600' : 'text-amber-600';
+  return status.toLowerCase() === "completed"
+    ? "text-emerald-600"
+    : "text-amber-600";
 }
 
-function getStatusBadgeVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
+function getStatusBadgeVariant(
+  status: string,
+): "default" | "secondary" | "destructive" | "outline" {
   const normalized = status.toLowerCase();
-  if (normalized === 'completed' || normalized === 'success') return 'default';
-  if (normalized === 'failed' || normalized === 'rejected') return 'destructive';
-  return 'secondary';
+  if (normalized === "completed" || normalized === "success") return "default";
+  if (normalized === "failed" || normalized === "rejected")
+    return "destructive";
+  return "secondary";
 }
 
 export function PayoutPanel() {
@@ -48,7 +53,8 @@ export function PayoutPanel() {
   const [transactionsPage, setTransactionsPage] = useState(1);
 
   const { data: walletDetails, isLoading } = useWalletDetails();
-  const { data: recentTransactions, isLoading: isRecentLoading } = useWithdrawalsList(1, 4);
+  const { data: recentTransactions, isLoading: isRecentLoading } =
+    useWithdrawalsList(1, 4);
   const {
     data: paginatedTransactions,
     isLoading: isPaginatedLoading,
@@ -79,12 +85,23 @@ export function PayoutPanel() {
         ) : (
           <>
             <div className="p-4 rounded-xl border bg-muted/20 space-y-2">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Available</p>
-              <p className="text-2xl font-black text-emerald-600">{walletDetails ? formatCurrency(availableBalance as number, currency) : '—'}</p>
-              <p className="text-[10px] text-muted-foreground border-t pt-2">Pending: {walletDetails ? formatCurrency(pendingBalance as number, currency) : '—'}</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+                Available
+              </p>
+              <p className="text-2xl font-black text-emerald-600">
+                {walletDetails
+                  ? formatCurrency(availableBalance as number, currency)
+                  : "—"}
+              </p>
+              <p className="text-[10px] text-muted-foreground border-t pt-2">
+                Pending:{" "}
+                {walletDetails
+                  ? formatCurrency(pendingBalance as number, currency)
+                  : "—"}
+              </p>
             </div>
 
-            <Button 
+            <Button
               className="w-full flex items-center justify-center gap-2 h-11"
               onClick={() => setIsWithdrawModalOpen(true)}
               disabled={!walletDetails?.meets_minimum}
@@ -96,7 +113,8 @@ export function PayoutPanel() {
             {!walletDetails?.meets_minimum && (
               <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
                 <p className="text-[10px] text-amber-700 font-medium">
-                  You need to reach the minimum withdrawal amount to proceed. Keep earning to unlock withdrawals.
+                  You need to reach the minimum withdrawal amount to proceed.
+                  Keep earning to unlock withdrawals.
                 </p>
               </div>
             )}
@@ -130,33 +148,44 @@ export function PayoutPanel() {
                   </p>
                 ) : (
                   recentItems.map((tx) => (
-                    <div key={tx.id} className="flex items-center justify-between p-2.5 rounded-lg border bg-card hover:bg-muted/30 transition-colors group">
+                    <div
+                      key={tx.id}
+                      className="flex items-center justify-between p-2.5 rounded-lg border bg-card hover:bg-muted/30 transition-colors group"
+                    >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center bg-amber-100 text-amber-700">
                           <ArrowUpRight className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold">Withdrawal — {trimWithdrawalId(tx.id)}</p>
-                          <p className="text-[10px] text-muted-foreground">{formatDate(tx.requested_at)}</p>
+                          <p className="text-xs font-bold">
+                            Withdrawal — {trimWithdrawalId(tx.id)}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {formatDate(tx.requested_at)}
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs font-black">- {formatCurrency(Number(tx.amount), currency)}</p>
-                        <p className={`text-[10px] font-medium ${getStatusTone(tx.status)}`}>{tx.status}</p>
+                        <p className="text-xs font-black">
+                          - {formatCurrency(Number(tx.amount), currency)}
+                        </p>
+                        <p
+                          className={`text-[10px] font-medium ${getStatusTone(tx.status)}`}
+                        >
+                          {tx.status}
+                        </p>
                       </div>
                     </div>
                   ))
                 )}
               </div>
             </div>
-
-            {/* Revenue Share Notice removed per role consolidation request */}
           </>
         )}
       </CardContent>
 
-      <WithdrawModal 
-        isOpen={isWithdrawModalOpen} 
+      <WithdrawModal
+        isOpen={isWithdrawModalOpen}
         onClose={() => setIsWithdrawModalOpen(false)}
         walletDetails={walletDetails}
       />
@@ -179,14 +208,26 @@ export function PayoutPanel() {
           ) : (
             <div className="space-y-2">
               {paginatedItems.map((tx) => (
-                <div key={tx.id} className="rounded-lg border p-3 flex items-center justify-between gap-3">
+                <div
+                  key={tx.id}
+                  className="rounded-lg border p-3 flex items-center justify-between gap-3"
+                >
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold">Withdrawal — {trimWithdrawalId(tx.id)}</p>
-                    <p className="text-xs text-muted-foreground">Requested: {formatDate(tx.requested_at)}</p>
+                    <p className="text-sm font-semibold">
+                      Withdrawal — {trimWithdrawalId(tx.id)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Requested: {formatDate(tx.requested_at)}
+                    </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-black">- {formatCurrency(Number(tx.amount), currency)}</p>
-                    <Badge variant={getStatusBadgeVariant(tx.status)} className="mt-1 capitalize">
+                    <p className="text-sm font-black">
+                      - {formatCurrency(Number(tx.amount), currency)}
+                    </p>
+                    <Badge
+                      variant={getStatusBadgeVariant(tx.status)}
+                      className="mt-1 capitalize"
+                    >
                       {tx.status}
                     </Badge>
                   </div>
@@ -197,7 +238,8 @@ export function PayoutPanel() {
 
           <div className="flex items-center justify-between border-t pt-3">
             <p className="text-xs text-muted-foreground">
-              Page {transactionsPage} of {totalPages} {isPaginatedFetching ? '(Updating...)' : ''}
+              Page {transactionsPage} of {totalPages}{" "}
+              {isPaginatedFetching ? "(Updating...)" : ""}
             </p>
             <div className="flex items-center gap-2">
               <Button
@@ -205,7 +247,9 @@ export function PayoutPanel() {
                 variant="outline"
                 size="sm"
                 disabled={!canGoPrevious || isPaginatedFetching}
-                onClick={() => setTransactionsPage((prev) => Math.max(1, prev - 1))}
+                onClick={() =>
+                  setTransactionsPage((prev) => Math.max(1, prev - 1))
+                }
               >
                 <ChevronLeft className="w-4 h-4" />
                 Prev

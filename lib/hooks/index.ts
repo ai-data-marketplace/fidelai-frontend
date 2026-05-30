@@ -1,9 +1,14 @@
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import apiClient from '@/services/api-client';
-import { API_ENDPOINTS } from '@/services/endpoints';
-import tokenUtils from '@/lib/utils/token-utils';
-import { useAuth } from '@/context/auth-context';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
+import { toast } from "sonner";
+import apiClient from "@/services/api-client";
+import { API_ENDPOINTS } from "@/services/endpoints";
+import tokenUtils from "@/lib/utils/token-utils";
+import { useAuth } from "@/context/auth-context";
 
 export interface LoginRequest {
   email: string;
@@ -127,14 +132,17 @@ export interface PaginatedAdminPlatformUsersResponse {
 
 export function useAdminPlatformUsers(page = 1, pageSize = 10) {
   return useQuery({
-    queryKey: ['adminPlatformUsers', page, pageSize],
+    queryKey: ["adminPlatformUsers", page, pageSize],
     queryFn: async () => {
-      const { data } = await apiClient.get<PaginatedAdminPlatformUsersResponse>(API_ENDPOINTS.ADMIN.USERS, {
-        params: {
-          page,
-          page_size: pageSize,
+      const { data } = await apiClient.get<PaginatedAdminPlatformUsersResponse>(
+        API_ENDPOINTS.ADMIN.USERS,
+        {
+          params: {
+            page,
+            page_size: pageSize,
+          },
         },
-      });
+      );
       return data;
     },
     placeholderData: keepPreviousData,
@@ -146,15 +154,19 @@ export function useDeactivateAdminUser() {
 
   return useMutation({
     mutationFn: async (userId: string) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.ADMIN.DEACTIVATE_USER(userId));
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.ADMIN.DEACTIVATE_USER(userId),
+      );
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminPlatformUsers'] });
-      toast.success('User deactivated');
+      queryClient.invalidateQueries({ queryKey: ["adminPlatformUsers"] });
+      toast.success("User deactivated");
     },
     onError: (err: any) => {
-      toast.error(getUserFriendlyErrorMessage(err, 'Failed to deactivate user'));
+      toast.error(
+        getUserFriendlyErrorMessage(err, "Failed to deactivate user"),
+      );
     },
   });
 }
@@ -164,15 +176,19 @@ export function useReactivateAdminUser() {
 
   return useMutation({
     mutationFn: async (userId: string) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.ADMIN.REACTIVATE_USER(userId));
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.ADMIN.REACTIVATE_USER(userId),
+      );
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminPlatformUsers'] });
-      toast.success('User reactivated');
+      queryClient.invalidateQueries({ queryKey: ["adminPlatformUsers"] });
+      toast.success("User reactivated");
     },
     onError: (err: any) => {
-      toast.error(getUserFriendlyErrorMessage(err, 'Failed to reactivate user'));
+      toast.error(
+        getUserFriendlyErrorMessage(err, "Failed to reactivate user"),
+      );
     },
   });
 }
@@ -330,7 +346,7 @@ export interface ExpertTask {
   id: string;
   name: string;
   domain: string;
-  status: 'assigned' | 'in_progress' | 'submitted';
+  status: "assigned" | "in_progress" | "submitted";
   assigned_at: string;
   total_chunks: number;
 }
@@ -387,13 +403,9 @@ export interface AnnotationPayload {
   is_skipped: false;
 }
 
-/* ─────────────────────────────────────
-   Auth Hooks
-   ───────────────────────────────────── */
-
 export function useCurrentUser() {
   return useQuery({
-    queryKey: ['currentUser'],
+    queryKey: ["currentUser"],
     queryFn: async () => {
       const { data } = await apiClient.get<AuthUser>(API_ENDPOINTS.AUTH.ME);
       return data;
@@ -404,9 +416,11 @@ export function useCurrentUser() {
 
 export function useApplicationStatus(options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: ['applicationStatus'],
+    queryKey: ["applicationStatus"],
     queryFn: async () => {
-      const { data } = await apiClient.get<ApplicationStatusResponse>(API_ENDPOINTS.AUTH.APPLICATION_STATUS);
+      const { data } = await apiClient.get<ApplicationStatusResponse>(
+        API_ENDPOINTS.AUTH.APPLICATION_STATUS,
+      );
       return data;
     },
     retry: false,
@@ -414,21 +428,30 @@ export function useApplicationStatus(options?: { enabled?: boolean }) {
   });
 }
 
-export function useAdminRoleApplications(options?: { page?: number; pageSize?: number; status?: string; enabled?: boolean }) {
+export function useAdminRoleApplications(options?: {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+  enabled?: boolean;
+}) {
   const page = options?.page ?? 1;
   const pageSize = options?.pageSize ?? 10;
   const status = options?.status;
 
   return useQuery({
-    queryKey: ['adminRoleApplications', page, pageSize, status ?? 'pending'],
+    queryKey: ["adminRoleApplications", page, pageSize, status ?? "pending"],
     queryFn: async () => {
-      const { data } = await apiClient.get<PaginatedAdminRoleApplicationsResponse>(API_ENDPOINTS.ADMIN.ROLE_APPLICATIONS, {
-        params: {
-          page,
-          page_size: pageSize,
-          ...(status ? { status } : { status: 'pending' }),
-        },
-      });
+      const { data } =
+        await apiClient.get<PaginatedAdminRoleApplicationsResponse>(
+          API_ENDPOINTS.ADMIN.ROLE_APPLICATIONS,
+          {
+            params: {
+              page,
+              page_size: pageSize,
+              ...(status ? { status } : { status: "pending" }),
+            },
+          },
+        );
       return data;
     },
     placeholderData: keepPreviousData,
@@ -442,14 +465,16 @@ function updateAdminRoleApplicationCache(
   updatedApplication: AdminRoleApplication,
 ) {
   queryClient.setQueriesData<PaginatedAdminRoleApplicationsResponse>(
-    { queryKey: ['adminRoleApplications'] },
+    { queryKey: ["adminRoleApplications"] },
     (current) => {
       if (!current) return current;
 
       return {
         ...current,
         results: current.results.map((application) =>
-          application.id === updatedApplication.id ? updatedApplication : application,
+          application.id === updatedApplication.id
+            ? updatedApplication
+            : application,
         ),
       };
     },
@@ -461,24 +486,32 @@ export function useApproveAdminRoleApplication() {
 
   return useMutation({
     mutationFn: async (applicationId: string) => {
-      const { data } = await apiClient.post<AdminRoleApplication>(API_ENDPOINTS.ADMIN.APPROVE_ROLE_APPLICATION(applicationId));
+      const { data } = await apiClient.post<AdminRoleApplication>(
+        API_ENDPOINTS.ADMIN.APPROVE_ROLE_APPLICATION(applicationId),
+      );
       return data;
     },
     onMutate: async (applicationId: string) => {
-      await queryClient.cancelQueries({ queryKey: ['adminRoleApplications'] });
+      await queryClient.cancelQueries({ queryKey: ["adminRoleApplications"] });
 
-      const previous = queryClient.getQueriesData<PaginatedAdminRoleApplicationsResponse>({ queryKey: ['adminRoleApplications'] });
+      const previous =
+        queryClient.getQueriesData<PaginatedAdminRoleApplicationsResponse>({
+          queryKey: ["adminRoleApplications"],
+        });
 
       for (const [queryKey, data] of previous) {
-        queryClient.setQueryData(queryKey, (current: PaginatedAdminRoleApplicationsResponse | undefined) => {
-          if (!current) return current;
+        queryClient.setQueryData(
+          queryKey,
+          (current: PaginatedAdminRoleApplicationsResponse | undefined) => {
+            if (!current) return current;
 
-          return {
-            ...current,
-            count: Math.max(0, current.count - 1),
-            results: current.results.filter((a) => a.id !== applicationId),
-          };
-        });
+            return {
+              ...current,
+              count: Math.max(0, current.count - 1),
+              results: current.results.filter((a) => a.id !== applicationId),
+            };
+          },
+        );
       }
 
       return { previous };
@@ -491,10 +524,15 @@ export function useApproveAdminRoleApplication() {
       }
     },
     onSuccess: async (updatedApplication) => {
-      queryClient.setQueryData(['adminRoleApplication', updatedApplication.id], updatedApplication);
+      queryClient.setQueryData(
+        ["adminRoleApplication", updatedApplication.id],
+        updatedApplication,
+      );
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['adminRoleApplications'] });
+      await queryClient.invalidateQueries({
+        queryKey: ["adminRoleApplications"],
+      });
     },
   });
 }
@@ -504,24 +542,32 @@ export function useRejectAdminRoleApplication() {
 
   return useMutation({
     mutationFn: async (applicationId: string) => {
-      const { data } = await apiClient.post<AdminRoleApplication>(API_ENDPOINTS.ADMIN.REJECT_ROLE_APPLICATION(applicationId));
+      const { data } = await apiClient.post<AdminRoleApplication>(
+        API_ENDPOINTS.ADMIN.REJECT_ROLE_APPLICATION(applicationId),
+      );
       return data;
     },
     onMutate: async (applicationId: string) => {
-      await queryClient.cancelQueries({ queryKey: ['adminRoleApplications'] });
+      await queryClient.cancelQueries({ queryKey: ["adminRoleApplications"] });
 
-      const previous = queryClient.getQueriesData<PaginatedAdminRoleApplicationsResponse>({ queryKey: ['adminRoleApplications'] });
+      const previous =
+        queryClient.getQueriesData<PaginatedAdminRoleApplicationsResponse>({
+          queryKey: ["adminRoleApplications"],
+        });
 
       for (const [queryKey, data] of previous) {
-        queryClient.setQueryData(queryKey, (current: PaginatedAdminRoleApplicationsResponse | undefined) => {
-          if (!current) return current;
+        queryClient.setQueryData(
+          queryKey,
+          (current: PaginatedAdminRoleApplicationsResponse | undefined) => {
+            if (!current) return current;
 
-          return {
-            ...current,
-            count: Math.max(0, current.count - 1),
-            results: current.results.filter((a) => a.id !== applicationId),
-          };
-        });
+            return {
+              ...current,
+              count: Math.max(0, current.count - 1),
+              results: current.results.filter((a) => a.id !== applicationId),
+            };
+          },
+        );
       }
 
       return { previous };
@@ -534,10 +580,15 @@ export function useRejectAdminRoleApplication() {
       }
     },
     onSuccess: async (updatedApplication) => {
-      queryClient.setQueryData(['adminRoleApplication', updatedApplication.id], updatedApplication);
+      queryClient.setQueryData(
+        ["adminRoleApplication", updatedApplication.id],
+        updatedApplication,
+      );
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['adminRoleApplications'] });
+      await queryClient.invalidateQueries({
+        queryKey: ["adminRoleApplications"],
+      });
     },
   });
 }
@@ -547,15 +598,19 @@ export function useSubmitOnboardingComplete() {
 
   return useMutation({
     mutationFn: async (formData: FormData) => {
-      const { data } = await apiClient.post<OnboardingCompleteResponse>(API_ENDPOINTS.AUTH.ONBOARDING_COMPLETE, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const { data } = await apiClient.post<OnboardingCompleteResponse>(
+        API_ENDPOINTS.AUTH.ONBOARDING_COMPLETE,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
       return data;
     },
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['applicationStatus'] }),
-        queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
+        queryClient.invalidateQueries({ queryKey: ["applicationStatus"] }),
+        queryClient.invalidateQueries({ queryKey: ["currentUser"] }),
       ]);
     },
   });
@@ -567,13 +622,16 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: async (payload: LoginRequest) => {
-      const { data } = await apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, payload);
+      const { data } = await apiClient.post<LoginResponse>(
+        API_ENDPOINTS.AUTH.LOGIN,
+        payload,
+      );
       return data;
     },
     onSuccess: async (data) => {
       tokenUtils.storeTokens(data.access, data.refresh);
       await auth.login(data.access, data.refresh, data.user);
-      queryClient.setQueryData(['currentUser'], data.user);
+      queryClient.setQueryData(["currentUser"], data.user);
     },
   });
 }
@@ -581,7 +639,10 @@ export function useLogin() {
 export function useRegister() {
   return useMutation({
     mutationFn: async (payload: RegisterRequest) => {
-      const { data } = await apiClient.post<{ message: string; email: string }>(API_ENDPOINTS.AUTH.REGISTER, payload);
+      const { data } = await apiClient.post<{ message: string; email: string }>(
+        API_ENDPOINTS.AUTH.REGISTER,
+        payload,
+      );
       return data;
     },
   });
@@ -593,13 +654,16 @@ export function useVerifyEmail() {
 
   return useMutation({
     mutationFn: async (payload: VerifyEmailRequest) => {
-      const { data } = await apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH.VERIFY_EMAIL, payload);
+      const { data } = await apiClient.post<LoginResponse>(
+        API_ENDPOINTS.AUTH.VERIFY_EMAIL,
+        payload,
+      );
       return data;
     },
     onSuccess: async (data) => {
       tokenUtils.storeTokens(data.access, data.refresh);
       await auth.login(data.access, data.refresh, data.user);
-      queryClient.setQueryData(['currentUser'], data.user);
+      queryClient.setQueryData(["currentUser"], data.user);
     },
   });
 }
@@ -607,7 +671,10 @@ export function useVerifyEmail() {
 export function useResendCode() {
   return useMutation({
     mutationFn: async (payload: ResendCodeRequest) => {
-      const { data } = await apiClient.post<{ message: string }>(API_ENDPOINTS.AUTH.RESEND_CODE, payload);
+      const { data } = await apiClient.post<{ message: string }>(
+        API_ENDPOINTS.AUTH.RESEND_CODE,
+        payload,
+      );
       return data;
     },
   });
@@ -616,7 +683,10 @@ export function useResendCode() {
 export function useForgotPassword() {
   return useMutation({
     mutationFn: async (payload: ForgotPasswordRequest) => {
-      const { data } = await apiClient.post<{ message: string }>(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, payload);
+      const { data } = await apiClient.post<{ message: string }>(
+        API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
+        payload,
+      );
       return data;
     },
   });
@@ -625,7 +695,10 @@ export function useForgotPassword() {
 export function useResetPassword() {
   return useMutation({
     mutationFn: async (payload: ResetPasswordRequest) => {
-      const { data } = await apiClient.post<{ message: string }>(API_ENDPOINTS.AUTH.RESET_PASSWORD, payload);
+      const { data } = await apiClient.post<{ message: string }>(
+        API_ENDPOINTS.AUTH.RESET_PASSWORD,
+        payload,
+      );
       return data;
     },
   });
@@ -634,7 +707,10 @@ export function useResetPassword() {
 export function useChangePassword() {
   return useMutation({
     mutationFn: async (payload: ChangePasswordRequest) => {
-      const { data } = await apiClient.post<{ message: string }>(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, payload);
+      const { data } = await apiClient.post<{ message: string }>(
+        API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
+        payload,
+      );
       return data;
     },
   });
@@ -643,21 +719,22 @@ export function useChangePassword() {
 export function useDeleteAccount() {
   return useMutation({
     mutationFn: async (payload: DeleteAccountRequest) => {
-      const { data } = await apiClient.post<{ message: string }>(API_ENDPOINTS.AUTH.DELETE_ACCOUNT, payload);
+      const { data } = await apiClient.post<{ message: string }>(
+        API_ENDPOINTS.AUTH.DELETE_ACCOUNT,
+        payload,
+      );
       return data;
     },
   });
 }
 
-/* ─────────────────────────────────────
-   Dataset Hooks
-   ───────────────────────────────────── */
-
 export function useDatasets(params?: Record<string, string>) {
   return useQuery({
-    queryKey: ['datasets', params],
+    queryKey: ["datasets", params],
     queryFn: async () => {
-      const { data } = await apiClient.get(API_ENDPOINTS.DATASETS.LIST, { params });
+      const { data } = await apiClient.get(API_ENDPOINTS.DATASETS.LIST, {
+        params,
+      });
       return data;
     },
   });
@@ -665,7 +742,7 @@ export function useDatasets(params?: Record<string, string>) {
 
 export function useDataset(id: string) {
   return useQuery({
-    queryKey: ['dataset', id],
+    queryKey: ["dataset", id],
     queryFn: async () => {
       const { data } = await apiClient.get(API_ENDPOINTS.DATASETS.DETAIL(id));
       return data;
@@ -679,23 +756,29 @@ export function usePurchaseDataset() {
 
   return useMutation({
     mutationFn: async (datasetId: string) => {
-      const { data } = await apiClient.post<DatasetPurchaseResponse>(API_ENDPOINTS.DATASETS.PURCHASE(datasetId), {});
+      const { data } = await apiClient.post<DatasetPurchaseResponse>(
+        API_ENDPOINTS.DATASETS.PURCHASE(datasetId),
+        {},
+      );
       return data;
     },
     onSuccess: async (_data, datasetId) => {
-      await queryClient.invalidateQueries({ queryKey: ['dataset', datasetId] });
-      await queryClient.invalidateQueries({ queryKey: ['datasets'] });
+      await queryClient.invalidateQueries({ queryKey: ["dataset", datasetId] });
+      await queryClient.invalidateQueries({ queryKey: ["datasets"] });
     },
   });
 }
 
 export function usePurchases(page: number = 1) {
   return useQuery({
-    queryKey: ['purchases', page],
+    queryKey: ["purchases", page],
     queryFn: async () => {
-      const { data } = await apiClient.get<PaginatedPurchasesResponse>(API_ENDPOINTS.PURCHASES.LIST, {
-        params: { page },
-      });
+      const { data } = await apiClient.get<PaginatedPurchasesResponse>(
+        API_ENDPOINTS.PURCHASES.LIST,
+        {
+          params: { page },
+        },
+      );
       return data;
     },
   });
@@ -705,23 +788,30 @@ export function useUploadDataset() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (formData: FormData) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.DOCUMENTS.SUBMIT, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.DOCUMENTS.SUBMIT,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['datasets'] });
+      queryClient.invalidateQueries({ queryKey: ["datasets"] });
     },
   });
 }
 
 export function useMySubmissions(search?: string) {
   return useQuery({
-    queryKey: ['documentSubmissions', search],
+    queryKey: ["documentSubmissions", search],
     queryFn: async () => {
       const params = search ? { search } : undefined;
-      const { data } = await apiClient.get<DocumentSubmission[]>(API_ENDPOINTS.DOCUMENTS.MY_SUBMISSIONS, { params });
+      const { data } = await apiClient.get<DocumentSubmission[]>(
+        API_ENDPOINTS.DOCUMENTS.MY_SUBMISSIONS,
+        { params },
+      );
       return data;
     },
   });
@@ -729,9 +819,11 @@ export function useMySubmissions(search?: string) {
 
 export function useMySubmission(id: string) {
   return useQuery({
-    queryKey: ['documentSubmission', id],
+    queryKey: ["documentSubmission", id],
     queryFn: async () => {
-      const { data } = await apiClient.get<DocumentSubmission>(API_ENDPOINTS.DOCUMENTS.MY_SUBMISSION_DETAIL(id));
+      const { data } = await apiClient.get<DocumentSubmission>(
+        API_ENDPOINTS.DOCUMENTS.MY_SUBMISSION_DETAIL(id),
+      );
       return data;
     },
     enabled: !!id,
@@ -740,9 +832,11 @@ export function useMySubmission(id: string) {
 
 export function useProfile() {
   return useQuery({
-    queryKey: ['profile'],
+    queryKey: ["profile"],
     queryFn: async () => {
-      const { data } = await apiClient.get<ProfileResponse>(API_ENDPOINTS.AUTH.PROFILE);
+      const { data } = await apiClient.get<ProfileResponse>(
+        API_ENDPOINTS.AUTH.PROFILE,
+      );
       return data;
     },
     placeholderData: keepPreviousData,
@@ -753,32 +847,43 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: Partial<ProfileResponse> & { profile_picture_file?: File | null }) => {
+    mutationFn: async (
+      payload: Partial<ProfileResponse> & {
+        profile_picture_file?: File | null;
+      },
+    ) => {
       const formData = new FormData();
-      if (payload.full_name !== undefined) formData.append('full_name', payload.full_name);
-      if (payload.phone_number !== undefined) formData.append('phone_number', payload.phone_number ?? '');
-      if (payload.country !== undefined) formData.append('country', payload.country ?? '');
-      if (payload.native_language !== undefined) formData.append('native_language', payload.native_language ?? '');
-      if (payload.bio !== undefined) formData.append('bio', payload.bio ?? '');
+      if (payload.full_name !== undefined)
+        formData.append("full_name", payload.full_name);
+      if (payload.phone_number !== undefined)
+        formData.append("phone_number", payload.phone_number ?? "");
+      if (payload.country !== undefined)
+        formData.append("country", payload.country ?? "");
+      if (payload.native_language !== undefined)
+        formData.append("native_language", payload.native_language ?? "");
+      if (payload.bio !== undefined) formData.append("bio", payload.bio ?? "");
       if (payload.profile_picture_file) {
-        formData.append('profile_picture', payload.profile_picture_file);
+        formData.append("profile_picture", payload.profile_picture_file);
       }
-      const { data } = await apiClient.patch<ProfileResponse>(API_ENDPOINTS.AUTH.PROFILE, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const { data } = await apiClient.patch<ProfileResponse>(
+        API_ENDPOINTS.AUTH.PROFILE,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
       return data;
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['profile'], data);
-      toast.success('Profile updated');
+      queryClient.setQueryData(["profile"], data);
+      toast.success("Profile updated");
     },
     onError: () => {
-      toast.error('Failed to update profile');
+      toast.error("Failed to update profile");
     },
   });
 }
 
-/* Notifications */
 export interface NotificationItemResponse {
   id: string;
   category: string;
@@ -798,11 +903,17 @@ export interface PaginatedNotificationsResponse {
   results: NotificationItemResponse[];
 }
 
-export function useNotifications(params?: { page?: number; page_size?: number }) {
+export function useNotifications(params?: {
+  page?: number;
+  page_size?: number;
+}) {
   return useQuery({
-    queryKey: ['notifications', params],
+    queryKey: ["notifications", params],
     queryFn: async () => {
-      const { data } = await apiClient.get<PaginatedNotificationsResponse>(API_ENDPOINTS.NOTIFICATIONS.LIST, { params });
+      const { data } = await apiClient.get<PaginatedNotificationsResponse>(
+        API_ENDPOINTS.NOTIFICATIONS.LIST,
+        { params },
+      );
       return data;
     },
     placeholderData: keepPreviousData,
@@ -811,9 +922,11 @@ export function useNotifications(params?: { page?: number; page_size?: number })
 
 export function useUnreadNotificationCount() {
   return useQuery({
-    queryKey: ['notifications', 'unread_count'],
+    queryKey: ["notifications", "unread_count"],
     queryFn: async () => {
-      const { data } = await apiClient.get<{ unread_count: number }>(API_ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT);
+      const { data } = await apiClient.get<{ unread_count: number }>(
+        API_ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT,
+      );
       return data.unread_count;
     },
     placeholderData: 0,
@@ -824,12 +937,16 @@ export function useMarkNotificationRead() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.NOTIFICATIONS.MARK_READ(id));
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.NOTIFICATIONS.MARK_READ(id),
+      );
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread_count'] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({
+        queryKey: ["notifications", "unread_count"],
+      });
     },
   });
 }
@@ -838,33 +955,40 @@ export function useMarkAllNotificationsRead() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const { data } = await apiClient.post(API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ);
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ,
+      );
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread_count'] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({
+        queryKey: ["notifications", "unread_count"],
+      });
     },
   });
 }
 
-/* ─────────────────────────────────────
-   Task Hooks
-   ───────────────────────────────────── */
-
 export function useTasks(params?: Record<string, string>) {
   return useQuery({
-    queryKey: ['tasks', params],
+    queryKey: ["tasks", params],
     queryFn: async () => {
-      const { data } = await apiClient.get<PaginatedAssignmentsResponse>(API_ENDPOINTS.TASKS.MY_ASSIGNMENTS, { params });
+      const { data } = await apiClient.get<PaginatedAssignmentsResponse>(
+        API_ENDPOINTS.TASKS.MY_ASSIGNMENTS,
+        { params },
+      );
       return data;
     },
   });
 }
 
-export function useMyAssignments(params?: { page?: number; page_size?: number; status?: string }) {
+export function useMyAssignments(params?: {
+  page?: number;
+  page_size?: number;
+  status?: string;
+}) {
   return useQuery({
-    queryKey: ['myAssignments', params],
+    queryKey: ["myAssignments", params],
     queryFn: async () => {
       const requestParams = {
         page: params?.page,
@@ -872,18 +996,25 @@ export function useMyAssignments(params?: { page?: number; page_size?: number; s
         ...(params?.status && { status: params.status }),
       };
 
-      const { data } = await apiClient.get<PaginatedAssignmentsResponse>(API_ENDPOINTS.TASKS.MY_ASSIGNMENTS, {
-        params: requestParams,
-      });
+      const { data } = await apiClient.get<PaginatedAssignmentsResponse>(
+        API_ENDPOINTS.TASKS.MY_ASSIGNMENTS,
+        {
+          params: requestParams,
+        },
+      );
       return data;
     },
     placeholderData: keepPreviousData,
   });
 }
 
-export function useNlpTasks(params?: { page?: number; page_size?: number; status?: string }) {
+export function useNlpTasks(params?: {
+  page?: number;
+  page_size?: number;
+  status?: string;
+}) {
   return useQuery({
-    queryKey: ['nlpTasks', params],
+    queryKey: ["nlpTasks", params],
     queryFn: async () => {
       const requestParams = {
         page: params?.page,
@@ -891,9 +1022,12 @@ export function useNlpTasks(params?: { page?: number; page_size?: number; status
         ...(params?.status && { status: params.status }),
       };
 
-      const { data } = await apiClient.get<PaginatedNlpTasksResponse>(API_ENDPOINTS.TASKS.NLP_TASKS, {
-        params: requestParams,
-      });
+      const { data } = await apiClient.get<PaginatedNlpTasksResponse>(
+        API_ENDPOINTS.TASKS.NLP_TASKS,
+        {
+          params: requestParams,
+        },
+      );
       return data;
     },
     placeholderData: keepPreviousData,
@@ -905,11 +1039,13 @@ export function useAcceptNlpTask() {
 
   return useMutation({
     mutationFn: async (taskId: string) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.TASKS.NLP_ACCEPT_TASK(taskId));
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.TASKS.NLP_ACCEPT_TASK(taskId),
+      );
       return data;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['nlpTasks'] });
+      await queryClient.invalidateQueries({ queryKey: ["nlpTasks"] });
     },
   });
 }
@@ -919,23 +1055,31 @@ export function useDeclineNlpTask() {
 
   return useMutation({
     mutationFn: async (taskId: string) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.TASKS.NLP_DECLINE_TASK(taskId));
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.TASKS.NLP_DECLINE_TASK(taskId),
+      );
       return data;
     },
     onMutate: async (taskId: string) => {
-      await queryClient.cancelQueries({ queryKey: ['nlpTasks'] });
+      await queryClient.cancelQueries({ queryKey: ["nlpTasks"] });
 
-      const previousTasks = queryClient.getQueriesData<PaginatedNlpTasksResponse>({ queryKey: ['nlpTasks'] });
+      const previousTasks =
+        queryClient.getQueriesData<PaginatedNlpTasksResponse>({
+          queryKey: ["nlpTasks"],
+        });
 
-      queryClient.setQueriesData<PaginatedNlpTasksResponse>({ queryKey: ['nlpTasks'] }, (current) => {
-        if (!current) return current;
+      queryClient.setQueriesData<PaginatedNlpTasksResponse>(
+        { queryKey: ["nlpTasks"] },
+        (current) => {
+          if (!current) return current;
 
-        return {
-          ...current,
-          count: Math.max(0, current.count - 1),
-          results: current.results.filter((task) => task.task_id !== taskId),
-        };
-      });
+          return {
+            ...current,
+            count: Math.max(0, current.count - 1),
+            results: current.results.filter((task) => task.task_id !== taskId),
+          };
+        },
+      );
 
       return { previousTasks };
     },
@@ -946,19 +1090,21 @@ export function useDeclineNlpTask() {
         queryClient.setQueryData(queryKey, data);
       }
 
-      toast.error('Could not decline the task. Please try again.');
+      toast.error("Could not decline the task. Please try again.");
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['nlpTasks'] });
+      await queryClient.invalidateQueries({ queryKey: ["nlpTasks"] });
     },
   });
 }
 
 export function useNlpTaskDetail(taskId: string) {
   return useQuery({
-    queryKey: ['nlpTaskDetail', taskId],
+    queryKey: ["nlpTaskDetail", taskId],
     queryFn: async () => {
-      const { data } = await apiClient.get<NlpTaskDetail>(API_ENDPOINTS.TASKS.NLP_TASK_DETAIL(taskId));
+      const { data } = await apiClient.get<NlpTaskDetail>(
+        API_ENDPOINTS.TASKS.NLP_TASK_DETAIL(taskId),
+      );
       return data;
     },
     enabled: !!taskId,
@@ -967,9 +1113,11 @@ export function useNlpTaskDetail(taskId: string) {
 
 export function useNlpTaskProgress(taskId: string) {
   return useQuery({
-    queryKey: ['nlpTaskProgress', taskId],
+    queryKey: ["nlpTaskProgress", taskId],
     queryFn: async () => {
-      const { data } = await apiClient.get<NlpTaskProgress>(API_ENDPOINTS.TASKS.NLP_TASK_PROGRESS(taskId));
+      const { data } = await apiClient.get<NlpTaskProgress>(
+        API_ENDPOINTS.TASKS.NLP_TASK_PROGRESS(taskId),
+      );
       return data;
     },
     enabled: !!taskId,
@@ -980,13 +1128,22 @@ export function useAnnotateNlpChunk() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ chunkId, payload }: { chunkId: string; payload: any }) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.TASKS.NLP_ANNOTATE_CHUNK(chunkId), payload);
+    mutationFn: async ({
+      chunkId,
+      payload,
+    }: {
+      chunkId: string;
+      payload: any;
+    }) => {
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.TASKS.NLP_ANNOTATE_CHUNK(chunkId),
+        payload,
+      );
       return data;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['nlpTaskDetail'] });
-      await queryClient.invalidateQueries({ queryKey: ['nlpTaskProgress'] });
+      await queryClient.invalidateQueries({ queryKey: ["nlpTaskDetail"] });
+      await queryClient.invalidateQueries({ queryKey: ["nlpTaskProgress"] });
     },
   });
 }
@@ -996,12 +1153,14 @@ export function useAcceptAssignment() {
 
   return useMutation({
     mutationFn: async (assignmentId: string) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.TASKS.ACCEPT_ASSIGNMENT(assignmentId));
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.TASKS.ACCEPT_ASSIGNMENT(assignmentId),
+      );
       return data;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['myAssignments'] });
-      await queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      await queryClient.invalidateQueries({ queryKey: ["myAssignments"] });
+      await queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 }
@@ -1011,23 +1170,33 @@ export function useDeclineAssignment() {
 
   return useMutation({
     mutationFn: async (assignmentId: string) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.TASKS.DECLINE_ASSIGNMENT(assignmentId));
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.TASKS.DECLINE_ASSIGNMENT(assignmentId),
+      );
       return data;
     },
     onMutate: async (assignmentId: string) => {
-      await queryClient.cancelQueries({ queryKey: ['myAssignments'] });
+      await queryClient.cancelQueries({ queryKey: ["myAssignments"] });
 
-      const previousAssignments = queryClient.getQueriesData<PaginatedAssignmentsResponse>({ queryKey: ['myAssignments'] });
+      const previousAssignments =
+        queryClient.getQueriesData<PaginatedAssignmentsResponse>({
+          queryKey: ["myAssignments"],
+        });
 
-      queryClient.setQueriesData<PaginatedAssignmentsResponse>({ queryKey: ['myAssignments'] }, (current) => {
-        if (!current) return current;
+      queryClient.setQueriesData<PaginatedAssignmentsResponse>(
+        { queryKey: ["myAssignments"] },
+        (current) => {
+          if (!current) return current;
 
-        return {
-          ...current,
-          count: Math.max(0, current.count - 1),
-          results: current.results.filter((assignment) => assignment.assignment_id !== assignmentId),
-        };
-      });
+          return {
+            ...current,
+            count: Math.max(0, current.count - 1),
+            results: current.results.filter(
+              (assignment) => assignment.assignment_id !== assignmentId,
+            ),
+          };
+        },
+      );
 
       return { previousAssignments };
     },
@@ -1038,11 +1207,11 @@ export function useDeclineAssignment() {
         queryClient.setQueryData(queryKey, data);
       }
 
-      toast.error('Could not decline the assignment. Please try again.');
+      toast.error("Could not decline the assignment. Please try again.");
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['myAssignments'] });
-      await queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      await queryClient.invalidateQueries({ queryKey: ["myAssignments"] });
+      await queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 }
@@ -1051,20 +1220,25 @@ export function useSubmitTask() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, payload }: { id: string; payload: unknown }) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.TASKS.SUBMIT(id), payload);
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.TASKS.SUBMIT(id),
+        payload,
+      );
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 }
 
 export function useAssignmentChunks(assignmentId: string) {
   return useQuery({
-    queryKey: ['assignmentChunks', assignmentId],
+    queryKey: ["assignmentChunks", assignmentId],
     queryFn: async () => {
-      const { data } = await apiClient.get<AssignmentChunk[]>(API_ENDPOINTS.TASKS.GET_CHUNKS(assignmentId));
+      const { data } = await apiClient.get<AssignmentChunk[]>(
+        API_ENDPOINTS.TASKS.GET_CHUNKS(assignmentId),
+      );
       return data;
     },
     enabled: !!assignmentId,
@@ -1073,9 +1247,11 @@ export function useAssignmentChunks(assignmentId: string) {
 
 export function useAssignmentProgress(assignmentId: string) {
   return useQuery({
-    queryKey: ['assignmentProgress', assignmentId],
+    queryKey: ["assignmentProgress", assignmentId],
     queryFn: async () => {
-      const { data } = await apiClient.get<AssignmentProgress>(API_ENDPOINTS.TASKS.GET_PROGRESS(assignmentId));
+      const { data } = await apiClient.get<AssignmentProgress>(
+        API_ENDPOINTS.TASKS.GET_PROGRESS(assignmentId),
+      );
       return data;
     },
     enabled: !!assignmentId,
@@ -1086,24 +1262,33 @@ export function useSubmitAnnotation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ chunkId, payload }: { chunkId: string; payload: AnnotationPayload }) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.TASKS.SUBMIT_ANNOTATION(chunkId), payload);
+    mutationFn: async ({
+      chunkId,
+      payload,
+    }: {
+      chunkId: string;
+      payload: AnnotationPayload;
+    }) => {
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.TASKS.SUBMIT_ANNOTATION(chunkId),
+        payload,
+      );
       return data;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['assignmentChunks'] });
-      await queryClient.invalidateQueries({ queryKey: ['assignmentProgress'] });
+      await queryClient.invalidateQueries({ queryKey: ["assignmentChunks"] });
+      await queryClient.invalidateQueries({ queryKey: ["assignmentProgress"] });
     },
   });
 }
 
-/* ─────────────────────────────────────
-   Expert Hooks
-   ───────────────────────────────────── */
-
-export function useExpertTasks(params?: { page?: number; page_size?: number; status?: string }) {
+export function useExpertTasks(params?: {
+  page?: number;
+  page_size?: number;
+  status?: string;
+}) {
   return useQuery({
-    queryKey: ['expertTasks', params],
+    queryKey: ["expertTasks", params],
     queryFn: async () => {
       const requestParams = {
         page: params?.page,
@@ -1111,9 +1296,12 @@ export function useExpertTasks(params?: { page?: number; page_size?: number; sta
         ...(params?.status && { status: params.status }),
       };
 
-      const { data } = await apiClient.get<PaginatedExpertTasksResponse>(API_ENDPOINTS.EXPERT.QUEUE, {
-        params: requestParams,
-      });
+      const { data } = await apiClient.get<PaginatedExpertTasksResponse>(
+        API_ENDPOINTS.EXPERT.QUEUE,
+        {
+          params: requestParams,
+        },
+      );
       return data;
     },
   });
@@ -1124,11 +1312,13 @@ export function useAcceptExpertTask() {
 
   return useMutation({
     mutationFn: async (taskId: string) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.EXPERT.ACCEPT_TASK(taskId));
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.EXPERT.ACCEPT_TASK(taskId),
+      );
       return data;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['expertTasks'] });
+      await queryClient.invalidateQueries({ queryKey: ["expertTasks"] });
     },
   });
 }
@@ -1138,23 +1328,31 @@ export function useDeclineExpertTask() {
 
   return useMutation({
     mutationFn: async (taskId: string) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.EXPERT.DECLINE_TASK(taskId));
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.EXPERT.DECLINE_TASK(taskId),
+      );
       return data;
     },
     onMutate: async (taskId: string) => {
-      await queryClient.cancelQueries({ queryKey: ['expertTasks'] });
+      await queryClient.cancelQueries({ queryKey: ["expertTasks"] });
 
-      const previousTasks = queryClient.getQueriesData<PaginatedExpertTasksResponse>({ queryKey: ['expertTasks'] });
+      const previousTasks =
+        queryClient.getQueriesData<PaginatedExpertTasksResponse>({
+          queryKey: ["expertTasks"],
+        });
 
-      queryClient.setQueriesData<PaginatedExpertTasksResponse>({ queryKey: ['expertTasks'] }, (current) => {
-        if (!current) return current;
+      queryClient.setQueriesData<PaginatedExpertTasksResponse>(
+        { queryKey: ["expertTasks"] },
+        (current) => {
+          if (!current) return current;
 
-        return {
-          ...current,
-          count: Math.max(0, current.count - 1),
-          results: current.results.filter((task) => task.id !== taskId),
-        };
-      });
+          return {
+            ...current,
+            count: Math.max(0, current.count - 1),
+            results: current.results.filter((task) => task.id !== taskId),
+          };
+        },
+      );
 
       return { previousTasks };
     },
@@ -1165,10 +1363,10 @@ export function useDeclineExpertTask() {
         queryClient.setQueryData(queryKey, data);
       }
 
-      toast.error('Could not decline the task. Please try again.');
+      toast.error("Could not decline the task. Please try again.");
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['expertTasks'] });
+      await queryClient.invalidateQueries({ queryKey: ["expertTasks"] });
     },
   });
 }
@@ -1217,21 +1415,23 @@ export interface ExpertProgress {
 }
 
 export interface ExpertResolvePayload {
-  domain_match: 'match' | 'not_match' | 'uncertain';
+  domain_match: "match" | "not_match" | "uncertain";
   is_amharic: boolean;
-  readability: 'high' | 'medium' | 'low';
-  safety_label: 'safe' | 'unsafe';
-  confidence: 'high' | 'medium' | 'low';
+  readability: "high" | "medium" | "low";
+  safety_label: "safe" | "unsafe";
+  confidence: "high" | "medium" | "low";
   notes?: string;
   resolution_reasoning: string;
-  final_decision: 'approved' | 'rejected';
+  final_decision: "approved" | "rejected";
 }
 
 export function useExpertChunks(taskId: string) {
   return useQuery({
-    queryKey: ['expertChunks', taskId],
+    queryKey: ["expertChunks", taskId],
     queryFn: async () => {
-      const { data } = await apiClient.get<ExpertChunksResponse>(API_ENDPOINTS.EXPERT.GET_CHUNKS(taskId));
+      const { data } = await apiClient.get<ExpertChunksResponse>(
+        API_ENDPOINTS.EXPERT.GET_CHUNKS(taskId),
+      );
       return data;
     },
     enabled: !!taskId,
@@ -1242,32 +1442,43 @@ export function useResolveExpertChunk(taskId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ chunkId, payload }: { chunkId: string | number; payload: ExpertResolvePayload }) => {
-      const { data } = await apiClient.post(API_ENDPOINTS.EXPERT.RESOLVE_CHUNK(chunkId), payload);
+    mutationFn: async ({
+      chunkId,
+      payload,
+    }: {
+      chunkId: string | number;
+      payload: ExpertResolvePayload;
+    }) => {
+      const { data } = await apiClient.post(
+        API_ENDPOINTS.EXPERT.RESOLVE_CHUNK(chunkId),
+        payload,
+      );
       return data;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['expertChunks', taskId] });
-      await queryClient.invalidateQueries({ queryKey: ['expertProgress', taskId] });
-      await queryClient.invalidateQueries({ queryKey: ['expertTasks'] });
+      await queryClient.invalidateQueries({
+        queryKey: ["expertChunks", taskId],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["expertProgress", taskId],
+      });
+      await queryClient.invalidateQueries({ queryKey: ["expertTasks"] });
     },
   });
 }
 
 export function useExpertProgress(taskId: string) {
   return useQuery({
-    queryKey: ['expertProgress', taskId],
+    queryKey: ["expertProgress", taskId],
     queryFn: async () => {
-      const { data } = await apiClient.get<ExpertProgress>(API_ENDPOINTS.EXPERT.GET_PROGRESS(taskId));
+      const { data } = await apiClient.get<ExpertProgress>(
+        API_ENDPOINTS.EXPERT.GET_PROGRESS(taskId),
+      );
       return data;
     },
     enabled: !!taskId,
   });
 }
-
-/* ─────────────────────────────────────
-   Payments Hooks
-   ───────────────────────────────────── */
 
 export interface WalletDetails {
   available_points: number;
@@ -1303,9 +1514,11 @@ export interface BanksResponse {
 
 export function useWalletDetails() {
   return useQuery({
-    queryKey: ['walletDetails'],
+    queryKey: ["walletDetails"],
     queryFn: async () => {
-      const { data } = await apiClient.get<WalletDetails>(API_ENDPOINTS.PAYMENTS.WALLET_DETAILS);
+      const { data } = await apiClient.get<WalletDetails>(
+        API_ENDPOINTS.PAYMENTS.WALLET_DETAILS,
+      );
       return data;
     },
   });
@@ -1313,9 +1526,11 @@ export function useWalletDetails() {
 
 export function usePaymentBanks() {
   return useQuery({
-    queryKey: ['paymentBanks'],
+    queryKey: ["paymentBanks"],
     queryFn: async () => {
-      const { data } = await apiClient.get<BanksResponse>(API_ENDPOINTS.PAYMENTS.BANKS);
+      const { data } = await apiClient.get<BanksResponse>(
+        API_ENDPOINTS.PAYMENTS.BANKS,
+      );
       return data;
     },
   });
@@ -1355,23 +1570,22 @@ export interface WithdrawalsListResponse {
 
 export function useWithdrawalsList(page = 1, pageSize = 10) {
   return useQuery({
-    queryKey: ['withdrawalsList', page, pageSize],
+    queryKey: ["withdrawalsList", page, pageSize],
     queryFn: async () => {
-      const { data } = await apiClient.get<WithdrawalsListResponse>(API_ENDPOINTS.PAYMENTS.WITHDRAWALS_LIST, {
-        params: {
-          page,
-          page_size: pageSize,
+      const { data } = await apiClient.get<WithdrawalsListResponse>(
+        API_ENDPOINTS.PAYMENTS.WITHDRAWALS_LIST,
+        {
+          params: {
+            page,
+            page_size: pageSize,
+          },
         },
-      });
+      );
       return data;
     },
     placeholderData: keepPreviousData,
   });
 }
-
-/* ─────────────────────────────────────
-   Scoring Hooks
-   ───────────────────────────────────── */
 
 export interface ScoreConfig {
   id: number;
@@ -1403,7 +1617,11 @@ export interface AnnotatorOverviewCard {
 }
 
 export interface AnnotatorOverviewGraphs {
-  weekly_performance: Array<{ period: string; tasks_completed: number; points_earned: number }>;
+  weekly_performance: Array<{
+    period: string;
+    tasks_completed: number;
+    points_earned: number;
+  }>;
   confidence_distribution: Array<{ label: string; value: number }>;
   readability_distribution: Array<{ label: string; value: number }>;
   avg_time_trend: Array<{ period: string; avg_time_minutes: number }>;
@@ -1477,9 +1695,11 @@ export interface ExpertOverviewResponse {
 
 export function useAnnotatorOverview() {
   return useQuery({
-    queryKey: ['annotatorOverview'],
+    queryKey: ["annotatorOverview"],
     queryFn: async () => {
-      const { data } = await apiClient.get<AnnotatorOverviewResponse>(API_ENDPOINTS.ANALYTICS.ANNOTATOR_OVERVIEW);
+      const { data } = await apiClient.get<AnnotatorOverviewResponse>(
+        API_ENDPOINTS.ANALYTICS.ANNOTATOR_OVERVIEW,
+      );
       return data;
     },
     placeholderData: keepPreviousData,
@@ -1488,9 +1708,11 @@ export function useAnnotatorOverview() {
 
 export function useAnnotatorDashboard() {
   return useQuery({
-    queryKey: ['annotatorDashboard'],
+    queryKey: ["annotatorDashboard"],
     queryFn: async () => {
-      const { data } = await apiClient.get<AnnotatorDashboardResponse>(API_ENDPOINTS.ANALYTICS.ANNOTATOR_DASHBOARD);
+      const { data } = await apiClient.get<AnnotatorDashboardResponse>(
+        API_ENDPOINTS.ANALYTICS.ANNOTATOR_DASHBOARD,
+      );
       return data;
     },
     placeholderData: keepPreviousData,
@@ -1499,9 +1721,11 @@ export function useAnnotatorDashboard() {
 
 export function useContributorDashboard() {
   return useQuery({
-    queryKey: ['contributorDashboard'],
+    queryKey: ["contributorDashboard"],
     queryFn: async () => {
-      const { data } = await apiClient.get<ContributorDashboardResponse>(API_ENDPOINTS.ANALYTICS.CONTRIBUTOR_DASHBOARD);
+      const { data } = await apiClient.get<ContributorDashboardResponse>(
+        API_ENDPOINTS.ANALYTICS.CONTRIBUTOR_DASHBOARD,
+      );
       return data;
     },
     placeholderData: keepPreviousData,
@@ -1530,9 +1754,11 @@ export interface ExpertDashboardResponse {
 
 export function useExpertOverview() {
   return useQuery({
-    queryKey: ['expertOverview'],
+    queryKey: ["expertOverview"],
     queryFn: async () => {
-      const { data } = await apiClient.get<ExpertOverviewResponse>(API_ENDPOINTS.ANALYTICS.EXPERT_OVERVIEW);
+      const { data } = await apiClient.get<ExpertOverviewResponse>(
+        API_ENDPOINTS.ANALYTICS.EXPERT_OVERVIEW,
+      );
       return data;
     },
     placeholderData: keepPreviousData,
@@ -1541,9 +1767,11 @@ export function useExpertOverview() {
 
 export function useExpertDashboard() {
   return useQuery({
-    queryKey: ['expertDashboard'],
+    queryKey: ["expertDashboard"],
     queryFn: async () => {
-      const { data } = await apiClient.get<ExpertDashboardResponse>(API_ENDPOINTS.ANALYTICS.EXPERT_DASHBOARD);
+      const { data } = await apiClient.get<ExpertDashboardResponse>(
+        API_ENDPOINTS.ANALYTICS.EXPERT_DASHBOARD,
+      );
       return data;
     },
     placeholderData: keepPreviousData,
@@ -1576,9 +1804,11 @@ export interface AdminDashboardResponse {
 
 export function useAdminDashboard() {
   return useQuery({
-    queryKey: ['adminDashboard'],
+    queryKey: ["adminDashboard"],
     queryFn: async () => {
-      const { data } = await apiClient.get<AdminDashboardResponse>(API_ENDPOINTS.ANALYTICS.ADMIN_DASHBOARD);
+      const { data } = await apiClient.get<AdminDashboardResponse>(
+        API_ENDPOINTS.ANALYTICS.ADMIN_DASHBOARD,
+      );
       return data;
     },
     placeholderData: keepPreviousData,
@@ -1630,9 +1860,11 @@ export interface BuyerDashboardResponse {
 
 export function useBuyerDashboard() {
   return useQuery({
-    queryKey: ['buyerDashboard'],
+    queryKey: ["buyerDashboard"],
     queryFn: async () => {
-      const { data } = await apiClient.get<BuyerDashboardResponse>(API_ENDPOINTS.ANALYTICS.BUYER_DASHBOARD);
+      const { data } = await apiClient.get<BuyerDashboardResponse>(
+        API_ENDPOINTS.ANALYTICS.BUYER_DASHBOARD,
+      );
       return data;
     },
     placeholderData: keepPreviousData,
@@ -1641,9 +1873,11 @@ export function useBuyerDashboard() {
 
 export function useScoreConfigs() {
   return useQuery({
-    queryKey: ['scoreConfigs'],
+    queryKey: ["scoreConfigs"],
     queryFn: async () => {
-      const { data } = await apiClient.get<ScoreConfig[]>(API_ENDPOINTS.SCORING.SCORE_CONFIGS);
+      const { data } = await apiClient.get<ScoreConfig[]>(
+        API_ENDPOINTS.SCORING.SCORE_CONFIGS,
+      );
       return data;
     },
   });
@@ -1652,16 +1886,21 @@ export function useScoreConfigs() {
 export function useCreateScoreConfig() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: Omit<ScoreConfig, 'id'>) => {
-      const { data } = await apiClient.post<ScoreConfig>(API_ENDPOINTS.SCORING.SCORE_CONFIGS, payload);
+    mutationFn: async (payload: Omit<ScoreConfig, "id">) => {
+      const { data } = await apiClient.post<ScoreConfig>(
+        API_ENDPOINTS.SCORING.SCORE_CONFIGS,
+        payload,
+      );
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['scoreConfigs'] });
-      toast.success('Score config created');
+      queryClient.invalidateQueries({ queryKey: ["scoreConfigs"] });
+      toast.success("Score config created");
     },
     onError: (err: any) => {
-      toast.error(getUserFriendlyErrorMessage(err, 'Failed to create score config'));
+      toast.error(
+        getUserFriendlyErrorMessage(err, "Failed to create score config"),
+      );
     },
   });
 }
@@ -1669,25 +1908,38 @@ export function useCreateScoreConfig() {
 export function useUpdateScoreConfig() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, payload }: { id: number; payload: Partial<ScoreConfig> }) => {
-      const { data } = await apiClient.patch<ScoreConfig>(`${API_ENDPOINTS.SCORING.SCORE_CONFIGS}${id}/`, payload);
+    mutationFn: async ({
+      id,
+      payload,
+    }: {
+      id: number;
+      payload: Partial<ScoreConfig>;
+    }) => {
+      const { data } = await apiClient.patch<ScoreConfig>(
+        `${API_ENDPOINTS.SCORING.SCORE_CONFIGS}${id}/`,
+        payload,
+      );
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['scoreConfigs'] });
-      toast.success('Score config updated');
+      queryClient.invalidateQueries({ queryKey: ["scoreConfigs"] });
+      toast.success("Score config updated");
     },
     onError: (err: any) => {
-      toast.error(getUserFriendlyErrorMessage(err, 'Failed to update score config'));
+      toast.error(
+        getUserFriendlyErrorMessage(err, "Failed to update score config"),
+      );
     },
   });
 }
 
 export function usePayoutRules() {
   return useQuery({
-    queryKey: ['payoutRules'],
+    queryKey: ["payoutRules"],
     queryFn: async () => {
-      const { data } = await apiClient.get<PayoutRule[]>(API_ENDPOINTS.PAYMENTS.PAYOUT_RULES);
+      const { data } = await apiClient.get<PayoutRule[]>(
+        API_ENDPOINTS.PAYMENTS.PAYOUT_RULES,
+      );
       return data;
     },
   });
@@ -1696,29 +1948,40 @@ export function usePayoutRules() {
 export function useUpdatePayoutRule() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, payload }: { id: string; payload: Partial<Omit<PayoutRule, 'id' | 'created_at' | 'updated_at'>> }) => {
-      const { data } = await apiClient.patch<PayoutRule>(API_ENDPOINTS.PAYMENTS.PAYOUT_RULES_UPDATE(id), payload);
+    mutationFn: async ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: Partial<Omit<PayoutRule, "id" | "created_at" | "updated_at">>;
+    }) => {
+      const { data } = await apiClient.patch<PayoutRule>(
+        API_ENDPOINTS.PAYMENTS.PAYOUT_RULES_UPDATE(id),
+        payload,
+      );
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payoutRules'] });
-      toast.success('Payout rule updated');
+      queryClient.invalidateQueries({ queryKey: ["payoutRules"] });
+      toast.success("Payout rule updated");
     },
     onError: (err: any) => {
-      toast.error(getUserFriendlyErrorMessage(err, 'Failed to update payout rule'));
+      toast.error(
+        getUserFriendlyErrorMessage(err, "Failed to update payout rule"),
+      );
     },
   });
 }
 
 function getFirstString(value: unknown): string | null {
-  if (typeof value === 'string' && value.trim()) return value.trim();
+  if (typeof value === "string" && value.trim()) return value.trim();
   if (Array.isArray(value)) {
     for (const item of value) {
       const found = getFirstString(item);
       if (found) return found;
     }
   }
-  if (value && typeof value === 'object') {
+  if (value && typeof value === "object") {
     for (const item of Object.values(value)) {
       const found = getFirstString(item);
       if (found) return found;
@@ -1728,14 +1991,17 @@ function getFirstString(value: unknown): string | null {
 }
 
 function parseEmbeddedJsonText(rawText: string): string | null {
-  const jsonStart = rawText.indexOf('{');
-  const jsonEnd = rawText.lastIndexOf('}');
+  const jsonStart = rawText.indexOf("{");
+  const jsonEnd = rawText.lastIndexOf("}");
   if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) return null;
 
   const jsonText = rawText.slice(jsonStart, jsonEnd + 1);
   try {
     const parsed = JSON.parse(jsonText) as Record<string, unknown>;
-    const candidate = getFirstString(parsed?.message) || getFirstString(parsed?.detail) || getFirstString(parsed?.error);
+    const candidate =
+      getFirstString(parsed?.message) ||
+      getFirstString(parsed?.detail) ||
+      getFirstString(parsed?.error);
     return candidate;
   } catch {
     return null;
@@ -1748,8 +2014,9 @@ function normalizeDetailMessage(detail: string): string {
   const embeddedJsonMessage = parseEmbeddedJsonText(trimmed);
   if (embeddedJsonMessage) return embeddedJsonMessage;
 
-  // Handle Django/DRF string representation like: ErrorDetail(string='...', code='invalid')
-  const errorDetailMatch = trimmed.match(/ErrorDetail\(string='([\s\S]*?)',\s*code='[^']*'\)/);
+  const errorDetailMatch = trimmed.match(
+    /ErrorDetail\(string='([\s\S]*?)',\s*code='[^']*'\)/,
+  );
   if (errorDetailMatch?.[1]) {
     const wrapped = errorDetailMatch[1].trim();
     const nestedJsonMessage = parseEmbeddedJsonText(wrapped);
@@ -1762,23 +2029,24 @@ function normalizeDetailMessage(detail: string): string {
 
 export function getUserFriendlyErrorMessage(
   error: unknown,
-  fallback = 'Unable to process your request right now. Please try again.'
+  fallback = "Unable to process your request right now. Please try again.",
 ) {
   const data = (error as any)?.response?.data;
   const message = data?.message;
   const detail = data?.detail;
   const rawError = data?.error;
 
-  if (typeof detail === 'string' && detail.trim()) return normalizeDetailMessage(detail);
+  if (typeof detail === "string" && detail.trim())
+    return normalizeDetailMessage(detail);
   if (Array.isArray(detail) && detail.length > 0) {
     const first = getFirstString(detail);
     if (first) return normalizeDetailMessage(first);
   }
 
-  if (typeof message === 'string' && message.trim()) return message;
-  if (typeof rawError === 'string' && rawError.trim()) return rawError;
+  if (typeof message === "string" && message.trim()) return message;
+  if (typeof rawError === "string" && rawError.trim()) return rawError;
 
-  if (data && typeof data === 'object') {
+  if (data && typeof data === "object") {
     const first = getFirstString(data);
     if (first) return normalizeDetailMessage(first);
   }
@@ -1791,15 +2059,21 @@ export function useWithdrawal() {
 
   return useMutation({
     mutationFn: async (payload: WithdrawalRequest) => {
-      const { data } = await apiClient.post<WithdrawalResponse>(API_ENDPOINTS.PAYMENTS.WITHDRAWALS, payload);
+      const { data } = await apiClient.post<WithdrawalResponse>(
+        API_ENDPOINTS.PAYMENTS.WITHDRAWALS,
+        payload,
+      );
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['walletDetails'] });
-      toast.success('Withdrawal request submitted successfully');
+      queryClient.invalidateQueries({ queryKey: ["walletDetails"] });
+      toast.success("Withdrawal request submitted successfully");
     },
     onError: (error: any) => {
-      const message = getUserFriendlyErrorMessage(error, 'Failed to submit withdrawal request');
+      const message = getUserFriendlyErrorMessage(
+        error,
+        "Failed to submit withdrawal request",
+      );
       toast.error(message);
     },
   });

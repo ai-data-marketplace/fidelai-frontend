@@ -7,21 +7,26 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
-import { useExpertChunks, useResolveExpertChunk, useExpertProgress, type ExpertResolvePayload } from "@/lib/hooks";
+import {
+  useExpertChunks,
+  useResolveExpertChunk,
+  useExpertProgress,
+  type ExpertResolvePayload,
+} from "@/lib/hooks";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  LogOut, 
-  ChevronRight, 
-  ChevronLeft, 
-  ShieldCheck, 
-  Settings2, 
+import {
+  LogOut,
+  ChevronRight,
+  ChevronLeft,
+  ShieldCheck,
+  Settings2,
   AlertTriangle,
   Users,
   CheckCircle2,
   Info,
   Database,
   TrendingUp,
-  XCircle
+  XCircle,
 } from "lucide-react";
 
 interface WorkspaceProps {
@@ -34,16 +39,18 @@ function formatTaskCode(taskId: string) {
 }
 
 function formatDomainMatchLabel(value: string | null | undefined) {
-  if (value === 'match') return 'Match';
-  if (value === 'not_match') return 'Not Match';
-  if (value === 'uncertain') return 'Uncertain';
-  return '-';
+  if (value === "match") return "Match";
+  if (value === "not_match") return "Not Match";
+  if (value === "uncertain") return "Uncertain";
+  return "-";
 }
 
 export function ExpertWorkspace({ taskId }: WorkspaceProps) {
   const router = useRouter();
-  const { data: chunksData, isLoading: isChunksLoading } = useExpertChunks(taskId);
-  const { data: progress, isLoading: progressLoading } = useExpertProgress(taskId);
+  const { data: chunksData, isLoading: isChunksLoading } =
+    useExpertChunks(taskId);
+  const { data: progress, isLoading: progressLoading } =
+    useExpertProgress(taskId);
   const resolveChunk = useResolveExpertChunk(taskId);
 
   const taskDetails = {
@@ -53,44 +60,49 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
   };
 
   // Use only API response, no mock fallback
-  const chunks = chunksData?.task_chunks?.map((chunk) => ({
-    id: `chunk-${chunk.chunk_id}`,
-    chunkId: chunk.chunk_id,
-    text: chunk.text,
-    consensusScore: Math.round(chunk.consensus.agreement_score * 100),
-    qualityScore: chunk.quality_score,
-    requiresExpertReview: chunk.consensus.requires_expert_review,
-    ai: {
-      predictedDomain: chunk.domain,
-      confidence: chunk.quality_score,
-      flags: { harmful: false, duplicate: false, noise: false },
-    },
-    consensus: {
-      domainMatch: chunk.consensus.final_domain_match,
-      isAmharic: chunk.consensus.final_is_amharic,
-      readability: chunk.consensus.final_readability,
-      safetyLabel: chunk.consensus.final_safety_label,
-      harmful: chunk.consensus.final_safety_label !== "safe",
-      agreementPct: Math.round(chunk.consensus.agreement_score * 100),
-      status: chunk.consensus.agreement_score > 0.8 ? "Strong Consensus" : chunk.consensus.agreement_score > 0.5 ? "Weak Consensus" : "Conflict",
-    },
-    source: chunk.source,
-    annotationCount: chunk.annotation_count,
-  })) || [];
-  
-  
+  const chunks =
+    chunksData?.task_chunks?.map((chunk) => ({
+      id: `chunk-${chunk.chunk_id}`,
+      chunkId: chunk.chunk_id,
+      text: chunk.text,
+      consensusScore: Math.round(chunk.consensus.agreement_score * 100),
+      qualityScore: chunk.quality_score,
+      requiresExpertReview: chunk.consensus.requires_expert_review,
+      ai: {
+        predictedDomain: chunk.domain,
+        confidence: chunk.quality_score,
+        flags: { harmful: false, duplicate: false, noise: false },
+      },
+      consensus: {
+        domainMatch: chunk.consensus.final_domain_match,
+        isAmharic: chunk.consensus.final_is_amharic,
+        readability: chunk.consensus.final_readability,
+        safetyLabel: chunk.consensus.final_safety_label,
+        harmful: chunk.consensus.final_safety_label !== "safe",
+        agreementPct: Math.round(chunk.consensus.agreement_score * 100),
+        status:
+          chunk.consensus.agreement_score > 0.8
+            ? "Strong Consensus"
+            : chunk.consensus.agreement_score > 0.5
+              ? "Weak Consensus"
+              : "Conflict",
+      },
+      source: chunk.source,
+      annotationCount: chunk.annotation_count,
+    })) || [];
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const domainMatchOptions = [
-    { value: 'match', label: 'Match' },
-    { value: 'not_match', label: 'Not Match' },
-    { value: 'uncertain', label: 'Uncertain' },
+    { value: "match", label: "Match" },
+    { value: "not_match", label: "Not Match" },
+    { value: "uncertain", label: "Uncertain" },
   ] as const;
   const finalDecisionOptions = [
-    { value: 'approved', label: 'Approved' },
-    { value: 'rejected', label: 'Rejected' },
+    { value: "approved", label: "Approved" },
+    { value: "rejected", label: "Rejected" },
   ] as const;
-  
+
   const [answers, setAnswers] = useState<any[]>(
     Array(Math.max(chunks.length, 1)).fill({
       domainMatch: null,
@@ -99,24 +111,33 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
       safetyLabel: null,
       confidence: null,
       finalDecision: null,
-      resolutionReasoning: ""
-    })
+      resolutionReasoning: "",
+    }),
   );
 
-  const [domainMatch, setDomainMatch] = useState<'match' | 'not_match' | 'uncertain' | null>(null);
+  const [domainMatch, setDomainMatch] = useState<
+    "match" | "not_match" | "uncertain" | null
+  >(null);
   const [isAmharic, setIsAmharic] = useState<boolean | null>(null);
-  const [readability, setReadability] = useState<'high' | 'medium' | 'low'>('high');
-  const [safetyLabel, setSafetyLabel] = useState<'safe' | 'unsafe' | null>(null);
-  const [confidence, setConfidence] = useState<'high' | 'medium' | 'low' | null>(null);
+  const [readability, setReadability] = useState<"high" | "medium" | "low">(
+    "high",
+  );
+  const [safetyLabel, setSafetyLabel] = useState<"safe" | "unsafe" | null>(
+    null,
+  );
+  const [confidence, setConfidence] = useState<
+    "high" | "medium" | "low" | null
+  >(null);
   const [notes, setNotes] = useState("");
-  const [finalDecision, setFinalDecision] = useState<'approved' | 'rejected' | null>(null);
+  const [finalDecision, setFinalDecision] = useState<
+    "approved" | "rejected" | null
+  >(null);
   const [resolutionReasoning, setResolutionReasoning] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentChunk = chunks[currentIndex];
-  const progressPercent = ((currentIndex) / chunks.length) * 100;
+  const progressPercent = (currentIndex / chunks.length) * 100;
 
-  // Sync state when currentIndex changes to preserve UI forward/back
   useEffect(() => {
     const saved = answers[currentIndex];
     if (saved) {
@@ -141,14 +162,22 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
       confidence,
       notes,
       finalDecision,
-      resolutionReasoning
+      resolutionReasoning,
     };
     setAnswers(newAnswers);
   };
 
   const handleSubmit = async () => {
     if (isComplete || isSubmitting || !currentChunk) return;
-    if (!domainMatch || isAmharic === null || !safetyLabel || !confidence || !finalDecision || resolutionReasoning.trim().length < 5) return;
+    if (
+      !domainMatch ||
+      isAmharic === null ||
+      !safetyLabel ||
+      !confidence ||
+      !finalDecision ||
+      resolutionReasoning.trim().length < 5
+    )
+      return;
 
     saveCurrentState();
     setIsSubmitting(true);
@@ -173,14 +202,17 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
       });
 
       if (currentIndex < chunks.length - 1) {
-        setCurrentIndex(prev => prev + 1);
+        setCurrentIndex((prev) => prev + 1);
       } else {
         setIsComplete(true);
       }
     } catch (error) {
       console.error("Failed to resolve chunk:", error);
       console.error("Resolve payload that failed:", payload);
-      console.error("Backend error body:", (error as any)?.response?.data ?? error);
+      console.error(
+        "Backend error body:",
+        (error as any)?.response?.data ?? error,
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -189,14 +221,14 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
   const handleBack = () => {
     if (currentIndex > 0) {
       saveCurrentState();
-      setCurrentIndex(prev => prev - 1);
+      setCurrentIndex((prev) => prev - 1);
     }
   };
 
   const handleSkip = () => {
     if (currentIndex < chunks.length - 1) {
       saveCurrentState();
-      setCurrentIndex(prev => prev + 1);
+      setCurrentIndex((prev) => prev + 1);
     }
   };
 
@@ -218,8 +250,12 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
         <AlertTriangle className="w-12 h-12 text-muted-foreground" />
         <div>
           <h2 className="text-2xl font-black mb-2">No chunks found</h2>
-          <p className="text-sm text-muted-foreground mb-6">This task has no items to review.</p>
-          <Button onClick={() => router.push("/expert/queue")}>Return to Queue</Button>
+          <p className="text-sm text-muted-foreground mb-6">
+            This task has no items to review.
+          </p>
+          <Button onClick={() => router.push("/expert/queue")}>
+            Return to Queue
+          </Button>
         </div>
       </div>
     );
@@ -227,12 +263,10 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
 
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)] w-full overflow-hidden bg-background">
-      
-      {/* ─── Top Bar ─── */}
       <div className="flex items-center justify-between pb-4 border-b border-border/50 shrink-0">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => router.push("/expert/queue")}
             className="h-9 w-9 p-0 rounded-lg border-border/50 bg-card text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
@@ -242,334 +276,440 @@ export function ExpertWorkspace({ taskId }: WorkspaceProps) {
 
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-               <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
-                 <ShieldCheck className="w-5 h-5 text-primary" /> {formatTaskCode(taskDetails.id)}
-               </h2>
-               <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">
-                 {taskDetails.domain}
-               </span>
+              <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-primary" />{" "}
+                {formatTaskCode(taskDetails.id)}
+              </h2>
+              <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">
+                {taskDetails.domain}
+              </span>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
-               <p className="text-xs font-bold text-muted-foreground">
-                 {progress?.reviewed_chunks ?? currentIndex + 1} / {progress?.total_chunks ?? chunks.length}
-               </p>
-               <Progress value={progress?.progress_percentage ?? progressPercent} className="w-40 h-1.5" />
-               <p className="text-xs font-bold text-muted-foreground">
-                 {(progress?.progress_percentage ?? progressPercent).toFixed(0)}%
-               </p>
+              <p className="text-xs font-bold text-muted-foreground">
+                {progress?.reviewed_chunks ?? currentIndex + 1} /{" "}
+                {progress?.total_chunks ?? chunks.length}
+              </p>
+              <Progress
+                value={progress?.progress_percentage ?? progressPercent}
+                className="w-40 h-1.5"
+              />
+              <p className="text-xs font-bold text-muted-foreground">
+                {(progress?.progress_percentage ?? progressPercent).toFixed(0)}%
+              </p>
             </div>
           </div>
         </div>
 
-        <Button variant="outline" onClick={handleExit} className="gap-2 text-muted-foreground hover:text-foreground">
+        <Button
+          variant="outline"
+          onClick={handleExit}
+          className="gap-2 text-muted-foreground hover:text-foreground"
+        >
           <LogOut className="w-4 h-4" />
           <span className="hidden md:inline">Exit Session</span>
         </Button>
       </div>
 
-      {/* ─── 3 Column Grid Area ─── */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 pt-6 overflow-hidden">
-        
-        {/* COLUMN 1: Source Material */}
         <div className="lg:col-span-4 flex flex-col min-h-0">
-           <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-3 shrink-0 flex items-center gap-2">
-             <Database className="w-4 h-4" /> Source Payload
-           </h3>
-           <Card className="flex-1 border-border/50 bg-card/40 overflow-auto shadow-inner border-dashed relative">
-             <CardContent className="p-8 pb-32"> {/* padding bottom so floating elements don't cover text */}
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentChunk?.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <p className="text-2xl font-medium leading-loose text-foreground/90 tracking-tight">
-                      {currentChunk?.text}
-                    </p>
-                  </motion.div>
-                </AnimatePresence>
-             </CardContent>
-           </Card>
+          <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-3 shrink-0 flex items-center gap-2">
+            <Database className="w-4 h-4" /> Source Payload
+          </h3>
+          <Card className="flex-1 border-border/50 bg-card/40 overflow-auto shadow-inner border-dashed relative">
+            <CardContent className="p-8 pb-32">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentChunk?.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <p className="text-2xl font-medium leading-loose text-foreground/90 tracking-tight">
+                    {currentChunk?.text}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* COLUMN 2: Contest Context (AI vs Annotators) */}
         <div className="lg:col-span-4 flex flex-col min-h-0 bg-muted/10 rounded-2xl p-4 border border-border/30 overflow-auto no-scrollbar">
-           <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4 shrink-0 flex items-center gap-2">
-             <Settings2 className="w-4 h-4" /> Conflict Analysis
-           </h3>
+          <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4 shrink-0 flex items-center gap-2">
+            <Settings2 className="w-4 h-4" /> Conflict Analysis
+          </h3>
 
-           {/* Consensus Header */}
-           <div className={`flex items-center justify-between p-4 rounded-xl border mb-6 ${
-             currentChunk?.consensus.status === 'Conflict' 
-               ? 'border-rose-500/30 bg-rose-500/10' 
-               : currentChunk?.consensus.status === 'Weak Consensus' 
-               ? 'border-amber-500/30 bg-amber-500/10'
-               : 'border-emerald-500/30 bg-emerald-500/10'
-           }`}>
-             <div>
-               <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${
-                 currentChunk?.consensus.status === 'Conflict' ? 'text-rose-600' :
-                 currentChunk?.consensus.status === 'Weak Consensus' ? 'text-amber-600' : 'text-emerald-600'
-               }`}>
-                 {currentChunk?.consensus.status}
-               </p>
-               <h4 className={`text-2xl font-black ${
-                 currentChunk?.consensus.status === 'Conflict' ? 'text-rose-700' :
-                 currentChunk?.consensus.status === 'Weak Consensus' ? 'text-amber-700' : 'text-emerald-700'
-               }`}>
-                 {currentChunk?.consensus.agreementPct}% Agreement
-               </h4>
-             </div>
-             {currentChunk?.consensus.status === 'Conflict' ? (
-               <XCircle className="w-8 h-8 text-rose-500/50" />
-             ) : currentChunk?.consensus.status === 'Weak Consensus' ? (
-               <AlertTriangle className="w-8 h-8 text-amber-500/50" />
-             ) : (
-               <CheckCircle2 className="w-8 h-8 text-emerald-500/50" />
-             )}
-           </div>
+          <div
+            className={`flex items-center justify-between p-4 rounded-xl border mb-6 ${
+              currentChunk?.consensus.status === "Conflict"
+                ? "border-rose-500/30 bg-rose-500/10"
+                : currentChunk?.consensus.status === "Weak Consensus"
+                  ? "border-amber-500/30 bg-amber-500/10"
+                  : "border-emerald-500/30 bg-emerald-500/10"
+            }`}
+          >
+            <div>
+              <p
+                className={`text-xs font-bold uppercase tracking-widest mb-1 ${
+                  currentChunk?.consensus.status === "Conflict"
+                    ? "text-rose-600"
+                    : currentChunk?.consensus.status === "Weak Consensus"
+                      ? "text-amber-600"
+                      : "text-emerald-600"
+                }`}
+              >
+                {currentChunk?.consensus.status}
+              </p>
+              <h4
+                className={`text-2xl font-black ${
+                  currentChunk?.consensus.status === "Conflict"
+                    ? "text-rose-700"
+                    : currentChunk?.consensus.status === "Weak Consensus"
+                      ? "text-amber-700"
+                      : "text-emerald-700"
+                }`}
+              >
+                {currentChunk?.consensus.agreementPct}% Agreement
+              </h4>
+            </div>
+            {currentChunk?.consensus.status === "Conflict" ? (
+              <XCircle className="w-8 h-8 text-rose-500/50" />
+            ) : currentChunk?.consensus.status === "Weak Consensus" ? (
+              <AlertTriangle className="w-8 h-8 text-amber-500/50" />
+            ) : (
+              <CheckCircle2 className="w-8 h-8 text-emerald-500/50" />
+            )}
+          </div>
 
-           <div className="space-y-6">
-              {/* Chunk Quality Block */}
-              <div className="space-y-3">
-                 <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground flex items-center gap-1.5 opacity-70">
-                   <TrendingUp className="w-3.5 h-3.5" /> Chunk Quality
-                 </p>
-                 <Card className="border-border/50 bg-card/80 shadow-sm border-l-4 border-l-blue-500">
-                   <CardContent className="p-4 space-y-3">
-                      <div className="flex justify-between items-center pb-2 border-b border-border/50">
-                        <span className="text-xs font-bold text-muted-foreground">Quality Score:</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-black">{Math.round((currentChunk?.qualityScore || 0) * 100)}%</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center pt-2">
-                        <span className="text-xs font-bold text-muted-foreground">Annotations:</span>
-                        <span className="text-xs font-black">{currentChunk?.annotationCount ?? 0}</span>
-                      </div>
-                   </CardContent>
-                 </Card>
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground flex items-center gap-1.5 opacity-70">
+                <TrendingUp className="w-3.5 h-3.5" /> Chunk Quality
+              </p>
+              <Card className="border-border/50 bg-card/80 shadow-sm border-l-4 border-l-blue-500">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex justify-between items-center pb-2 border-b border-border/50">
+                    <span className="text-xs font-bold text-muted-foreground">
+                      Quality Score:
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black">
+                        {Math.round((currentChunk?.qualityScore || 0) * 100)}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center pt-2">
+                    <span className="text-xs font-bold text-muted-foreground">
+                      Annotations:
+                    </span>
+                    <span className="text-xs font-black">
+                      {currentChunk?.annotationCount ?? 0}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between opacity-70">
+                <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5" /> Consensus Annotation
+                </p>
               </div>
+              <p className="text-[9px] font-bold text-muted-foreground uppercase leading-relaxed mb-1">
+                * Aggregated from {currentChunk?.annotationCount || 0}{" "}
+                independent annotator decisions.
+              </p>
 
-              {/* Consensus Annotation Block */}
-              <div className="space-y-3">
-                 <div className="flex items-center justify-between opacity-70">
-                   <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground flex items-center gap-1.5">
-                     <Users className="w-3.5 h-3.5" /> Consensus Annotation
-                   </p>
-                 </div>
-                 <p className="text-[9px] font-bold text-muted-foreground uppercase leading-relaxed mb-1">
-                   * Aggregated from {currentChunk?.annotationCount || 0} independent annotator decisions.
-                 </p>
-                 
-                 <Card className="border-border/50 bg-card shadow-sm text-xs border-l-4 border-l-emerald-500 relative overflow-hidden">
-                   <CardContent className="p-4 space-y-3">
-                      <div className="flex justify-between items-center pb-2 border-b border-border/50">
-                        <span className="text-xs font-bold text-muted-foreground">Domain Match:</span>
-                        <span className={`font-bold ${
-                          currentChunk?.consensus.domainMatch === 'match' ? 'text-emerald-500' : 
-                          currentChunk?.consensus.domainMatch === 'not_match' ? 'text-rose-500' : 'text-amber-500'
-                        }`}>
-                          {formatDomainMatchLabel(currentChunk?.consensus.domainMatch)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center pb-2 border-b border-border/50">
-                        <span className="text-xs font-bold text-muted-foreground">Is Amharic:</span>
-                        <span className={`font-bold ${currentChunk?.consensus.isAmharic ? 'text-emerald-500' : 'text-rose-500'}`}>
-                          {currentChunk?.consensus.isAmharic ? 'Yes' : 'No'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center pb-2 border-b border-border/50">
-                        <span className="text-xs font-bold text-muted-foreground">Readability:</span>
-                        <span className="text-xs font-black">{currentChunk?.consensus.readability || '-'}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-muted-foreground">Safety Label:</span>
-                        <span className="text-xs font-black">{currentChunk?.consensus.safetyLabel || '-'}</span>
-                      </div>
-                   </CardContent>
-                 </Card>
-              </div>
-           </div>
+              <Card className="border-border/50 bg-card shadow-sm text-xs border-l-4 border-l-emerald-500 relative overflow-hidden">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex justify-between items-center pb-2 border-b border-border/50">
+                    <span className="text-xs font-bold text-muted-foreground">
+                      Domain Match:
+                    </span>
+                    <span
+                      className={`font-bold ${
+                        currentChunk?.consensus.domainMatch === "match"
+                          ? "text-emerald-500"
+                          : currentChunk?.consensus.domainMatch === "not_match"
+                            ? "text-rose-500"
+                            : "text-amber-500"
+                      }`}
+                    >
+                      {formatDomainMatchLabel(
+                        currentChunk?.consensus.domainMatch,
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pb-2 border-b border-border/50">
+                    <span className="text-xs font-bold text-muted-foreground">
+                      Is Amharic:
+                    </span>
+                    <span
+                      className={`font-bold ${currentChunk?.consensus.isAmharic ? "text-emerald-500" : "text-rose-500"}`}
+                    >
+                      {currentChunk?.consensus.isAmharic ? "Yes" : "No"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pb-2 border-b border-border/50">
+                    <span className="text-xs font-bold text-muted-foreground">
+                      Readability:
+                    </span>
+                    <span className="text-xs font-black">
+                      {currentChunk?.consensus.readability || "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-muted-foreground">
+                      Safety Label:
+                    </span>
+                    <span className="text-xs font-black">
+                      {currentChunk?.consensus.safetyLabel || "-"}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
 
-        {/* COLUMN 3: Authority Decision Panel */}
         <div className="lg:col-span-4 flex flex-col min-h-0 overflow-auto no-scrollbar pb-0 px-1 relative">
-           <h3 className="text-xs font-black uppercase tracking-widest text-primary mb-4 shrink-0 flex items-center gap-2">
-             <ShieldCheck className="w-4 h-4 text-primary" /> Authority Resolution
-           </h3>
+          <h3 className="text-xs font-black uppercase tracking-widest text-primary mb-4 shrink-0 flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-primary" /> Authority
+            Resolution
+          </h3>
 
-           <div className="flex-1 space-y-6">
-             {/* 1. Final Domain */}
-             <div className="space-y-2.5">
-                <label className="text-sm font-bold">1. Final Domain Match</label>
-                <div className="grid grid-cols-3 gap-2">
-                   {domainMatchOptions.map((opt) => (
-                     <button
-                       key={opt.value}
-                       onClick={() => setDomainMatch(opt.value)}
-                       className={`px-2 py-2 rounded-xl text-[11px] font-bold border whitespace-nowrap transition-colors ${domainMatch === opt.value ? 'bg-primary border-primary text-white' : 'bg-card border-border/50 hover:bg-muted'}`}
-                     >
-                       {opt.label}
-                     </button>
-                   ))}
-                </div>
-             </div>
+          <div className="flex-1 space-y-6">
+            <div className="space-y-2.5">
+              <label className="text-sm font-bold">1. Final Domain Match</label>
+              <div className="grid grid-cols-3 gap-2">
+                {domainMatchOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setDomainMatch(opt.value)}
+                    className={`px-2 py-2 rounded-xl text-[11px] font-bold border whitespace-nowrap transition-colors ${domainMatch === opt.value ? "bg-primary border-primary text-white" : "bg-card border-border/50 hover:bg-muted"}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-             <hr className="border-border/50" />
+            <hr className="border-border/50" />
 
-             {/* 2. Valid Amharic */}
-             <div className="space-y-2.5">
-                <label className="text-sm font-bold text-foreground">2. Is Valid Amharic?</label>
-                <div className="grid grid-cols-2 gap-2">
-                   <button onClick={() => setIsAmharic(true)} className={`py-2 rounded-xl text-xs font-bold border transition-colors ${isAmharic === true ? 'bg-primary border-primary text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>Yes</button>
-                   <button onClick={() => setIsAmharic(false)} className={`py-2 rounded-xl text-xs font-bold border transition-colors ${isAmharic === false ? 'bg-rose-500 border-rose-500 text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>No</button>
-                </div>
-             </div>
+            <div className="space-y-2.5">
+              <label className="text-sm font-bold text-foreground">
+                2. Is Valid Amharic?
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setIsAmharic(true)}
+                  className={`py-2 rounded-xl text-xs font-bold border transition-colors ${isAmharic === true ? "bg-primary border-primary text-white" : "bg-card border-border/50 hover:bg-muted"}`}
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={() => setIsAmharic(false)}
+                  className={`py-2 rounded-xl text-xs font-bold border transition-colors ${isAmharic === false ? "bg-rose-500 border-rose-500 text-white" : "bg-card border-border/50 hover:bg-muted"}`}
+                >
+                  No
+                </button>
+              </div>
+            </div>
 
-             <hr className="border-border/50" />
+            <hr className="border-border/50" />
 
-             {/* 3. Readability */}
-             <div className="space-y-2.5">
-               <label className="text-sm font-bold text-foreground">3. How readable is this text?</label>
-               <div className="grid grid-cols-3 gap-2">
-                 {(['high', 'medium', 'low'] as const).map(opt => (
-                  <button key={opt} onClick={() => setReadability(opt as 'high' | 'medium' | 'low')} className={`py-2 rounded-xl text-[11px] font-bold border transition-colors ${readability === opt ? 'bg-primary border-primary text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</button>
-                 ))}
-                </div>
-             </div>
+            <div className="space-y-2.5">
+              <label className="text-sm font-bold text-foreground">
+                3. How readable is this text?
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {(["high", "medium", "low"] as const).map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() =>
+                      setReadability(opt as "high" | "medium" | "low")
+                    }
+                    className={`py-2 rounded-xl text-[11px] font-bold border transition-colors ${readability === opt ? "bg-primary border-primary text-white" : "bg-card border-border/50 hover:bg-muted"}`}
+                  >
+                    {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-             <hr className="border-border/50" />
+            <hr className="border-border/50" />
 
-             {/* 4. Safety */}
-             <div className="space-y-2.5">
-               <label className="text-sm font-bold text-foreground">4. Is this text safe?</label>
-                <div className="grid grid-cols-2 gap-2">
-                 <button onClick={() => setSafetyLabel('safe')} className={`py-2 rounded-xl text-xs font-bold border transition-colors ${safetyLabel === 'safe' ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>Safe</button>
-                 <button onClick={() => setSafetyLabel('unsafe')} className={`py-2 rounded-xl text-xs font-bold border transition-colors ${safetyLabel === 'unsafe' ? 'bg-rose-500 border-rose-500 text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>Unsafe</button>
-                </div>
-             </div>
+            <div className="space-y-2.5">
+              <label className="text-sm font-bold text-foreground">
+                4. Is this text safe?
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setSafetyLabel("safe")}
+                  className={`py-2 rounded-xl text-xs font-bold border transition-colors ${safetyLabel === "safe" ? "bg-emerald-500 border-emerald-500 text-white" : "bg-card border-border/50 hover:bg-muted"}`}
+                >
+                  Safe
+                </button>
+                <button
+                  onClick={() => setSafetyLabel("unsafe")}
+                  className={`py-2 rounded-xl text-xs font-bold border transition-colors ${safetyLabel === "unsafe" ? "bg-rose-500 border-rose-500 text-white" : "bg-card border-border/50 hover:bg-muted"}`}
+                >
+                  Unsafe
+                </button>
+              </div>
+            </div>
 
-             <hr className="border-border/50" />
+            <hr className="border-border/50" />
 
-             {/* 5. Confidence */}
-             <div className="space-y-2.5">
-               <label className="text-sm font-bold text-foreground">5. How confident are you?</label>
-               <div className="grid grid-cols-3 gap-2">
-                 {(['high', 'medium', 'low'] as const).map(opt => (
-                  <button key={opt} onClick={() => setConfidence(opt as 'high' | 'medium' | 'low')} className={`py-2 rounded-xl text-[11px] font-bold border transition-colors ${confidence === opt ? 'bg-primary border-primary text-white' : 'bg-card border-border/50 hover:bg-muted'}`}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</button>
-                 ))}
-               </div>
-             </div>
+            <div className="space-y-2.5">
+              <label className="text-sm font-bold text-foreground">
+                5. How confident are you?
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {(["high", "medium", "low"] as const).map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() =>
+                      setConfidence(opt as "high" | "medium" | "low")
+                    }
+                    className={`py-2 rounded-xl text-[11px] font-bold border transition-colors ${confidence === opt ? "bg-primary border-primary text-white" : "bg-card border-border/50 hover:bg-muted"}`}
+                  >
+                    {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-             <hr className="border-border/50" />
+            <hr className="border-border/50" />
 
-             {/* 6. Final Decision */}
-             <div className="space-y-2.5">
-               <label className="text-sm font-bold text-foreground">6. Final Decision</label>
-               <div className="grid grid-cols-2 gap-2">
-                   {finalDecisionOptions.map((opt) => (
-                     <button
-                       key={opt.value}
-                       onClick={() => setFinalDecision(opt.value)}
-                       className={`py-2 rounded-xl text-xs font-bold border transition-colors ${finalDecision === opt.value ? 'bg-primary border-primary text-white' : 'bg-card border-border/50 hover:bg-muted'}`}
-                     >
-                       {opt.label}
-                     </button>
-                   ))}
-               </div>
-             </div>
+            <div className="space-y-2.5">
+              <label className="text-sm font-bold text-foreground">
+                6. Final Decision
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {finalDecisionOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setFinalDecision(opt.value)}
+                    className={`py-2 rounded-xl text-xs font-bold border transition-colors ${finalDecision === opt.value ? "bg-primary border-primary text-white" : "bg-card border-border/50 hover:bg-muted"}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-             <hr className="border-border/50" />
+            <hr className="border-border/50" />
 
-             {/* 7. Notes */}
-             <div className="space-y-2.5">
-               <label className="text-sm font-bold text-foreground flex justify-between items-center">
-                 <span>7. Notes</span>
-                 <span className="opacity-50 text-xs">Optional</span>
-               </label>
-               <textarea
+            <div className="space-y-2.5">
+              <label className="text-sm font-bold text-foreground flex justify-between items-center">
+                <span>7. Notes</span>
+                <span className="opacity-50 text-xs">Optional</span>
+              </label>
+              <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Looks fine."
                 className="w-full h-24 rounded-xl border border-border/50 bg-card/60 p-4 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-               />
-             </div>
+              />
+            </div>
 
-             <hr className="border-border/50" />
+            <hr className="border-border/50" />
 
-             {/* Mandatory Reasoning */}
-             <div className="space-y-2.5">
-               <label className="text-sm font-black flex items-center gap-2 text-rose-500">
-                8. Resolution Reasoning <span className="text-[9px] uppercase tracking-widest bg-rose-500/10 px-2 py-0.5 rounded-full font-black">Required</span>
-                </label>
-               <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-2">Explain why you made this final resolution decision.</p>
-                <textarea
+            <div className="space-y-2.5">
+              <label className="text-sm font-black flex items-center gap-2 text-rose-500">
+                8. Resolution Reasoning{" "}
+                <span className="text-[9px] uppercase tracking-widest bg-rose-500/10 px-2 py-0.5 rounded-full font-black">
+                  Required
+                </span>
+              </label>
+              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-2">
+                Explain why you made this final resolution decision.
+              </p>
+              <textarea
                 value={resolutionReasoning}
                 onChange={(e) => setResolutionReasoning(e.target.value)}
                 placeholder="Majority ambiguous; expert confirms match and approves."
-                  className="w-full h-28 rounded-xl border border-rose-500/30 bg-rose-500/5 focus:bg-card focus:border-primary/50 p-4 text-sm resize-none outline-none transition-all"
-                />
-             </div>
-           </div>
+                className="w-full h-28 rounded-xl border border-rose-500/30 bg-rose-500/5 focus:bg-card focus:border-primary/50 p-4 text-sm resize-none outline-none transition-all"
+              />
+            </div>
+          </div>
 
-            <div className="pt-4 shrink-0 sticky bottom-0 bg-background/95 backdrop-blur-md pb-4 mt-auto space-y-3 z-10 w-full border-t-0 shadow-[0_-10px_20px_-5px_hsl(var(--background))] ">
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={handleBack}
-                  disabled={currentIndex === 0}
-                  className="h-14 px-5 border-border/50 bg-card hover:bg-muted"
-                >
-                  <ChevronLeft className="w-5 h-5 text-muted-foreground" />
-                </Button>
-                <Button 
-                  onClick={handleSubmit}
-                  disabled={!domainMatch || isAmharic === null || !readability || !safetyLabel || !confidence || !finalDecision || resolutionReasoning.trim().length < 5 || isSubmitting}
-                  className="w-full h-14 text-sm font-black tracking-widest uppercase gap-2 shadow-xl shadow-primary/20"
-                >
-                   <CheckCircle2 className="w-5 h-5" /> Resolve and Continue
-                </Button>
-              </div>
-              
-              <div className="flex justify-between gap-3">
-                <Button
-                  variant="outline"
-                  onClick={handleSkip}
-                  disabled={currentIndex >= chunks.length - 1}
-                  className="w-full text-xs font-bold text-muted-foreground border-border/50 bg-card hover:bg-muted/50 h-10"
-                >
-                  <XCircle className="w-3.5 h-3.5 mr-2" /> Skip
-                </Button>
-              </div>
-           </div>
+          <div className="pt-4 shrink-0 sticky bottom-0 bg-background/95 backdrop-blur-md pb-4 mt-auto space-y-3 z-10 w-full border-t-0 shadow-[0_-10px_20px_-5px_hsl(var(--background))] ">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                disabled={currentIndex === 0}
+                className="h-14 px-5 border-border/50 bg-card hover:bg-muted"
+              >
+                <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={
+                  !domainMatch ||
+                  isAmharic === null ||
+                  !readability ||
+                  !safetyLabel ||
+                  !confidence ||
+                  !finalDecision ||
+                  resolutionReasoning.trim().length < 5 ||
+                  isSubmitting
+                }
+                className="w-full h-14 text-sm font-black tracking-widest uppercase gap-2 shadow-xl shadow-primary/20"
+              >
+                <CheckCircle2 className="w-5 h-5" /> Resolve and Continue
+              </Button>
+            </div>
+
+            <div className="flex justify-between gap-3">
+              <Button
+                variant="outline"
+                onClick={handleSkip}
+                disabled={currentIndex >= chunks.length - 1}
+                className="w-full text-xs font-bold text-muted-foreground border-border/50 bg-card hover:bg-muted/50 h-10"
+              >
+                <XCircle className="w-3.5 h-3.5 mr-2" /> Skip
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Completion Modal */}
-      <Modal isOpen={isComplete} onClose={handleExit} className="max-w-md text-center p-8 border-primary/20">
-         <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
-            <ShieldCheck className="w-10 h-10" />
-         </div>
-         <h2 className="text-3xl font-black mb-2 tracking-tighter">Resolution Applied</h2>
-         <p className="text-muted-foreground mb-8 text-sm leading-relaxed">
-           Your authoritative decisions have been logged. The dataset will be compiled using your overridings.
-         </p>
-         
-         <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className="p-4 rounded-xl border bg-card text-center col-span-2">
-               <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Escalations Eliminated</p>
-               <p className="text-2xl font-black">{chunks.length}</p>
-            </div>
-         </div>
+      <Modal
+        isOpen={isComplete}
+        onClose={handleExit}
+        className="max-w-md text-center p-8 border-primary/20"
+      >
+        <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
+          <ShieldCheck className="w-10 h-10" />
+        </div>
+        <h2 className="text-3xl font-black mb-2 tracking-tighter">
+          Resolution Applied
+        </h2>
+        <p className="text-muted-foreground mb-8 text-sm leading-relaxed">
+          Your authoritative decisions have been logged. The dataset will be
+          compiled using your overridings.
+        </p>
 
-         <Button className="w-full h-12 font-black text-sm uppercase tracking-widest" onClick={handleExit}>
-           Return to Queue
-         </Button>
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="p-4 rounded-xl border bg-card text-center col-span-2">
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
+              Escalations Eliminated
+            </p>
+            <p className="text-2xl font-black">{chunks.length}</p>
+          </div>
+        </div>
+
+        <Button
+          className="w-full h-12 font-black text-sm uppercase tracking-widest"
+          onClick={handleExit}
+        >
+          Return to Queue
+        </Button>
       </Modal>
-
     </div>
   );
 }

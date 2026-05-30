@@ -3,8 +3,28 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, X, ChevronRight, Filter, Inbox, Stethoscope, Scale, BarChart2, Cpu, Leaf, HelpCircle, Clock, Layers, CheckCircle2, XCircle } from "lucide-react";
-import { useExpertTasks, useAcceptExpertTask, useDeclineExpertTask } from "@/lib/hooks";
+import {
+  Check,
+  X,
+  ChevronRight,
+  Filter,
+  Inbox,
+  Stethoscope,
+  Scale,
+  BarChart2,
+  Cpu,
+  Leaf,
+  HelpCircle,
+  Clock,
+  Layers,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
+import {
+  useExpertTasks,
+  useAcceptExpertTask,
+  useDeclineExpertTask,
+} from "@/lib/hooks";
 import { PAGINATION } from "@/lib/constants";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -51,9 +71,9 @@ const domainColor: Record<string, string> = {
 };
 
 const statusStyle: Record<string, string> = {
-  "in_progress": "bg-amber-500/10 text-amber-600 border-amber-500/30",
-  "submitted": "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
-  "assigned": "bg-blue-500/10 text-blue-600 border-blue-500/30",
+  in_progress: "bg-amber-500/10 text-amber-600 border-amber-500/30",
+  submitted: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
+  assigned: "bg-blue-500/10 text-blue-600 border-blue-500/30",
 };
 
 function EmptyState() {
@@ -88,10 +108,12 @@ function ExpertTaskCard({
   const domainKey = task.domain?.toLowerCase() ?? "";
   const icon = domainIcon[domainKey] ?? <HelpCircle className="h-4 w-4" />;
   const iconColor = domainColor[domainKey] ?? "bg-muted text-muted-foreground";
-  const statusClass = statusStyle[task.status] ?? "bg-muted text-muted-foreground border-border";
+  const statusClass =
+    statusStyle[task.status] ?? "bg-muted text-muted-foreground border-border";
 
   const isAssigned = task.status === "assigned";
-  const isInProgress = task.status === "in_progress" || task.status === "accepted";
+  const isInProgress =
+    task.status === "in_progress" || task.status === "accepted";
   const isSubmitted = task.status === "submitted";
 
   return (
@@ -118,7 +140,10 @@ function ExpertTaskCard({
                 <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                   {formatTaskCode(task.id)}
                 </span>
-                <Badge variant="outline" className={`text-xs font-bold ${statusClass}`}>
+                <Badge
+                  variant="outline"
+                  className={`text-xs font-bold ${statusClass}`}
+                >
                   {formatStatus(task.status)}
                 </Badge>
                 <Badge variant="outline" className="text-xs font-bold">
@@ -140,7 +165,6 @@ function ExpertTaskCard({
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex sm:flex-col gap-2 shrink-0">
               {isAssigned && (
                 <>
@@ -166,11 +190,11 @@ function ExpertTaskCard({
                 </>
               )}
               {isInProgress && (
-                <Link href={`/expert/workspace/${task.id}`} className="flex-1 sm:flex-none">
-                  <Button
-                    size="sm"
-                    className="w-full gap-1.5 font-bold"
-                  >
+                <Link
+                  href={`/expert/workspace/${task.id}`}
+                  className="flex-1 sm:flex-none"
+                >
+                  <Button size="sm" className="w-full gap-1.5 font-bold">
                     <CheckCircle2 className="h-3.5 w-3.5" />
                     Continue
                   </Button>
@@ -192,10 +216,16 @@ function ExpertTaskCard({
 
 export function ExpertQueueList() {
   const router = useRouter();
-  const [status, setStatus] = useState<'assigned' | 'in_progress' | 'submitted'>('assigned');
+  const [status, setStatus] = useState<
+    "assigned" | "in_progress" | "submitted"
+  >("assigned");
   const [page, setPage] = useState(1);
-  const { data, isLoading } = useExpertTasks({ page, page_size: EXPERT_PAGE_SIZE, status });
-  
+  const { data, isLoading } = useExpertTasks({
+    page,
+    page_size: EXPERT_PAGE_SIZE,
+    status,
+  });
+
   const acceptMutation = useAcceptExpertTask();
   const declineMutation = useDeclineExpertTask();
 
@@ -214,7 +244,9 @@ export function ExpertQueueList() {
     await declineMutation.mutateAsync(taskId);
   };
 
-  const handleStatusChange = (newStatus: 'assigned' | 'in_progress' | 'submitted') => {
+  const handleStatusChange = (
+    newStatus: "assigned" | "in_progress" | "submitted",
+  ) => {
     setStatus(newStatus);
     setPage(1);
   };
@@ -223,7 +255,9 @@ export function ExpertQueueList() {
     return (
       <div className="space-y-4">
         <Card className="border-border/50 bg-card/60 backdrop-blur-sm">
-          <CardContent className="p-5 text-sm text-muted-foreground">Loading tasks...</CardContent>
+          <CardContent className="p-5 text-sm text-muted-foreground">
+            Loading tasks...
+          </CardContent>
         </Card>
       </div>
     );
@@ -231,12 +265,11 @@ export function ExpertQueueList() {
 
   return (
     <div className="space-y-4">
-      {/* Status Filter */}
       <div className="flex items-center gap-2 flex-wrap pb-2 border-b border-border/50">
         {[
-          { value: 'assigned' as const, label: 'Assigned' },
-          { value: 'in_progress' as const, label: 'In Progress' },
-          { value: 'submitted' as const, label: 'Submitted' },
+          { value: "assigned" as const, label: "Assigned" },
+          { value: "in_progress" as const, label: "In Progress" },
+          { value: "submitted" as const, label: "Submitted" },
         ].map((f) => (
           <Button
             key={f.value}
