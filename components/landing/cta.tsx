@@ -15,12 +15,11 @@ export function CTA() {
           transition={{ duration: 0.7 }}
           className="relative rounded-3xl overflow-hidden"
         >
-          {/* Gradient background */}
           <div className="absolute inset-0 brand-gradient-surface" />
 
-          {/* Decorative pattern */}
           <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-full h-full"
+            <div
+              className="absolute top-0 left-0 w-full h-full"
               style={{
                 backgroundImage: `radial-gradient(circle at 25% 25%, rgba(255,255,255,0.2) 1px, transparent 1px),
                                   radial-gradient(circle at 75% 75%, rgba(255,255,255,0.2) 1px, transparent 1px)`,
@@ -29,11 +28,9 @@ export function CTA() {
             />
           </div>
 
-          {/* Glow effects */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-96 h-96 brand-bg-soft-faint rounded-full blur-3xl" />
 
-          {/* Content */}
           <div className="relative px-8 py-20 sm:px-16 sm:py-24 text-center">
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
@@ -53,8 +50,9 @@ export function CTA() {
             </h2>
 
             <p className="max-w-xl mx-auto text-lg text-white/70 mb-10 leading-relaxed">
-              Be part of the largest Amharic AI data ecosystem. Whether you contribute, annotate,
-              review, or build — your work accelerates African language AI.
+              Be part of the largest Amharic AI data ecosystem. Whether you
+              contribute, annotate, review, or build — your work accelerates
+              African language AI.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

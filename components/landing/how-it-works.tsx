@@ -46,7 +46,6 @@ export function HowItWorks() {
   return (
     <section id="how-it-works" className="relative py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -59,18 +58,15 @@ export function HowItWorks() {
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
             From Raw Data to{" "}
-            <span className="brand-gradient-text">
-              Production Datasets
-            </span>
+            <span className="brand-gradient-text">Production Datasets</span>
           </h2>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
-            Four simple steps to create and monetize high-quality Amharic AI datasets.
+            Four simple steps to create and monetize high-quality Amharic AI
+            datasets.
           </p>
         </motion.div>
 
-        {/* Steps */}
         <div className="relative">
-          {/* Connecting line */}
           <div className="hidden lg:block absolute top-24 left-[calc(12.5%+24px)] right-[calc(12.5%+24px)] h-0.5 bg-gradient-to-r from-orange-500/30 via-blue-500/30 via-emerald-500/30 to-orange-500/30" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -83,7 +79,6 @@ export function HowItWorks() {
                 transition={{ duration: 0.6, delay: index * 0.15 }}
                 className="relative text-center group"
               >
-                {/* Icon */}
                 <div className="relative mx-auto mb-6 w-20 h-20">
                   <div
                     className={`absolute inset-0 ${step.glow} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
@@ -93,7 +88,7 @@ export function HowItWorks() {
                   >
                     <step.icon className="w-8 h-8 text-white" />
                   </div>
-                  {/* Step number badge */}
+
                   <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-background border-2 border-border flex items-center justify-center text-xs font-bold">
                     {step.step}
                   </div>

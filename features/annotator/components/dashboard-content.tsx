@@ -2,7 +2,15 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Target, Flame, Coins, TrendingUp, MessageSquareText, Clock3 } from "lucide-react";
+import {
+  CheckCircle2,
+  Target,
+  Flame,
+  Coins,
+  TrendingUp,
+  MessageSquareText,
+  Clock3,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { useAnnotatorDashboard } from "@/lib/hooks";
 
@@ -46,8 +54,20 @@ export function AnnotatorDashboardContent() {
     return (
       <div className="flex items-center justify-center p-12">
         <svg className="h-6 w-6 animate-spin text-primary" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a12 12 0 00-12 12h4z" />
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+            fill="none"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4l3-3-3-3v4a12 12 0 00-12 12h4z"
+          />
         </svg>
       </div>
     );
@@ -75,7 +95,8 @@ export function AnnotatorDashboardContent() {
           </div>
           <h1 className="text-4xl font-black tracking-tighter">Welcome back</h1>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            Track your performance, claim tasks, and level up your annotation career.
+            Track your performance, claim tasks, and level up your annotation
+            career.
           </p>
         </div>
       </section>
@@ -95,7 +116,9 @@ export function AnnotatorDashboardContent() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.08, duration: 0.4 }}
               >
-                <Card className={`bg-gradient-to-br ${style.color} border ${style.border} shadow-sm hover:shadow-md transition-shadow duration-200`}>
+                <Card
+                  className={`bg-gradient-to-br ${style.color} border ${style.border} shadow-sm hover:shadow-md transition-shadow duration-200`}
+                >
                   <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-5">
                     <CardTitle className="text-xs font-black uppercase tracking-[0.15em] text-muted-foreground">
                       {highlight.label}
@@ -122,7 +145,10 @@ export function AnnotatorDashboardContent() {
           <CardContent className="p-0">
             <ul className="divide-y divide-border/50">
               {recentActivity.map((act) => (
-                <li key={act.id} className="flex flex-col gap-3 px-6 py-4 hover:bg-muted/40 transition-colors duration-150 md:flex-row md:items-center md:justify-between">
+                <li
+                  key={act.id}
+                  className="flex flex-col gap-3 px-6 py-4 hover:bg-muted/40 transition-colors duration-150 md:flex-row md:items-center md:justify-between"
+                >
                   <div className="flex items-start gap-4">
                     <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                       <CheckCircle2 className="w-4 h-4 text-primary" />
@@ -141,7 +167,10 @@ export function AnnotatorDashboardContent() {
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 md:justify-end">
-                    <Badge variant="outline" className="text-xs font-bold bg-primary/10 text-primary border-primary/20 capitalize">
+                    <Badge
+                      variant="outline"
+                      className="text-xs font-bold bg-primary/10 text-primary border-primary/20 capitalize"
+                    >
                       {act.status}
                     </Badge>
                   </div>

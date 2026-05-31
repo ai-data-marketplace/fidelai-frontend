@@ -1,20 +1,15 @@
 "use client";
 
-import { 
-  Input, 
-  Select, 
-  Card, 
-  CardContent, 
-  CardHeader, 
+import {
+  Input,
+  Select,
+  Card,
+  CardContent,
+  CardHeader,
   CardTitle,
-  Button
+  Button,
 } from "@/components/ui";
-import { 
-  Search, 
-  RotateCcw,
-  SlidersHorizontal,
-  SortAsc
-} from "lucide-react";
+import { Search, RotateCcw, SlidersHorizontal, SortAsc } from "lucide-react";
 
 export interface MarketplaceFiltersState {
   q: string;
@@ -43,7 +38,11 @@ const domains = [
   { value: "religion", label: "Religion" },
 ];
 
-export function MarketplaceFilters({ filters, onChange, onReset }: MarketplaceFiltersProps) {
+export function MarketplaceFilters({
+  filters,
+  onChange,
+  onReset,
+}: MarketplaceFiltersProps) {
   const clampNonNegative = (value: string) => {
     if (value === "") return "";
     const parsed = Number(value);
@@ -71,9 +70,10 @@ export function MarketplaceFilters({ filters, onChange, onReset }: MarketplaceFi
         </div>
       </CardHeader>
       <CardContent className="pt-6 space-y-6">
-        {/* Search */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-muted-foreground uppercase">Search Keywords</label>
+          <label className="text-xs font-bold text-muted-foreground uppercase">
+            Search Keywords
+          </label>
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -85,9 +85,10 @@ export function MarketplaceFilters({ filters, onChange, onReset }: MarketplaceFi
           </div>
         </div>
 
-        {/* Domain Selection */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-muted-foreground uppercase">Domain</label>
+          <label className="text-xs font-bold text-muted-foreground uppercase">
+            Domain
+          </label>
           <Select
             value={filters.domain}
             onChange={(e) => onChange({ domain: e.target.value })}
@@ -102,14 +103,17 @@ export function MarketplaceFilters({ filters, onChange, onReset }: MarketplaceFi
           </Select>
         </div>
 
-        {/* Year Filter */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-muted-foreground uppercase">Created Year</label>
+          <label className="text-xs font-bold text-muted-foreground uppercase">
+            Created Year
+          </label>
           <Input
             type="number"
             min={0}
             value={filters.year}
-            onChange={(e) => onChange({ year: clampNonNegative(e.target.value) })}
+            onChange={(e) =>
+              onChange({ year: clampNonNegative(e.target.value) })
+            }
             onKeyDown={(e) => {
               if (e.key === "-") e.preventDefault();
             }}
@@ -118,14 +122,17 @@ export function MarketplaceFilters({ filters, onChange, onReset }: MarketplaceFi
           />
         </div>
 
-        {/* Min Size (MB) */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-muted-foreground uppercase">Min Size (MB)</label>
+          <label className="text-xs font-bold text-muted-foreground uppercase">
+            Min Size (MB)
+          </label>
           <Input
             type="number"
             min={0}
             value={filters.minSize}
-            onChange={(e) => onChange({ minSize: clampNonNegative(e.target.value) })}
+            onChange={(e) =>
+              onChange({ minSize: clampNonNegative(e.target.value) })
+            }
             onKeyDown={(e) => {
               if (e.key === "-") e.preventDefault();
             }}
@@ -134,14 +141,17 @@ export function MarketplaceFilters({ filters, onChange, onReset }: MarketplaceFi
           />
         </div>
 
-        {/* Max Price */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-muted-foreground uppercase">Max Price</label>
+          <label className="text-xs font-bold text-muted-foreground uppercase">
+            Max Price
+          </label>
           <Input
             type="number"
             min={0}
             value={filters.maxPrice}
-            onChange={(e) => onChange({ maxPrice: clampNonNegative(e.target.value) })}
+            onChange={(e) =>
+              onChange({ maxPrice: clampNonNegative(e.target.value) })
+            }
             onKeyDown={(e) => {
               if (e.key === "-") e.preventDefault();
             }}
@@ -150,7 +160,6 @@ export function MarketplaceFilters({ filters, onChange, onReset }: MarketplaceFi
           />
         </div>
 
-        {/* Sort Order */}
         <div className="pt-4 border-t space-y-4">
           <div className="space-y-2">
             <label className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
@@ -159,7 +168,9 @@ export function MarketplaceFilters({ filters, onChange, onReset }: MarketplaceFi
             </label>
             <Select
               value={filters.ordering}
-              onChange={(e) => onChange({ ordering: e.target.value as "newest" | "oldest" })}
+              onChange={(e) =>
+                onChange({ ordering: e.target.value as "newest" | "oldest" })
+              }
               className="text-sm"
             >
               <option value="newest">Newest First</option>

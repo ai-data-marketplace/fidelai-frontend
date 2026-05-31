@@ -1,9 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import apiClient from '../services/api-client';
-import { API_ENDPOINTS } from '../services/endpoints';
-import tokenUtils from '../lib/utils/token-utils';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import apiClient from "../services/api-client";
+import { API_ENDPOINTS } from "../services/endpoints";
+import tokenUtils from "../lib/utils/token-utils";
 
 export interface AuthUser {
   id: string;
@@ -50,7 +56,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!refresh) return false;
     setIsRefreshing(true);
     try {
-      const resp = await apiClient.post(API_ENDPOINTS.AUTH.REFRESH, { refresh });
+      const resp = await apiClient.post(API_ENDPOINTS.AUTH.REFRESH, {
+        refresh,
+      });
       const { access, refresh: newRefresh } = resp.data;
       if (access && newRefresh) {
         tokenUtils.storeTokens(access, newRefresh);
@@ -64,22 +72,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return false;
   }, []);
 
-  const login = useCallback(async (access: string, refresh: string, userData?: AuthUser) => {
-    tokenUtils.storeTokens(access, refresh);
-    if (userData) {
-      setUser(userData);
-    } else {
-      await fetchCurrentUser();
-    }
-  }, [fetchCurrentUser]);
+  const login = useCallback(
+    async (access: string, refresh: string, userData?: AuthUser) => {
+      tokenUtils.storeTokens(access, refresh);
+      if (userData) {
+        setUser(userData);
+      } else {
+        await fetchCurrentUser();
+      }
+    },
+    [fetchCurrentUser],
+  );
 
   const logout = useCallback(() => {
     tokenUtils.clearTokens();
     setUser(null);
-    // client-side redirect can be handled by pages that consume the context
   }, []);
 
-  // Hydrate on mount: if tokens exist try to ensure user is loaded
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -89,7 +98,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // If access token missing or expired, try refresh
       const shouldRefresh = tokenUtils.isTokenExpired(access);
       if (shouldRefresh && refresh) {
         const ok = await refreshTokens();
@@ -103,11 +111,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (mounted) setIsLoading(false);
     })();
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [fetchCurrentUser, refreshTokens]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated, isRefreshing, login, logout, refreshTokens, fetchCurrentUser, setUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        isAuthenticated,
+        isRefreshing,
+        login,
+        logout,
+        refreshTokens,
+        fetchCurrentUser,
+        setUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -115,6 +137,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };

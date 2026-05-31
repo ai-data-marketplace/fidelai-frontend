@@ -1,8 +1,9 @@
-/* ─────────────────────────────────────
-   User & Auth Types
-   ───────────────────────────────────── */
-
-export type UserRole = 'contributor' | 'annotator' | 'expert' | 'buyer' | 'admin';
+export type UserRole =
+  | "contributor"
+  | "annotator"
+  | "expert"
+  | "buyer"
+  | "admin";
 
 export interface User {
   id: string;
@@ -21,10 +22,6 @@ export interface AuthTokens {
   refresh: string;
 }
 
-/* ─────────────────────────────────────
-   Dataset Types
-   ───────────────────────────────────── */
-
 export interface Dataset {
   id: string;
   title: string;
@@ -35,9 +32,9 @@ export interface Dataset {
   size: number;
   recordCount: number;
   price: number;
-  status: 'draft' | 'processing' | 'published' | 'archived';
+  status: "draft" | "processing" | "published" | "archived";
   qualityScore?: number;
-  contributor: Pick<User, 'id' | 'name' | 'avatar'>;
+  contributor: Pick<User, "id" | "name" | "avatar">;
   createdAt: string;
   updatedAt: string;
 }
@@ -51,17 +48,18 @@ export interface DatasetVersion {
   createdAt: string;
 }
 
-/* ─────────────────────────────────────
-   Task & Annotation Types
-   ───────────────────────────────────── */
-
-export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'needs_review' | 'rejected';
+export type TaskStatus =
+  | "pending"
+  | "in_progress"
+  | "completed"
+  | "needs_review"
+  | "rejected";
 
 export interface Task {
   id: string;
   datasetId: string;
   chunkId: string;
-  type: 'annotation' | 'review' | 'adjudication';
+  type: "annotation" | "review" | "adjudication";
   status: TaskStatus;
   assignedTo?: string;
   priority: number;
@@ -86,16 +84,12 @@ export interface AnnotationLabel {
   text: string;
 }
 
-/* ─────────────────────────────────────
-   Marketplace Types
-   ───────────────────────────────────── */
-
 export interface MarketplaceListing {
   id: string;
   dataset: Dataset;
   price: number;
   currency: string;
-  licenseType: 'commercial' | 'research' | 'open';
+  licenseType: "commercial" | "research" | "open";
   downloads: number;
   rating: number;
   reviewCount: number;
@@ -106,13 +100,9 @@ export interface Purchase {
   buyerId: string;
   datasetId: string;
   price: number;
-  status: 'pending' | 'completed' | 'refunded';
+  status: "pending" | "completed" | "refunded";
   purchasedAt: string;
 }
-
-/* ─────────────────────────────────────
-   Analytics Types
-   ───────────────────────────────────── */
 
 export interface DashboardStats {
   totalDatasets: number;
@@ -127,10 +117,6 @@ export interface ChartDataPoint {
   value: number;
   category?: string;
 }
-
-/* ─────────────────────────────────────
-   API Response Types
-   ───────────────────────────────────── */
 
 export interface PaginatedResponse<T> {
   count: number;

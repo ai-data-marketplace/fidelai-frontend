@@ -7,7 +7,6 @@ export default function AnnotatorWorkspacePage() {
       <p className="mt-2 text-muted-foreground">
         Annotate and label Amharic text chunks.
       </p>
-      {/* AnnotationPanel, ChunkViewer, LabelSelector components */}
     </div>
   );
 }

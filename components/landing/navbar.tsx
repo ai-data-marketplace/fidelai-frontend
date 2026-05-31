@@ -22,9 +22,10 @@ export function Navbar() {
   const { user, isLoading: isAuthLoading, logout } = useAuth();
   const role = user?.role?.toLowerCase() || null;
   const shouldFetchApplicationStatus = Boolean(user && role === "unknown");
-  const { data: applicationStatus, isLoading: isApplicationStatusLoading } = useApplicationStatus({
-    enabled: shouldFetchApplicationStatus,
-  });
+  const { data: applicationStatus, isLoading: isApplicationStatusLoading } =
+    useApplicationStatus({
+      enabled: shouldFetchApplicationStatus,
+    });
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -33,11 +34,14 @@ export function Navbar() {
   }, []);
 
   const roleRoots = ["contributor", "annotator", "expert", "buyer", "admin"];
-  const knownRoleHref = role && roleRoots.includes(role) ? `/${role}` : "/dashboard/profile";
+  const knownRoleHref =
+    role && roleRoots.includes(role) ? `/${role}` : "/dashboard/profile";
   const onboardingHref = "/onboarding";
 
   let authMode: "guest" | "known-role" | "onboarding" | "review" = "guest";
-  const isAuthActionsLoading = Boolean(user && shouldFetchApplicationStatus && isApplicationStatusLoading);
+  const isAuthActionsLoading = Boolean(
+    user && shouldFetchApplicationStatus && isApplicationStatusLoading,
+  );
   if (user) {
     if (role === "unknown") {
       if (isApplicationStatusLoading) {
@@ -251,7 +255,6 @@ export function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
-            {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group">
               <div className="relative">
                 <div className="w-9 h-9 rounded-xl brand-gradient-logo flex items-center justify-center shadow-lg brand-shadow brand-shadow-hover transition-shadow">
@@ -264,7 +267,6 @@ export function Navbar() {
               </span>
             </Link>
 
-            {/* Desktop Nav */}
             <nav className="hidden lg:flex items-center gap-1">
               {navLinks.map((link) => (
                 <Link
@@ -277,21 +279,22 @@ export function Navbar() {
               ))}
             </nav>
 
-            {/* Desktop Auth */}
             {renderDesktopAuth()}
 
-            {/* Mobile Toggle */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="lg:hidden p-2 rounded-lg hover:bg-foreground/5 transition-colors"
             >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </button>
           </div>
         </div>
       </motion.header>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div

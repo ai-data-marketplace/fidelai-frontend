@@ -20,14 +20,16 @@ export function RoleToggle() {
   const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newRole = e.target.value as any;
     setRole(newRole);
-    // Redirect to the corresponding dashboard for UI testing
+
     router.push(`/${newRole}`);
   };
 
   return (
     <div className="flex items-center gap-2 bg-muted px-3 py-1.5 rounded-lg border shadow-sm">
       <ShieldCheck className="w-4 h-4 text-primary" />
-      <span className="text-xs font-semibold text-muted-foreground hidden sm:inline">Role:</span>
+      <span className="text-xs font-semibold text-muted-foreground hidden sm:inline">
+        Role:
+      </span>
       <select
         value={role || "contributor"}
         onChange={handleRoleChange}

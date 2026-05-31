@@ -64,7 +64,6 @@ export function Testimonials() {
   return (
     <section className="relative py-28 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -77,16 +76,14 @@ export function Testimonials() {
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
             Trusted by{" "}
-            <span className="brand-gradient-text">
-              Researchers & Companies
-            </span>
+            <span className="brand-gradient-text">Researchers & Companies</span>
           </h2>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
-            See what researchers, AI companies, and universities say about FidelAI.
+            See what researchers, AI companies, and universities say about
+            FidelAI.
           </p>
         </motion.div>
 
-        {/* Testimonial Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((t, index) => (
             <motion.div
@@ -115,7 +112,6 @@ export function Testimonials() {
                 </div>
               </div>
 
-              {/* Org badge */}
               <div className="absolute top-6 right-6">
                 <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-foreground/5 text-muted-foreground">
                   {t.org}

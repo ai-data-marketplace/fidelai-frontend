@@ -7,8 +7,6 @@ export const annotatorStats = {
   totalPoints: 2_840,
 };
 
-
-
 export const recentActivity = [
   {
     id: "act-001",
@@ -52,8 +50,6 @@ export const recentActivity = [
   },
 ];
 
-// ─── Task Queue ──────────────────────────────────────────────────────────────
-
 export type Difficulty = "Easy" | "Medium" | "Hard";
 
 export interface Task {
@@ -72,7 +68,8 @@ export const taskQueue: Task[] = [
     chunks: 12,
     estimatedMinutes: 20,
     difficulty: "Easy",
-    description: "Review and validate Amharic medical transcription segments for accuracy.",
+    description:
+      "Review and validate Amharic medical transcription segments for accuracy.",
   },
   {
     id: "TASK-1096",
@@ -104,13 +101,15 @@ export const taskQueue: Task[] = [
     chunks: 20,
     estimatedMinutes: 40,
     difficulty: "Medium",
-    description: "Validate crop-disease terminology in field report translations.",
+    description:
+      "Validate crop-disease terminology in field report translations.",
   },
 ];
 
-// ─── History ─────────────────────────────────────────────────────────────────
-
-export type ConsensusStatus = "Agreed" | "Partially Agreed" | "Disputed (Escalated)";
+export type ConsensusStatus =
+  | "Agreed"
+  | "Partially Agreed"
+  | "Disputed (Escalated)";
 
 export interface CompletedTask {
   id: string;
@@ -180,8 +179,6 @@ export const completedTasks: CompletedTask[] = [
   },
 ];
 
-// ─── Performance Analytics ───────────────────────────────────────────────────
-
 export const accuracyOverTime = [
   { week: "W1 Mar", accuracy: 82 },
   { week: "W2 Mar", accuracy: 85 },
@@ -209,8 +206,6 @@ export const pointsEarned = [
   { week: "W2 Apr", points: 500 },
 ];
 
-// ─── Workspace Chunks ────────────────────────────────────────────────────────
-
 export interface TaskChunk {
   id: string;
   text: string;
@@ -218,15 +213,27 @@ export interface TaskChunk {
 
 export const mockTaskChunks: Record<string, TaskChunk[]> = {
   "TASK-1095": [
-    { id: "chunk-1", text: "የህክምና መረጃ በግልጽ መቀመጥ አለበት። ይህ በሽተኞች ስለ ጤንነታቸው ሙሉ መረጃ እንዲያገኙ ይረዳል።" },
-    { id: "chunk-2", text: "የደም ግፊት መጨመር ብዙ ጊዜ ምልክት አያሳይም፤ ስለዚህ መደበኛ ምርመራ ማድረግ አስፈላጊ ነው።" },
-    { id: "chunk-3", text: "ስኳር በሽታን ለመቆጣጠር አመጋገብ እና የአካል ብቃት እንቅስቃሴ ወሳኝ ድርሻ አላቸው።" },
+    {
+      id: "chunk-1",
+      text: "የህክምና መረጃ በግልጽ መቀመጥ አለበት። ይህ በሽተኞች ስለ ጤንነታቸው ሙሉ መረጃ እንዲያገኙ ይረዳል።",
+    },
+    {
+      id: "chunk-2",
+      text: "የደም ግፊት መጨመር ብዙ ጊዜ ምልክት አያሳይም፤ ስለዚህ መደበኛ ምርመራ ማድረግ አስፈላጊ ነው።",
+    },
+    {
+      id: "chunk-3",
+      text: "ስኳር በሽታን ለመቆጣጠር አመጋገብ እና የአካል ብቃት እንቅስቃሴ ወሳኝ ድርሻ አላቸው።",
+    },
   ],
-  "default": [
-    { id: "c-1", text: "በአዲስ አበባ ከተማ አስተዳደር የትራፊክ ፍሰት ለማሻሻል አዳዲስ መንገዶች እየተገነቡ ነው።" },
+  default: [
+    {
+      id: "c-1",
+      text: "በአዲስ አበባ ከተማ አስተዳደር የትራፊክ ፍሰት ለማሻሻል አዳዲስ መንገዶች እየተገነቡ ነው።",
+    },
     { id: "c-2", text: "የቴክኖሎጂ እድገት በኢኮኖሚው ላይ ትልቅ ተጽዕኖ እያሳደረ ይገኛል።" },
     { id: "c-3", text: "የአየር ንብረት ለውጥ በአለም አቀፍ ደረጃ ከፍተኛ ስጋት እየፈጠረ ነው።" },
     { id: "c-4", text: "ባህላዊ እሴቶቻችንን በመጠበቅ ለቀጣይ ትውልድ ማስተላለፍ የሁላችንም ሃላፊነት ነው።" },
     { id: "c-5", text: "በገጠር አካባቢዎች የንጹህ መጠጥ ውሃ አቅርቦት ለማስፋፋት ጥረቶች እየተደረጉ ነው።" },
-  ]
+  ],
 };

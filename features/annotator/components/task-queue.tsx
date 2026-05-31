@@ -36,8 +36,6 @@ import { PAGINATION } from "@/lib/constants";
 import { motion, AnimatePresence } from "framer-motion";
 import { NlpTaskCard } from "./nlp-task-card";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 const ASSIGNMENT_PAGE_SIZE = PAGINATION.DEFAULT_PAGE_SIZE;
 
 type TaskView = "quality-control" | "nlp";
@@ -49,7 +47,11 @@ const STATUS_FILTERS: Array<{ value: TaskStatusFilter; label: string }> = [
   { value: "submitted", label: "Submitted" },
 ];
 
-const TASK_VIEWS: Array<{ value: TaskView; label: string; description: string }> = [
+const TASK_VIEWS: Array<{
+  value: TaskView;
+  label: string;
+  description: string;
+}> = [
   {
     value: "quality-control",
     label: "Quality Control Tasks",
@@ -105,9 +107,13 @@ function formatDate(value: string | null) {
   return date.toLocaleString();
 }
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
-
-function EmptyState({ title, description }: { title: string; description: string }) {
+function EmptyState({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
   return (
     <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
       <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center">
@@ -120,8 +126,6 @@ function EmptyState({ title, description }: { title: string; description: string
     </div>
   );
 }
-
-// ─── Quality Control Task Card ────────────────────────────────────────────────
 
 function QualityControlTaskCard({
   task,
@@ -139,10 +143,12 @@ function QualityControlTaskCard({
   const domainKey = task.domain?.toLowerCase() ?? "";
   const icon = domainIcon[domainKey] ?? <HelpCircle className="h-4 w-4" />;
   const iconColor = domainColor[domainKey] ?? "bg-muted text-muted-foreground";
-  const statusClass = statusStyle[task.status] ?? "bg-muted text-muted-foreground border-border";
+  const statusClass =
+    statusStyle[task.status] ?? "bg-muted text-muted-foreground border-border";
 
   const isAssigned = task.status === "assigned";
-  const isInProgress = task.status === "in_progress" || task.status === "accepted";
+  const isInProgress =
+    task.status === "in_progress" || task.status === "accepted";
   const isSubmitted = task.status === "submitted";
 
   return (
@@ -156,7 +162,9 @@ function QualityControlTaskCard({
       <Card className="border-border/50 bg-card/60 backdrop-blur-sm hover:shadow-md hover:border-primary/20 transition-all duration-200 group">
         <CardContent className="p-5">
           <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconColor}`}>
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconColor}`}
+            >
               {icon}
             </div>
 
@@ -165,7 +173,10 @@ function QualityControlTaskCard({
                 <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                   {formatTaskCode(task.task_id)}
                 </span>
-                <Badge variant="outline" className={`text-xs font-bold ${statusClass}`}>
+                <Badge
+                  variant="outline"
+                  className={`text-xs font-bold ${statusClass}`}
+                >
                   {formatStatus(task.status)}
                 </Badge>
                 <Badge variant="outline" className="text-xs font-bold">
@@ -173,9 +184,13 @@ function QualityControlTaskCard({
                 </Badge>
               </div>
 
-              <p className="text-base font-black tracking-tight">{task.task_name}</p>
+              <p className="text-base font-black tracking-tight">
+                {task.task_name}
+              </p>
 
-              <p className="text-sm text-muted-foreground leading-relaxed">{task.description}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {task.description}
+              </p>
 
               <div className="flex flex-wrap gap-4 text-xs font-semibold text-muted-foreground">
                 <span className="flex items-center gap-1.5">
@@ -246,8 +261,6 @@ function QualityControlTaskCard({
   );
 }
 
-// ─── Quality Control Task List ───────────────────────────────────────────────
-
 function QualityControlTaskList({ status }: { status: TaskStatusFilter }) {
   const router = useRouter();
   const [page, setPage] = useState(1);
@@ -285,7 +298,9 @@ function QualityControlTaskList({ status }: { status: TaskStatusFilter }) {
     return (
       <div className="space-y-4">
         <Card className="border-border/50 bg-card/60 backdrop-blur-sm">
-          <CardContent className="p-5 text-sm text-muted-foreground">Loading assignments...</CardContent>
+          <CardContent className="p-5 text-sm text-muted-foreground">
+            Loading assignments...
+          </CardContent>
         </Card>
       </div>
     );
@@ -352,8 +367,6 @@ function QualityControlTaskList({ status }: { status: TaskStatusFilter }) {
   );
 }
 
-// ─── NLP Task List ────────────────────────────────────────────────────────────
-
 function NlpTaskList({ status }: { status: TaskStatusFilter }) {
   const [page, setPage] = useState(1);
   const router = useRouter();
@@ -395,7 +408,9 @@ function NlpTaskList({ status }: { status: TaskStatusFilter }) {
     return (
       <div className="space-y-4">
         <Card className="border-border/50 bg-card/60 backdrop-blur-sm">
-          <CardContent className="p-5 text-sm text-muted-foreground">Loading NLP tasks...</CardContent>
+          <CardContent className="p-5 text-sm text-muted-foreground">
+            Loading NLP tasks...
+          </CardContent>
         </Card>
       </div>
     );
@@ -462,8 +477,6 @@ function NlpTaskList({ status }: { status: TaskStatusFilter }) {
     </div>
   );
 }
-
-// ─── Main Component ───────────────────────────────────────────────────────────
 
 export function TaskQueueList() {
   const [activeView, setActiveView] = useState<TaskView>("quality-control");
