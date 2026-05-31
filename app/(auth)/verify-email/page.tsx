@@ -1,7 +1,6 @@
-import Link from "next/link";
-import { Sparkles, Mail } from "lucide-react";
+import {  Mail } from "lucide-react";
 import { VerifyEmailForm } from "@/components/auth/verify-email-form";
-
+import { Suspense } from "react";
 export default function VerifyEmailPage() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
@@ -17,8 +16,9 @@ export default function VerifyEmailPage() {
           <p className="text-sm text-muted-foreground mb-8">
             We've sent a 6-digit verification code to your email address. Please enter it below.
           </p>
-
-          <VerifyEmailForm />
+ <Suspense fallback={<div>Loading...</div>}>
+      <VerifyEmailForm />
+    </Suspense>
         </div>
       </div>
     </div>

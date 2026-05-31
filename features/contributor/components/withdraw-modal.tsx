@@ -82,11 +82,11 @@ export function WithdrawModal({ isOpen, onClose, walletDetails }: WithdrawModalP
       setErrorMessage(`Please enter a valid amount in ${currency}`);
       return;
     }
-    if (amountValue < minimumAmount) {
+    if (minimumAmount != null && amountValue < minimumAmount) {
       setErrorMessage(`Minimum withdrawal amount is ${formatCurrency(minimumAmount, currency)}`);
       return;
     }
-    if (amountValue > withdrawableAmount) {
+    if (withdrawableAmount != null && amountValue > withdrawableAmount) {
       setErrorMessage(`Cannot exceed withdrawable amount of ${formatCurrency(withdrawableAmount, currency)}`);
       return;
     }
