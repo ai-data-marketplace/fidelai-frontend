@@ -76,11 +76,9 @@ const item = {
 export function Features() {
   return (
     <section id="features" className="relative py-28 overflow-hidden">
-      {/* Background decor */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] brand-bg-faint rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -93,9 +91,7 @@ export function Features() {
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
             Everything You Need to Build{" "}
-            <span className="brand-gradient-text">
-              AI Datasets
-            </span>
+            <span className="brand-gradient-text">AI Datasets</span>
           </h2>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
             A complete end-to-end platform for dataset collection, annotation,
@@ -103,7 +99,6 @@ export function Features() {
           </p>
         </motion.div>
 
-        {/* Grid */}
         <motion.div
           variants={container}
           initial="hidden"
@@ -117,7 +112,6 @@ export function Features() {
               variants={item}
               className={`group relative p-8 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm hover:border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${feature.shadow}`}
             >
-              {/* Icon */}
               <div
                 className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-5 shadow-lg ${feature.shadow} group-hover:scale-110 transition-transform duration-300`}
               >
@@ -129,7 +123,6 @@ export function Features() {
                 {feature.description}
               </p>
 
-              {/* Hover gradient border effect */}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-orange-500/0 via-orange-500/0 to-amber-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10 blur-xl" />
             </motion.div>
           ))}

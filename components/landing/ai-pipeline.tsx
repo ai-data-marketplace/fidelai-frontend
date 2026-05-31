@@ -16,7 +16,11 @@ const pipelineSteps = [
   { icon: FileText, label: "Documents", color: "from-slate-500 to-slate-600" },
   { icon: Bot, label: "AI Processing", color: "from-orange-500 to-red-600" },
   { icon: PenTool, label: "Annotators", color: "from-blue-500 to-cyan-500" },
-  { icon: ShieldCheck, label: "Experts", color: "from-emerald-500 to-teal-500" },
+  {
+    icon: ShieldCheck,
+    label: "Experts",
+    color: "from-emerald-500 to-teal-500",
+  },
   { icon: Database, label: "Dataset", color: "from-amber-500 to-orange-500" },
   { icon: Store, label: "Marketplace", color: "from-pink-500 to-rose-500" },
 ];
@@ -27,11 +31,9 @@ export function AIPipeline() {
 
   return (
     <section className="relative py-28 overflow-hidden">
-      {/* Background decor */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(124,58,237,0.04),transparent_70%)] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -44,19 +46,15 @@ export function AIPipeline() {
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
             End-to-End{" "}
-            <span className="brand-gradient-text">
-              Data Pipeline
-            </span>
+            <span className="brand-gradient-text">Data Pipeline</span>
           </h2>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
-            From raw documents to marketplace-ready datasets — fully automated with
-            human-in-the-loop quality assurance.
+            From raw documents to marketplace-ready datasets — fully automated
+            with human-in-the-loop quality assurance.
           </p>
         </motion.div>
 
-        {/* Pipeline Flow */}
         <div ref={ref} className="relative">
-          {/* Desktop - Horizontal */}
           <div className="hidden lg:flex items-center justify-between gap-4">
             {pipelineSteps.map((step, index) => (
               <div key={step.label} className="flex items-center gap-4">
@@ -71,10 +69,11 @@ export function AIPipeline() {
                   >
                     <step.icon className="w-8 h-8 text-white" />
                   </div>
-                  <span className="text-sm font-medium whitespace-nowrap">{step.label}</span>
+                  <span className="text-sm font-medium whitespace-nowrap">
+                    {step.label}
+                  </span>
                 </motion.div>
 
-                {/* Arrow connector */}
                 {index < pipelineSteps.length - 1 && (
                   <motion.div
                     initial={{ opacity: 0, x: -10 }}
@@ -90,10 +89,12 @@ export function AIPipeline() {
             ))}
           </div>
 
-          {/* Mobile - Vertical */}
           <div className="lg:hidden flex flex-col items-center gap-6">
             {pipelineSteps.map((step, index) => (
-              <div key={step.label} className="flex flex-col items-center gap-3">
+              <div
+                key={step.label}
+                className="flex flex-col items-center gap-3"
+              >
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}
                   animate={isInView ? { opacity: 1, x: 0 } : {}}
@@ -114,7 +115,6 @@ export function AIPipeline() {
             ))}
           </div>
 
-          {/* Animated glow line behind the pipeline on desktop */}
           <motion.div
             initial={{ scaleX: 0 }}
             animate={isInView ? { scaleX: 1 } : {}}

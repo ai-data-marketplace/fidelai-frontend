@@ -30,7 +30,10 @@ export function VerifyEmailForm() {
 
   useEffect(() => {
     if (cooldown <= 0) return;
-    const timer = window.setTimeout(() => setCooldown((value) => value - 1), 1000);
+    const timer = window.setTimeout(
+      () => setCooldown((value) => value - 1),
+      1000,
+    );
     return () => window.clearTimeout(timer);
   }, [cooldown]);
 
@@ -46,7 +49,10 @@ export function VerifyEmailForm() {
     }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
     if (e.key === "Backspace" && !code[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
@@ -54,7 +60,10 @@ export function VerifyEmailForm() {
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData("text/plain").slice(0, 6).replace(/[^0-9]/g, "");
+    const pastedData = e.clipboardData
+      .getData("text/plain")
+      .slice(0, 6)
+      .replace(/[^0-9]/g, "");
     if (!pastedData) return;
 
     const newCode = [...code];
@@ -62,7 +71,7 @@ export function VerifyEmailForm() {
       newCode[i] = pastedData[i];
     }
     setCode(newCode);
-    
+
     const nextFocusIndex = Math.min(pastedData.length, 5);
     inputRefs.current[nextFocusIndex]?.focus();
   };
@@ -78,19 +87,26 @@ export function VerifyEmailForm() {
       {
         onSuccess: (data) => {
           setIsSuccess(true);
-          // Use data.user if available, otherwise fallback to auth context (which was just updated by hook)
-          const roleRoots = ["contributor", "annotator", "expert", "buyer", "admin"];
+
+          const roleRoots = [
+            "contributor",
+            "annotator",
+            "expert",
+            "buyer",
+            "admin",
+          ];
           const userRole = data?.user?.role || user?.role || "";
           const normalizedRole = userRole.trim().toLowerCase();
-          const targetRoute = normalizedRole === "unknown"
-            ? "/onboarding"
-            : roleRoots.includes(normalizedRole)
-              ? `/${normalizedRole}`
-              : "/dashboard/profile";
+          const targetRoute =
+            normalizedRole === "unknown"
+              ? "/onboarding"
+              : roleRoots.includes(normalizedRole)
+                ? `/${normalizedRole}`
+                : "/dashboard/profile";
           window.setTimeout(() => router.push(targetRoute), 1200);
         },
         onError: (error) => setGeneralError(getErrorMessage(error)),
-      }
+      },
     );
   };
 
@@ -106,7 +122,7 @@ export function VerifyEmailForm() {
           setCooldown(60);
         },
         onError: (error) => setGeneralError(getErrorMessage(error)),
-      }
+      },
     );
   };
 
@@ -150,7 +166,9 @@ export function VerifyEmailForm() {
         {code.map((digit, index) => (
           <input
             key={index}
-            ref={(el) => { inputRefs.current[index] = el; }}
+            ref={(el) => {
+              inputRefs.current[index] = el;
+            }}
             type="text"
             inputMode="numeric"
             maxLength={1}
@@ -165,16 +183,25 @@ export function VerifyEmailForm() {
 
       <button
         type="submit"
-        disabled={verifyMutation.isPending || code.join("").length !== 6 || !email}
+        disabled={
+          verifyMutation.isPending || code.join("").length !== 6 || !email
+        }
         className="w-full flex h-12 items-center justify-center rounded-xl brand-gradient-btn px-8 text-sm font-bold text-white shadow-lg brand-shadow brand-shadow-hover transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
       >
-        {verifyMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+        {verifyMutation.isPending ? (
+          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+        ) : null}
         Verify Email
       </button>
 
       <p className="text-center text-sm text-muted-foreground">
         Didn't receive the code?{" "}
-        <button type="button" onClick={handleResend} disabled={!email || cooldown > 0 || resendMutation.isPending} className="font-medium text-orange-600 hover:text-orange-500 hover:underline transition-colors disabled:opacity-50 disabled:no-underline">
+        <button
+          type="button"
+          onClick={handleResend}
+          disabled={!email || cooldown > 0 || resendMutation.isPending}
+          className="font-medium text-orange-600 hover:text-orange-500 hover:underline transition-colors disabled:opacity-50 disabled:no-underline"
+        >
           {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend"}
         </button>
       </p>

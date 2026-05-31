@@ -1,21 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Modal, 
-  Button, 
-  Input, 
-  Select, 
-  Checkbox, 
-  Badge 
-} from "@/components/ui";
-import { 
-  Upload, 
-  AlertCircle, 
-  FileText, 
-  ShieldCheck, 
+import { Modal, Button, Input, Select, Checkbox, Badge } from "@/components/ui";
+import {
+  Upload,
+  AlertCircle,
+  FileText,
+  ShieldCheck,
   X,
-  Plus
+  Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -34,7 +27,10 @@ const domains = [
   "Religion",
 ];
 
-export function UploadDatasetModal({ isOpen, onClose }: UploadDatasetModalProps) {
+export function UploadDatasetModal({
+  isOpen,
+  onClose,
+}: UploadDatasetModalProps) {
   const [domain, setDomain] = useState("General");
   const [hasConsent, setHasConsent] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -44,9 +40,9 @@ export function UploadDatasetModal({ isOpen, onClose }: UploadDatasetModalProps)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!hasConsent) return;
-    
+
     setIsUploading(true);
-    // Mock upload delay
+
     setTimeout(() => {
       setIsUploading(false);
       onClose();
@@ -62,7 +58,8 @@ export function UploadDatasetModal({ isOpen, onClose }: UploadDatasetModalProps)
           <div className="text-sm">
             <p className="font-semibold text-amber-800">Technology Note</p>
             <p className="text-amber-700/80">
-              Only text-based datasets are currently supported. Other formats will be added in future updates.
+              Only text-based datasets are currently supported. Other formats
+              will be added in future updates.
             </p>
           </div>
         </div>
@@ -72,16 +69,18 @@ export function UploadDatasetModal({ isOpen, onClose }: UploadDatasetModalProps)
             <label className="text-sm font-medium">Dataset Title</label>
             <Input placeholder="e.g. Amharic News Corpus 2024" required />
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Domain</label>
-            <Select 
-              value={domain} 
+            <Select
+              value={domain}
               onChange={(e) => setDomain(e.target.value)}
               required
             >
-              {domains.map(d => (
-                <option key={d} value={d}>{d}</option>
+              {domains.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
               ))}
             </Select>
           </div>
@@ -92,16 +91,22 @@ export function UploadDatasetModal({ isOpen, onClose }: UploadDatasetModalProps)
           <Input placeholder="e.g. Politics, Medical Records, Court Rulings" />
         </div>
 
-        {/* File Upload Area */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Upload Dataset File</label>
           <div className="border-2 border-dashed rounded-xl p-8 text-center hover:border-primary/50 hover:bg-muted/50 transition-all cursor-pointer group relative">
-            <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept=".pdf,.docx,.txt,.jpg,.png" required />
+            <input
+              type="file"
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              accept=".pdf,.docx,.txt,.jpg,.png"
+              required
+            />
             <div className="flex flex-col items-center">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <Upload className="w-6 h-6 text-primary" />
               </div>
-              <p className="text-sm font-medium">Click to upload or drag and drop</p>
+              <p className="text-sm font-medium">
+                Click to upload or drag and drop
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Supported: PDF, TXT, DOCX, JPG, PNG (Max 50MB)
               </p>
@@ -109,7 +114,6 @@ export function UploadDatasetModal({ isOpen, onClose }: UploadDatasetModalProps)
           </div>
         </div>
 
-        {/* Sensitive Domain Logic */}
         <AnimatePresence>
           {isSensitiveDomain && (
             <motion.div
@@ -121,14 +125,22 @@ export function UploadDatasetModal({ isOpen, onClose }: UploadDatasetModalProps)
               <div className="p-4 rounded-xl border bg-muted/30 space-y-4">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span className="text-sm font-semibold">Sensitive Domain Verification</span>
+                  <span className="text-sm font-semibold">
+                    Sensitive Domain Verification
+                  </span>
                 </div>
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground">
-                    Upload proof of ownership or authorization for this {domain}-related data.
+                    Upload proof of ownership or authorization for this {domain}
+                    -related data.
                   </p>
                   <div className="flex items-center gap-3">
-                    <Button type="button" variant="outline" size="sm" className="h-9 gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-9 gap-2"
+                    >
                       <Plus className="w-4 h-4" />
                       Upload Authorization PDF
                     </Button>
@@ -142,9 +154,8 @@ export function UploadDatasetModal({ isOpen, onClose }: UploadDatasetModalProps)
           )}
         </AnimatePresence>
 
-        {/* Consent Section */}
         <div className="p-4 rounded-xl border bg-primary/5 border-primary/10">
-          <Checkbox 
+          <Checkbox
             id="consent"
             checked={hasConsent}
             onChange={(e) => setHasConsent(e.target.checked)}
@@ -157,8 +168,8 @@ export function UploadDatasetModal({ isOpen, onClose }: UploadDatasetModalProps)
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={!hasConsent || isUploading}
             className="min-w-[140px]"
           >

@@ -7,7 +7,6 @@ export default function ExpertWorkspacePage() {
       <p className="mt-2 text-muted-foreground">
         Adjudicate and resolve conflicting annotations.
       </p>
-      {/* AdjudicationPanel, ConflictViewer, ResolutionForm components */}
     </div>
   );
 }

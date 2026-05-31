@@ -40,7 +40,6 @@ export function Footer() {
   return (
     <footer className="border-t border-border/50 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main footer */}
         <div className="py-16 grid grid-cols-2 md:grid-cols-6 gap-8">
           {/* Brand */}
           <div className="col-span-2">
@@ -53,10 +52,10 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed mb-6 max-w-xs">
-              AI-powered data marketplace and crowdsourcing platform for
-              Amharic dataset collection, annotation, and selling.
+              AI-powered data marketplace and crowdsourcing platform for Amharic
+              dataset collection, annotation, and selling.
             </p>
-            {/* Social */}
+
             <div className="flex items-center gap-3">
               {socialLinks.map((social) => (
                 <a
@@ -71,7 +70,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Link columns */}
           {Object.entries(footerLinks).map(([title, links]) => (
             <div key={title}>
               <h4 className="text-sm font-semibold mb-4">{title}</h4>
@@ -91,7 +89,6 @@ export function Footer() {
           ))}
         </div>
 
-        {/* Bottom bar */}
         <div className="border-t border-border/50 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground text-center sm:text-left">
             &copy; {new Date().getFullYear()} FidelAI. All rights reserved.

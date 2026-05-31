@@ -1,7 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Star, Download, ArrowRight, Globe, Database, BadgeCheck } from "lucide-react";
+import {
+  Star,
+  Download,
+  ArrowRight,
+  Globe,
+  Database,
+  BadgeCheck,
+} from "lucide-react";
 import Link from "next/link";
 
 const datasets = [
@@ -52,11 +59,13 @@ function QualityBadge({ score }: { score: number }) {
     score >= 98
       ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20"
       : score >= 96
-      ? "text-blue-500 bg-blue-500/10 border-blue-500/20"
-      : "text-amber-500 bg-amber-500/10 border-amber-500/20";
+        ? "text-blue-500 bg-blue-500/10 border-blue-500/20"
+        : "text-amber-500 bg-amber-500/10 border-amber-500/20";
 
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${color}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${color}`}
+    >
       <BadgeCheck className="w-3 h-3" />
       {score}%
     </span>
@@ -67,7 +76,6 @@ export function Marketplace() {
   return (
     <section id="marketplace" className="relative py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -79,17 +87,14 @@ export function Marketplace() {
             Marketplace
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
-            Browse{" "}
-            <span className="brand-gradient-text">
-              Quality Datasets
-            </span>
+            Browse <span className="brand-gradient-text">Quality Datasets</span>
           </h2>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
-            Explore curated, quality-verified Amharic datasets ready for your AI models.
+            Explore curated, quality-verified Amharic datasets ready for your AI
+            models.
           </p>
         </motion.div>
 
-        {/* Dataset Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {datasets.map((dataset, index) => (
             <motion.div
@@ -100,7 +105,6 @@ export function Marketplace() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className="group relative rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden brand-hover-border hover:-translate-y-1 hover:shadow-xl brand-hover-shadow-subtle transition-all duration-300"
             >
-              {/* Category tag */}
               <div className="p-6 pb-0">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-medium px-2.5 py-0.5 rounded-full brand-chip">
@@ -135,7 +139,10 @@ export function Marketplace() {
                   <div className="text-xl font-bold">${dataset.price}</div>
                   <div className="flex items-center gap-0.5">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                      <Star
+                        key={i}
+                        className="w-3 h-3 fill-amber-400 text-amber-400"
+                      />
                     ))}
                   </div>
                 </div>

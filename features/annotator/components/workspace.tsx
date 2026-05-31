@@ -7,13 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
-import { LogOut, CheckCircle2, ChevronRight, ChevronLeft, XCircle, Info } from "lucide-react";
-import { 
-  useAssignmentChunks, 
-  useAssignmentProgress, 
+import {
+  LogOut,
+  CheckCircle2,
+  ChevronRight,
+  ChevronLeft,
+  XCircle,
+  Info,
+} from "lucide-react";
+import {
+  useAssignmentChunks,
+  useAssignmentProgress,
   useSubmitAnnotation,
   type AssignmentChunk,
-  type AnnotationPayload 
+  type AnnotationPayload,
 } from "@/lib/hooks";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -38,8 +45,14 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
   const searchParams = useSearchParams();
   const actualAssignmentId = assignmentId || searchParams.get("assignmentId");
 
-  const { data: chunks, isLoading: chunksLoading, isError: chunksError } = useAssignmentChunks(actualAssignmentId || "");
-  const { data: progress, isLoading: progressLoading } = useAssignmentProgress(actualAssignmentId || "");
+  const {
+    data: chunks,
+    isLoading: chunksLoading,
+    isError: chunksError,
+  } = useAssignmentChunks(actualAssignmentId || "");
+  const { data: progress, isLoading: progressLoading } = useAssignmentProgress(
+    actualAssignmentId || "",
+  );
   const submitAnnotation = useSubmitAnnotation();
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -47,11 +60,15 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const initializedRef = useRef(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [localAnnotations, setLocalAnnotations] = useState<Record<string, any>>({});
+  const [localAnnotations, setLocalAnnotations] = useState<Record<string, any>>(
+    {},
+  );
 
   useEffect(() => {
     if (chunks && chunks.length > 0 && !initializedRef.current) {
-      const firstUnannotatedIndex = chunks.findIndex((chunk) => !chunk.annotation_exists);
+      const firstUnannotatedIndex = chunks.findIndex(
+        (chunk) => !chunk.annotation_exists,
+      );
       if (firstUnannotatedIndex !== -1) {
         setCurrentIndex(firstUnannotatedIndex);
       }
@@ -84,7 +101,11 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
 
     if (currentChunk.annotation_exists && currentChunk.annotation) {
       setDomainMatch(currentChunk.annotation.domain_match || null);
-      setIsAmharic(currentChunk.annotation.is_amharic !== undefined ? currentChunk.annotation.is_amharic : null);
+      setIsAmharic(
+        currentChunk.annotation.is_amharic !== undefined
+          ? currentChunk.annotation.is_amharic
+          : null,
+      );
       setReadability(currentChunk.annotation.readability || "high");
       setSafetyLabel(currentChunk.annotation.safety_label || null);
       setConfidence(currentChunk.annotation.confidence || null);
@@ -121,7 +142,13 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
 
   const handleSubmit = async () => {
     if (!currentChunk || !actualAssignmentId || isSubmitting) return;
-    if (!domainMatch || !confidence || isAmharic === null || safetyLabel === null) return;
+    if (
+      !domainMatch ||
+      !confidence ||
+      isAmharic === null ||
+      safetyLabel === null
+    )
+      return;
 
     setIsSubmitting(true);
 
@@ -220,9 +247,11 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
         <div className="flex items-center gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-black tracking-tight">{formatTaskCode(taskId)}</h2>
+              <h2 className="text-xl font-black tracking-tight">
+                {formatTaskCode(taskId)}
+              </h2>
               <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">
-                {currentChunk?.domain || 'Domain'}
+                {currentChunk?.domain || "Domain"}
               </span>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
@@ -234,23 +263,28 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
                 {progressPercent.toFixed(0)}%
               </p>
               <div className="flex items-center gap-2 rounded-full border border-border/50 bg-muted/40 px-3 py-1">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Timer</span>
-                <span className="text-xs font-bold text-foreground tabular-nums">{formatElapsedTime(elapsedSeconds)}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  Timer
+                </span>
+                <span className="text-xs font-bold text-foreground tabular-nums">
+                  {formatElapsedTime(elapsedSeconds)}
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        <Button variant="outline" onClick={handleExit} className="gap-2 text-muted-foreground hover:text-foreground">
+        <Button
+          variant="outline"
+          onClick={handleExit}
+          className="gap-2 text-muted-foreground hover:text-foreground"
+        >
           <LogOut className="w-4 h-4" />
           <span className="hidden md:inline">Exit</span>
         </Button>
       </div>
 
-      {/* ─── Main Content Split ─── */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden gap-6 lg:gap-10 pt-6">
-        
-        {/* Left Panel: Text Viewer */}
         <div className="flex-1 flex flex-col min-h-[250px] overflow-hidden">
           <div className="mb-4 shrink-0 px-1">
             <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">
@@ -272,7 +306,10 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
                     exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.15 }}
                   >
-                    <p className="text-2xl md:text-3xl font-medium leading-relaxed tracking-tight text-foreground/90 pb-8 text-center" style={{ lineHeight: '1.8' }}>
+                    <p
+                      className="text-2xl md:text-3xl font-medium leading-relaxed tracking-tight text-foreground/90 pb-8 text-center"
+                      style={{ lineHeight: "1.8" }}
+                    >
                       {currentChunk.text}
                     </p>
                   </motion.div>
@@ -282,28 +319,31 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
           </Card>
         </div>
 
-        {/* Right Panel: Annotation Controls */}
         <div className="w-full lg:w-[450px] shrink-0 flex flex-col overflow-auto h-full px-1 no-scrollbar">
           <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-4 shrink-0">
             Annotation Labels
           </h3>
 
           <div className="space-y-7 flex-1 pb-6">
-            {/* Section 1: Domain Match */}
             <div className="space-y-3">
-              <label className="text-sm font-bold text-foreground">Does this text match its assigned domain?</label>
+              <label className="text-sm font-bold text-foreground">
+                Does this text match its assigned domain?
+              </label>
               <div className="grid grid-cols-3 gap-2">
-                {['match', 'not-match', 'uncertain'].map((opt) => (
+                {["match", "not-match", "uncertain"].map((opt) => (
                   <button
                     key={opt}
                     onClick={() => setDomainMatch(opt)}
                     className={`py-2 px-2 rounded-xl border text-xs font-bold transition-all ${
-                      domainMatch === opt 
-                        ? 'bg-primary border-primary text-white shadow-md shadow-primary/20 scale-[1.02]' 
-                        : 'bg-card border-border hover:border-primary/50 text-muted-foreground hover:text-foreground'
+                      domainMatch === opt
+                        ? "bg-primary border-primary text-white shadow-md shadow-primary/20 scale-[1.02]"
+                        : "bg-card border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {opt.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                    {opt
+                      .split("-")
+                      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                      .join(" ")}
                   </button>
                 ))}
               </div>
@@ -311,16 +351,17 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
 
             <hr className="border-border/50" />
 
-            {/* Section 2: Language Check */}
             <div className="space-y-3">
-              <label className="text-sm font-bold text-foreground">Is this text written in Amharic?</label>
+              <label className="text-sm font-bold text-foreground">
+                Is this text written in Amharic?
+              </label>
               <div className="flex gap-2">
                 <button
                   onClick={() => setIsAmharic(true)}
                   className={`flex-1 py-2 rounded-xl border text-xs font-bold transition-all ${
-                    isAmharic === true 
-                      ? 'bg-primary border-primary text-white shadow-md scale-[1.02]' 
-                      : 'bg-card border-border hover:border-primary/50 text-muted-foreground hover:text-foreground'
+                    isAmharic === true
+                      ? "bg-primary border-primary text-white shadow-md scale-[1.02]"
+                      : "bg-card border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   Yes, Amharic
@@ -328,9 +369,9 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
                 <button
                   onClick={() => setIsAmharic(false)}
                   className={`flex-1 py-2 rounded-xl border text-xs font-bold transition-all ${
-                    isAmharic === false 
-                      ? 'bg-rose-500 border-rose-500 text-white shadow-md scale-[1.02]' 
-                      : 'bg-card border-border hover:border-rose-500/50 text-muted-foreground hover:text-foreground'
+                    isAmharic === false
+                      ? "bg-rose-500 border-rose-500 text-white shadow-md scale-[1.02]"
+                      : "bg-card border-border hover:border-rose-500/50 text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   No, not Amharic
@@ -340,44 +381,46 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
 
             <hr className="border-border/50" />
 
-            {/* Section 3: Readability */}
             <div className="space-y-3">
-              <label className="text-sm font-bold text-foreground">How readable is this text?</label>
-              <Select 
+              <label className="text-sm font-bold text-foreground">
+                How readable is this text?
+              </label>
+              <Select
                 value={readability}
                 onChange={(e) => setReadability(e.target.value)}
                 className="rounded-xl border-border/50 bg-card/60 h-11 text-sm font-medium"
               >
                 <option value="high">High (Clear and natural)</option>
-                <option value="medium">Medium (Understandable but awkward)</option>
+                <option value="medium">
+                  Medium (Understandable but awkward)
+                </option>
                 <option value="low">Low (Confusing or broken)</option>
               </Select>
             </div>
 
             <hr className="border-border/50" />
 
-            {/* Section 4: Safety Label */}
             <div className="space-y-3">
               <label className="text-sm font-bold text-foreground">
                 Is this text safe?
               </label>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setSafetyLabel('safe')}
+                  onClick={() => setSafetyLabel("safe")}
                   className={`flex-1 py-2 rounded-xl border text-xs font-bold transition-all ${
-                    safetyLabel === 'safe' 
-                      ? 'bg-emerald-500 border-emerald-500 text-white shadow-md scale-[1.02]' 
-                      : 'bg-card border-border hover:border-emerald-500/50 text-muted-foreground hover:text-foreground'
+                    safetyLabel === "safe"
+                      ? "bg-emerald-500 border-emerald-500 text-white shadow-md scale-[1.02]"
+                      : "bg-card border-border hover:border-emerald-500/50 text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   Safe
                 </button>
                 <button
-                  onClick={() => setSafetyLabel('unsafe')}
+                  onClick={() => setSafetyLabel("unsafe")}
                   className={`flex-1 py-2 rounded-xl border text-xs font-bold transition-all ${
-                    safetyLabel === 'unsafe' 
-                      ? 'bg-rose-500 border-rose-500 text-white shadow-md scale-[1.02]' 
-                      : 'bg-card border-border hover:border-rose-500/50 text-muted-foreground hover:text-foreground'
+                    safetyLabel === "unsafe"
+                      ? "bg-rose-500 border-rose-500 text-white shadow-md scale-[1.02]"
+                      : "bg-card border-border hover:border-rose-500/50 text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   Unsafe
@@ -387,18 +430,19 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
 
             <hr className="border-border/50" />
 
-            {/* Section 5: Confidence */}
             <div className="space-y-3">
-              <label className="text-sm font-bold text-foreground">How confident are you?</label>
+              <label className="text-sm font-bold text-foreground">
+                How confident are you?
+              </label>
               <div className="flex gap-2">
-                {['high', 'medium', 'low'].map((opt) => (
+                {["high", "medium", "low"].map((opt) => (
                   <button
                     key={opt}
                     onClick={() => setConfidence(opt)}
                     className={`flex-1 py-2 rounded-xl border text-xs font-bold transition-all ${
-                      confidence === opt 
-                        ? 'bg-primary border-primary text-white shadow-md scale-[1.02]' 
-                        : 'bg-card border-border hover:border-primary/50 text-muted-foreground hover:text-foreground'
+                      confidence === opt
+                        ? "bg-primary border-primary text-white shadow-md scale-[1.02]"
+                        : "bg-card border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {opt.charAt(0).toUpperCase() + opt.slice(1)}
@@ -409,7 +453,6 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
 
             <hr className="border-border/50" />
 
-            {/* Section 6: Notes */}
             <div className="space-y-2 pb-2">
               <label className="text-sm font-bold text-muted-foreground flex justify-between">
                 <span>Notes</span>
@@ -424,30 +467,37 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="pt-4 border-t border-border/50 space-y-3 shrink-0 bg-background sticky bottom-0">
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="h-12 px-4 shadow-sm text-foreground bg-card hover:bg-muted/60"
                 onClick={handleBack}
                 disabled={currentIndex === 0}
               >
-                <ChevronLeft className="w-4 h-4 mr-1 lg:mr-0" /> <span className="hidden lg:inline">Back</span>
+                <ChevronLeft className="w-4 h-4 mr-1 lg:mr-0" />{" "}
+                <span className="hidden lg:inline">Back</span>
               </Button>
-              <Button 
+              <Button
                 className="flex-1 h-12 text-sm font-black gap-2 shadow-lg shadow-primary/20 group transition-all"
                 onClick={handleSubmit}
-                disabled={!domainMatch || !confidence || isAmharic === null || safetyLabel === null || isSubmitting}
+                disabled={
+                  !domainMatch ||
+                  !confidence ||
+                  isAmharic === null ||
+                  safetyLabel === null ||
+                  isSubmitting
+                }
               >
-                Submit & Next <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                Submit & Next{" "}
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
 
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                className="flex-1 h-10 text-xs font-bold text-muted-foreground hover:bg-muted/50" 
+              <Button
+                variant="outline"
+                className="flex-1 h-10 text-xs font-bold text-muted-foreground hover:bg-muted/50"
                 onClick={handleSkip}
                 disabled={currentIndex >= (chunks?.length ?? 0) - 1}
               >
@@ -456,11 +506,13 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
             </div>
           </div>
         </div>
-
       </div>
 
-      {/* Completion Modal */}
-      <Modal isOpen={isComplete} onClose={handleExit} className="max-w-md text-center p-8">
+      <Modal
+        isOpen={isComplete}
+        onClose={handleExit}
+        className="max-w-md text-center p-8"
+      >
         <div className="w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle2 className="w-10 h-10" />
         </div>
@@ -471,12 +523,18 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
 
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="p-4 rounded-xl border bg-card text-center col-span-2">
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Progress</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
+              Progress
+            </p>
             <p className="text-2xl font-black">{progressPercent.toFixed(0)}%</p>
           </div>
           <div className="p-4 rounded-xl border bg-emerald-500/5 border-emerald-500/20 text-center col-span-2">
-            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Total Chunks</p>
-            <p className="text-xl font-bold text-emerald-600">{chunks?.length ?? 0}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">
+              Total Chunks
+            </p>
+            <p className="text-xl font-bold text-emerald-600">
+              {chunks?.length ?? 0}
+            </p>
           </div>
         </div>
 
@@ -487,4 +545,3 @@ export function AnnotatorWorkspace({ taskId, assignmentId }: WorkspaceProps) {
     </div>
   );
 }
-

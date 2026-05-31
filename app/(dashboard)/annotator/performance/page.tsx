@@ -4,8 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText, Info } from "lucide-react";
 
-// Local mock data just for this view so it renders cleanly and correctly
-export type ConsensusStatus = "Agreed" | "Partially Agreed" | "Disputed (Escalated)";
+export type ConsensusStatus =
+  | "Agreed"
+  | "Partially Agreed"
+  | "Disputed (Escalated)";
 
 export interface CompletedTaskRecord {
   id: string;
@@ -75,8 +77,6 @@ const completedTasksRecords: CompletedTaskRecord[] = [
   },
 ];
 
-// ─── Component helpers ────────────────────────────────────────────────────────
-
 function StatusBadge({ status }: { status: ConsensusStatus }) {
   if (status === "Agreed") {
     return (
@@ -101,62 +101,79 @@ function StatusBadge({ status }: { status: ConsensusStatus }) {
 
 function AccuracyBadge({ value }: { value: number }) {
   let colorClass = "text-emerald-600 bg-emerald-500/10 border-emerald-500/30";
-  if (value < 90) colorClass = "text-amber-600 bg-amber-500/10 border-amber-500/30";
-  if (value < 80) colorClass = "text-rose-600 bg-rose-500/10 border-rose-500/30";
+  if (value < 90)
+    colorClass = "text-amber-600 bg-amber-500/10 border-amber-500/30";
+  if (value < 80)
+    colorClass = "text-rose-600 bg-rose-500/10 border-rose-500/30";
 
   return (
-    <div className={`inline-flex px-2 py-0.5 rounded-md border font-black text-xs ${colorClass}`}>
+    <div
+      className={`inline-flex px-2 py-0.5 rounded-md border font-black text-xs ${colorClass}`}
+    >
       {value.toFixed(1)}%
     </div>
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function AnnotatorPerformancePage() {
   return (
     <div className="space-y-12 pb-20">
-      {/* Header */}
       <section className="border-b pb-8">
         <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-[0.2em] mb-2">
           <FileText className="w-3.5 h-3.5" />
           Performance Records
         </div>
-        <h1 className="text-4xl font-black tracking-tighter">Completed Tasks</h1>
+        <h1 className="text-4xl font-black tracking-tighter">
+          Completed Tasks
+        </h1>
         <p className="text-muted-foreground text-lg leading-relaxed mt-1">
           Review factual records of your completed task batches and outcomes.
         </p>
       </section>
 
-      {/* Context Note */}
       <section>
         <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20 max-w-3xl">
           <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <p className="text-sm text-primary/80 font-medium leading-relaxed">
-            Each task is reviewed by multiple annotators. Final outcomes are determined using consensus. 
-            Disputed tasks are escalated to Expert Reviewers for final arbitration.
+            Each task is reviewed by multiple annotators. Final outcomes are
+            determined using consensus. Disputed tasks are escalated to Expert
+            Reviewers for final arbitration.
           </p>
         </div>
       </section>
 
-      {/* Table Section */}
       <section>
         <Card className="border-border/50 bg-card/60 backdrop-blur-sm shadow-sm overflow-hidden">
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
-                  <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Task ID</th>
-                  <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Domain</th>
-                  <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground text-center">Chunks</th>
-                  <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground text-center">Your Accuracy</th>
-                  <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Consensus Status</th>
-                  <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground text-right">Date</th>
+                  <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground">
+                    Task ID
+                  </th>
+                  <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground">
+                    Domain
+                  </th>
+                  <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground text-center">
+                    Chunks
+                  </th>
+                  <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground text-center">
+                    Your Accuracy
+                  </th>
+                  <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground">
+                    Consensus Status
+                  </th>
+                  <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground text-right">
+                    Date
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
                 {completedTasksRecords.map((task) => (
-                  <tr key={task.id} className="hover:bg-muted/20 transition-colors group">
+                  <tr
+                    key={task.id}
+                    className="hover:bg-muted/20 transition-colors group"
+                  >
                     <td className="px-6 py-4">
                       <span className="font-black text-sm">{task.id}</span>
                     </td>
@@ -166,7 +183,9 @@ export default function AnnotatorPerformancePage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="font-bold text-sm text-muted-foreground">{task.chunksCompleted}</span>
+                      <span className="font-bold text-sm text-muted-foreground">
+                        {task.chunksCompleted}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <AccuracyBadge value={task.accuracy} />
@@ -175,7 +194,13 @@ export default function AnnotatorPerformancePage() {
                       <StatusBadge status={task.consensusStatus} />
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <span className="text-sm font-medium text-muted-foreground">{new Date(task.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {new Date(task.date).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </span>
                     </td>
                   </tr>
                 ))}
