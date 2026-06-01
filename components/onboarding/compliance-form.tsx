@@ -21,7 +21,7 @@ const domainOptions = [
   "Education",
   "Law",
   "Finance",
-  "News",
+  "Politics",
   "Religion",
 ];
 

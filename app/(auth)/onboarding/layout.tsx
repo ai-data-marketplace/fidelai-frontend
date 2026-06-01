@@ -26,12 +26,7 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
               <StepIndicator />
             </div>
             
-            <div className="hidden lg:block">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Need help? <br />
-                Contact our support team at <strong className="text-foreground font-medium">support@fidelai.com</strong>
-              </p>
-            </div>
+
           </div>
 
           <div className="lg:w-2/3 p-8 lg:p-16 flex flex-col justify-center">

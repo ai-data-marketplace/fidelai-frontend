@@ -2,7 +2,7 @@
 
 import { useOnboarding } from "@/context/onboarding-context";
 import { useSubmitOnboardingComplete } from "@/lib/hooks";
-import { ArrowLeft, CheckCircle2, UploadCloud, Check, Loader2, FileText, Zap, Star, Target } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, FileText, Zap, Star, Target } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -36,9 +36,9 @@ export function ReadinessTest() {
       case "contributor":
         return !!(answers.dataset_name && answers.dataset_description && answers.primary_domain && answers.file_format);
       case "annotator":
-        return !!(answers.content_types && Array.isArray(answers.content_types) && answers.content_types.length > 0 && answers.quality_standard && answers.batch_size);
+        return !!(answers.content_types && Array.isArray(answers.content_types) && answers.content_types.length > 0);
       case "expert":
-        return !!(answers.review_types && Array.isArray(answers.review_types) && answers.review_types.length > 0 && answers.focus_area && answers.capacity);
+        return !!(answers.capacity);
       case "buyer":
         return !!answers.primary_requirement;
       default:
@@ -221,69 +221,6 @@ export function ReadinessTest() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-3">Quality Standard</label>
-                <div className="space-y-2">
-                  {[
-                    { value: "high", label: "High", desc: "Precise, detailed annotations" },
-                    { value: "medium", label: "Medium", desc: "Standard accuracy with good speed" },
-                    { value: "standard", label: "Standard", desc: "Acceptable quality with flexibility" },
-                  ].map((option) => (
-                    <label
-                      key={option.value}
-                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                        readinessData.answers.quality_standard === option.value
-                          ? "bg-primary/10 border-primary"
-                          : "bg-background border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="quality"
-                        checked={readinessData.answers.quality_standard === option.value}
-                        onChange={() => updateAnswers({ quality_standard: option.value })}
-                        className="w-4 h-4 mt-0.5 border-border accent-primary"
-                      />
-                      <div className="flex-1">
-                        <div className="text-sm font-medium">{option.label}</div>
-                        <div className="text-xs text-muted-foreground">{option.desc}</div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-3">Preferred Batch Size</label>
-                <div className="space-y-2">
-                  {[
-                    { value: "small", label: "Small", desc: "10-50 items per batch" },
-                    { value: "medium", label: "Medium", desc: "50-200 items per batch" },
-                    { value: "large", label: "Large", desc: "200+ items per batch" },
-                  ].map((option) => (
-                    <label
-                      key={option.value}
-                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                        readinessData.answers.batch_size === option.value
-                          ? "bg-primary/10 border-primary"
-                          : "bg-background border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="batch"
-                        checked={readinessData.answers.batch_size === option.value}
-                        onChange={() => updateAnswers({ batch_size: option.value })}
-                        className="w-4 h-4 mt-0.5 border-border accent-primary"
-                      />
-                      <div className="flex-1">
-                        <div className="text-sm font-medium">{option.label}</div>
-                        <div className="text-xs text-muted-foreground">{option.desc}</div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         )}
@@ -297,73 +234,6 @@ export function ReadinessTest() {
             <p className="text-sm text-muted-foreground">Configure your expertise and review preferences.</p>
 
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium mb-3">Types of Datasets You Review</label>
-                <div className="space-y-2">
-                  {["NER & Entity Recognition", "Sentiment Analysis", "Text Classification", "Translation Quality"].map((type) => {
-                    const selected = Array.isArray(readinessData.answers.review_types) && 
-                      readinessData.answers.review_types.includes(type);
-                    return (
-                      <label
-                        key={type}
-                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                          selected
-                            ? "bg-primary/10 border-primary"
-                            : "bg-background border-border hover:border-primary/50"
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selected}
-                          onChange={(e) => {
-                            const current = Array.isArray(readinessData.answers.review_types) 
-                              ? readinessData.answers.review_types 
-                              : [];
-                            const updated = e.target.checked
-                              ? [...current, type]
-                              : current.filter((t) => t !== type);
-                            updateAnswers({ review_types: updated });
-                          }}
-                          className="w-4 h-4 rounded border-border accent-primary"
-                        />
-                        <span className="text-sm font-medium">{type}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-3">Review Focus Area</label>
-                <div className="space-y-2">
-                  {[
-                    { value: "qa", label: "Quality Assurance", desc: "Focus on data accuracy & consistency" },
-                    { value: "adjudication", label: "Adjudication", desc: "Resolve disputed annotations" },
-                    { value: "validation", label: "Training Data Validation", desc: "Ensure data readiness for models" },
-                  ].map((option) => (
-                    <label
-                      key={option.value}
-                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                        readinessData.answers.focus_area === option.value
-                          ? "bg-primary/10 border-primary"
-                          : "bg-background border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="focus"
-                        checked={readinessData.answers.focus_area === option.value}
-                        onChange={() => updateAnswers({ focus_area: option.value })}
-                        className="w-4 h-4 mt-0.5 border-border accent-primary"
-                      />
-                      <div className="flex-1">
-                        <div className="text-sm font-medium">{option.label}</div>
-                        <div className="text-xs text-muted-foreground">{option.desc}</div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
 
               <div>
                 <label className="block text-sm font-medium mb-3">Review Capacity per Week</label>
