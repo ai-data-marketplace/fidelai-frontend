@@ -102,7 +102,7 @@ export function Hero() {
   return (
     <section
       id="home"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-[90vh] lg:min-h-screen flex items-center justify-center overflow-hidden"
     >
       <div className="absolute inset-0 z-0">
         <Canvas
@@ -117,101 +117,85 @@ export function Hero() {
       <div className="absolute inset-0 z-[1] bg-gradient-to-b from-background via-background/40 to-background" />
       <div className="absolute inset-0 z-[1] brand-radial-overlay" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full brand-chip-soft text-sm font-medium mb-8"
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full brand-bg-soft opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 brand-bg" />
-          </span>
-          FidelAi - Next Gen Ai Data Hub
-        </motion.div>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-0">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          <div className="text-left">
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.15 }}
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6"
+            >
+              <span className="text-foreground">AI Data Marketplace</span>
+              <br />
+              <span className="brand-gradient-text-hero">
+                for Amharic Language
+              </span>
+            </motion.h1>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.15 }}
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6"
-        >
-          <span className="text-foreground">AI Data Marketplace</span>
-          <br />
-          <span className="brand-gradient-text-hero">for Amharic Language</span>
-        </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="text-lg sm:text-xl text-muted-foreground leading-relaxed mb-10 max-w-xl"
+            >
+              Collect, Annotate, Validate, and Sell High-Quality Amharic Datasets
+              using AI-powered workflows and crowdsourcing.
+            </motion.p>
 
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="max-w-2xl mx-auto text-lg sm:text-xl text-muted-foreground leading-relaxed mb-10"
-        >
-          Collect, Annotate, Validate, and Sell High-Quality Amharic Datasets
-          using AI-powered workflows and crowdsourcing.
-        </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.45 }}
+              className="flex flex-col sm:flex-row items-center justify-start gap-4"
+            >
+              <Link
+                href="/register"
+                className="group relative w-full sm:w-auto px-8 py-4 text-base font-semibold text-white brand-gradient-btn rounded-2xl shadow-2xl brand-shadow brand-shadow-hover transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+              >
+                Get Started Free
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link
+                href="#marketplace"
+                className="group w-full sm:w-auto px-8 py-4 text-base font-semibold text-foreground bg-foreground/5 hover:bg-foreground/10 border border-border/50 rounded-2xl transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+              >
+                <Play className="w-4 h-4 brand-text" />
+                Explore Marketplace
+              </Link>
+            </motion.div>
+          </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.45 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
-          <Link
-            href="/register"
-            className="group relative px-8 py-4 text-base font-semibold text-white brand-gradient-btn rounded-2xl shadow-2xl brand-shadow brand-shadow-hover transition-all hover:-translate-y-0.5 flex items-center gap-2"
-          >
-            Get Started Free
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-          <Link
-            href="#marketplace"
-            className="group px-8 py-4 text-base font-semibold text-foreground bg-foreground/5 hover:bg-foreground/10 border border-border/50 rounded-2xl transition-all hover:-translate-y-0.5 flex items-center gap-2"
-          >
-            <Play className="w-4 h-4 brand-text" />
-            Explore Marketplace
-          </Link>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.7 }}
-          className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto"
-        >
-          {[
-            { value: "10K+", label: "Datasets" },
-            { value: "50K+", label: "Contributors" },
-            { value: "99.2%", label: "Quality Score" },
-            { value: "1M+", label: "Annotations" },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="text-2xl sm:text-3xl font-bold brand-gradient-text-soft">
-                {stat.value}
-              </div>
-              <div className="text-sm text-muted-foreground mt-1">
-                {stat.label}
-              </div>
+          <div className="relative">
+            <div className="grid grid-cols-2 gap-4 sm:gap-6">
+              {[
+                { value: "10K+", label: "Datasets", delay: 0.6 },
+                { value: "50K+", label: "Contributors", delay: 0.7 },
+                { value: "99.2%", label: "Quality Score", delay: 0.8 },
+                { value: "1M+", label: "Annotations", delay: 0.9 },
+              ].map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: stat.delay }}
+                  className="p-6 sm:p-8 rounded-3xl bg-card/40 border border-border/50 backdrop-blur-xl shadow-xl hover:bg-card/60 transition-all hover:-translate-y-1 group"
+                >
+                  <div className="text-2xl sm:text-4xl font-bold brand-gradient-text-soft mb-1 group-hover:scale-105 transition-transform origin-left">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                    {stat.label}
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          ))}
-        </motion.div>
-      </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-6 h-10 rounded-full border-2 border-muted-foreground/30 flex items-start justify-center p-1.5"
-        >
-          <div className="w-1.5 h-1.5 rounded-full brand-bg" />
-        </motion.div>
-      </motion.div>
+            {/* Decorative background glow for metrics */}
+            <div className="absolute -inset-4 z-[-1] brand-bg opacity-[0.03] blur-3xl rounded-full" />
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
