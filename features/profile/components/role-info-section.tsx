@@ -22,7 +22,7 @@ export function RoleInfoSection({ role }: RoleInfoSectionProps) {
       icon: Briefcase,
       title: "Annotation Expertise",
       details: [
-        { label: "Domains", value: "Linguistics, News, Social Media" },
+        { label: "Domains", value: "Linguistics, Politics, Social Media" }
         { label: "Experience", value: "2+ Years" },
         { label: "Accuracy Rate", value: "96.4%" },
       ],

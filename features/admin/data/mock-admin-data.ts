@@ -84,7 +84,7 @@ export const mockDatasetApprovals: DatasetApproval[] = [
     id: "ds-1", 
     name: "Amharic News Corpus 2024", 
     contributor: "Amanuel Kebede", 
-    domain: "News", 
+    domain: "Politics", 
     qcScore: 94.5, 
     status: "Pending", 
     date: "2024-03-22",

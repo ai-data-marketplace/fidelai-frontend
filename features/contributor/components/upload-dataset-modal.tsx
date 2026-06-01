@@ -23,7 +23,7 @@ const domains = [
   "Education",
   "Law",
   "Finance",
-  "News",
+  "Politics",
   "Religion",
 ];
 

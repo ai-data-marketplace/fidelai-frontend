@@ -34,7 +34,7 @@ const domains = [
   { value: "education", label: "Education" },
   { value: "law", label: "Law" },
   { value: "finance", label: "Finance" },
-  { value: "news", label: "News" },
+  { value: "politics", label: "Politics" },
   { value: "religion", label: "Religion" },
 ];
 

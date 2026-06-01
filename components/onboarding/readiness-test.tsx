@@ -141,7 +141,7 @@ export function ReadinessTest() {
                   className="w-full px-4 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Select a domain...</option>
-                  <option value="news">News / Media</option>
+                  <option value="politics">Politics / Media</option>
                   <option value="health">Health / Medical</option>
                   <option value="education">Education / Academic</option>
                   <option value="legal">Legal / Compliance</option>

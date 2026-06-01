@@ -29,7 +29,7 @@ export const mockDatasets: Dataset[] = [
   {
     id: "ds-1",
     title: "Amharic News Corpus 2024",
-    domain: "News",
+    domain: "Politics",
     subdomain: "Journalism",
     size: "1.2 GB",
     qcScore: 94,
