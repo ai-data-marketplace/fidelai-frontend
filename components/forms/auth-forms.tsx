@@ -349,14 +349,14 @@ export function RegisterForm() {
         >
           I agree to the{" "}
           <Link
-            href="/terms"
+            href="/legal"
             className="text-foreground hover:text-orange-600 font-medium transition-colors"
           >
             Terms of Service
           </Link>{" "}
           and{" "}
           <Link
-            href="/privacy"
+            href="/legal"
             className="text-foreground hover:text-orange-600 font-medium transition-colors"
           >
             Privacy Policy

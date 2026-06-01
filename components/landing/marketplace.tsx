@@ -136,7 +136,7 @@ export function Marketplace() {
                 </div>
 
                 <div className="flex items-center justify-between border-t border-border/50 pt-4">
-                  <div className="text-xl font-bold">${dataset.price}</div>
+                  <div className="text-xl font-bold">ETB {dataset.price * 50}</div>
                   <div className="flex items-center gap-0.5">
                     {[...Array(5)].map((_, i) => (
                       <Star

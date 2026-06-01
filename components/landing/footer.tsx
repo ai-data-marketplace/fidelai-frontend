@@ -1,38 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { Database, Globe, MessageCircle, ExternalLink } from "lucide-react";
+import { Database, ExternalLink } from "lucide-react";
 
 const footerLinks = {
   Platform: [
-    { label: "Features", href: "#features" },
-    { label: "Marketplace", href: "#marketplace" },
     { label: "Pricing", href: "/pricing" },
-    { label: "Documentation", href: "/documentation" },
   ],
   Company: [
     { label: "About", href: "/about" },
-    { label: "Contact", href: "/contact" },
-    { label: "Blog", href: "#" },
-    { label: "Careers", href: "#" },
   ],
   Legal: [
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms of Service", href: "#" },
-    { label: "Cookie Policy", href: "#" },
-    { label: "Data Processing", href: "#" },
-  ],
-  Resources: [
-    { label: "API Reference", href: "/documentation" },
-    { label: "Guides", href: "#" },
-    { label: "Community", href: "#" },
-    { label: "Status", href: "#" },
+    { label: "Privacy Policy", href: "/legal" },
+    { label: "Terms of Service", href: "/legal" },
+    { label: "Data Processing", href: "/legal" },
   ],
 };
 
 const socialLinks = [
-  { icon: Globe, href: "#", label: "Website" },
-  { icon: MessageCircle, href: "#", label: "Community" },
   { icon: ExternalLink, href: "#", label: "More" },
 ];
 

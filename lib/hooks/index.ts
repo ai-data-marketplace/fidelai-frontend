@@ -798,7 +798,7 @@ export function useUploadDataset() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["datasets"] });
+      void queryClient.invalidateQueries({ queryKey: ["datasets"] });
     },
   });
 }

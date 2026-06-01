@@ -15,10 +15,8 @@ import {
 import {
   Upload,
   AlertCircle,
-  ShieldCheck,
   CheckCircle2,
   ArrowLeft,
-  Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -81,8 +79,6 @@ export function DatasetUploadForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
-
-  const isSensitiveDomain = ["health", "law", "finance"].includes(domain);
 
   const selectedFileLabel = useMemo(
     () => selectedFile?.name ?? "No file selected yet",
@@ -287,7 +283,7 @@ export function DatasetUploadForm() {
                   onChange={handleFileChange}
                   required
                 />
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center pointer-events-none">
                   <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-primary transition-all duration-300">
                     <Upload className="w-8 h-8 text-primary group-hover:text-white" />
                   </div>
@@ -302,54 +298,6 @@ export function DatasetUploadForm() {
               </div>
             </div>
 
-            <AnimatePresence>
-              {isSensitiveDomain && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="p-6 rounded-2xl border-2 border-emerald-500/20 bg-emerald-500/5 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-emerald-500/20">
-                        <ShieldCheck className="w-5 h-5 text-emerald-700" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-black text-emerald-900 uppercase tracking-wider">
-                          Verification Required
-                        </p>
-                        <p className="text-xs text-emerald-800/80">
-                          Proof of authorization needed for {domain} datasets.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4 pt-2">
-                      <p className="text-xs text-muted-foreground leading-relaxed italic">
-                        By uploading to this domain, you must provide valid
-                        proof of ownership or authorization under Ethiopian Data
-                        Privacy Laws.
-                      </p>
-                      <div className="flex items-center gap-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="h-11 gap-2 border-emerald-500/30 text-emerald-700 hover:bg-emerald-100"
-                        >
-                          <Plus className="w-4 h-4" />
-                          Upload Auth Document
-                        </Button>
-                        <span className="text-[10px] text-muted-foreground font-mono">
-                          Accepted: PDF, JPG, PNG
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             <div className="p-6 rounded-2xl border border-primary/20 bg-primary/5 space-y-4 shadow-inner">
               <div className="flex items-start gap-3">
                 <Checkbox
@@ -357,11 +305,11 @@ export function DatasetUploadForm() {
                   checked={hasConsent}
                   onChange={(event) => setHasConsent(event.target.checked)}
                   required
-                  className="mt-1"
+                  className="mt-1 accent-primary "
                 />
                 <label
                   htmlFor="consent"
-                  className="text-sm font-medium leading-relaxed cursor-pointer select-none"
+                  className="text-sm font-medium leading-relaxed cursor-pointer select-none text-foreground"
                 >
                   I confirm that I have the legal right to share this data and
                   allow it to be used for AI training and marketplace datasets.
